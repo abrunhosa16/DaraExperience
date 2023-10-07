@@ -12,33 +12,45 @@
   <body>
     <h1>Dara game night experience</h1>
     <p>
-      Dara is a strategy game 1x1, that the objective is let the opponent without pieces like chess but absolutely different. 
-      This game is from Niger and you will be addicted for that.
+      Dara is a strategy game 1x1, that the objective is let the opponent
+      without pieces like chess but absolutely different. This game is from
+      Niger and you will be addicted for that.
     </p>
 
-    <form action="">
-      <label for="boards">Choose the board's size:</label>
-      <select name="sizeb" id="boards">
-        <option value="5x6">5x6</option>
-        <option value="Standart">6x6</option>
-        <option value="My game">Your Custom</option>
-      </select>
+    <div>
+      <div>
+        <label for="b-size-sel">Choose the board size:</label>
+        <select id="b-size-sel">
+          <option value="5_6">5x6</option>
+          <option value="6_6">6x6</option>
+          <option value="custom">Custom</option>
+        </select>
+        <div id="b-size-sel-custom" class="hidden">
+          <p>
+            Custom width:
+            <input type="number" id="b-size-sel-w" />
+            <span class="hidden err-message" id="b-size-sel-w-err"></span>
+          </p>
+          <p>
+            Custom height:
+            <input type="number" id="b-size-sel-h" />
+            <span class="hidden err-message" id="b-size-sel-h-err"></span>
+          </p>
+        </div>
+      </div>
       <br /><br />
+
       <p>Who is the challenger?</p>
       <button type="button" onclick="alert('Hello world!')">
         Player vs Player
       </button>
-      <button type="button" onclick="alert('Hello world!')" >
+      <button type="button" onclick="alert('Hello world!')">
         Player vs AI
       </button>
       <br /><br />
       <p>Who starts?</p>
-      <button type="button" onclick="alert('Hello world!')" >
-        You first
-      </button>
-      <button type="button" onclick="alert('Hello world!')" >
-        Enemy first
-      </button>
+      <button type="button" onclick="alert('Hello world!')">You first</button>
+      <button type="button" onclick="alert('Hello world!')">Enemy first</button>
       <br /><br />
       <label for="Level">Robots level</label>
       <select name="level" id="lvl">
@@ -48,11 +60,19 @@
       </select>
       <br /><br />
 
+      <button id="b-gen-button">Let's do this</button>
+    </div>
 
-      <input type="submit" value="Submit" />
-    </form>
+    <table id="board" class="board hidden">
+      <tbody />
+    </table>
 
-    <script></script>
-    <p>Please feel always free to contact us, the team Dara experience appreciate your message.</p>
+    <p>
+      Please feel always free to contact us, the team Dara experience appreciate
+      your message.
+    </p>
+
+    <!-- ISTO TEM QUE FICAR EM ÚLTIMO LUGAR -->
+    <script type="text/javascript" src="main.js"></script>
   </body>
 </html>
