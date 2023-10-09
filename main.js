@@ -15,6 +15,8 @@ const INVALID_HEIGHT_ERROR_MESSAGES = {
 const ELEMENT_IDS = {
   main: "board",
   config: {
+    main: "b-gen-area",
+
     size: {
       main: "b-size-sel",
       custom: {
@@ -29,25 +31,38 @@ const ELEMENT_IDS = {
   },
 };
 
-function getSizeSelectOnChange(custom_select_el) {
-  return (new_val) => {
-    if (new_val === "custom") {
-      custom_select_el.classList.remove("hidden");
-    } else {
-      custom_select_el.classList.add("hidden");
-    }
-  };
+// TODO: is using global variables the right choice?
+// contains all board gen info
+var boardGenState = {
+  width: "6",
+  height: "6",
+  ai_game: false,
+  whites_first: true,
+  error_count: 0
+};
+
+const showElement = (el) => el.classList.remove("hidden");
+const hideElement = (el) => el.classList.add("hidden");
+
+// should run every time some gen state is updated
+const updateGenButton = () => {
+  const button = document.getElementById(ELEMENT_IDS.config.gen);
+  button.disabled = boardGenState.error_count > 0;
 }
 
-function isCustomSizeValid(val) {
+
+// test for validity of a value
+// returns true if valid
+const isCustomSizeValid = (val) => {
   // val expected to be null or Int
-  // returns true if valid
-  return !(val === null || parseInt(val) < MIN_HEIGHT_WIDTH);
+  return val && parseInt(val) >= MIN_HEIGHT_WIDTH;
 }
 
-function getCustomSizeErrorMessage(val, err_messages) {
-  // val expected to be null or Int
-  if (val === null) {
+// test for a validity of a value
+// returns null if valid, otherwise an error string
+const getCustomSizeErrorMessage = (val, err_messages) => {
+  // expects val to be a integer if valid
+  if (!val) {
     return err_messages.required;
   }
   if (parseInt(val) < MIN_HEIGHT_WIDTH) {
@@ -56,91 +71,149 @@ function getCustomSizeErrorMessage(val, err_messages) {
   return null;
 }
 
-function getCustomSizeInpOnChange(error_el, err_messages) {
-  return (new_val) => {
-    let err = getCustomSizeErrorMessage(new_val, err_messages);
-    if (err !== null) {
-      error_el.innerHTML = err;
-      error_el.classList.remove("hidden");
-    } else {
-      error_el.classList.add("hidden");
-    }
-  };
-}
+// update custom width field with any string, with error notifications
+const setCustomWidth = (new_val) => {
+  const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
+  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.width_err);
+  
+  const old_was_valid = isCustomSizeValid(boardGenState.width);
+  const err = getCustomSizeErrorMessage(new_val, INVALID_WIDTH_ERROR_MESSAGES);
 
-function validateBoardCreation() {
-  const size = document.getElementById(ELEMENT_IDS.config.size.main);
-  if (size.value === "custom") {
-    if (
-      !isCustomSizeValid(
-        document.getElementById(ELEMENT_IDS.config.size.custom.width).value
-      ) ||
-      !isCustomSizeValid(
-        document.getElementById(ELEMENT_IDS.config.size.custom.height).value
-      )
-    ) {
-      return false;
+  boardGenState.width = new_val;
+  el.value = new_val;
+  if (err === null) {
+    if (!old_was_valid) {
+      boardGenState.error_count -= 1;
     }
+
+    hideElement(err_el);
+  } else {
+    if (old_was_valid) {
+      boardGenState.error_count += 1;
+    }
+
+    err_el.innerHTML = err;
+    showElement(err_el);
   }
-  return true;
+
+  updateGenButton();
 }
 
-function updateGenButton() {
-  const button = document.getElementById(ELEMENT_IDS.config.gen);
-  button.disabled = !validateBoardCreation();
+// change custom width field with a new value without checking for errors
+const setCustomWidthUnckecked = (new_val) => {
+  const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
+  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.width_err);
+  
+  const old_was_valid = isCustomSizeValid(boardGenState.width);
+  if (!old_was_valid) {
+    boardGenState.error_count -= 1;
+  }
+  boardGenState.width = new_val;
+  el.value = new_val;
+
+  hideElement(err_el);
+
+  updateGenButton();
 }
 
-function initialize_board_size_selection() {
+// this function should be analogous to the width counterpart
+const setCustomHeight = (new_val) => {
+  const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
+  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.height_err);
+  
+  const old_was_valid = isCustomSizeValid(boardGenState.height);
+  const err = getCustomSizeErrorMessage(new_val, INVALID_HEIGHT_ERROR_MESSAGES);
+
+  boardGenState.height = new_val;
+  el.value = new_val;
+  if (err === null) {
+    if (!old_was_valid) {
+      boardGenState.error_count -= 1;
+    }
+
+    hideElement(err_el);
+  } else {
+    if (old_was_valid) {
+      boardGenState.error_count += 1;
+    }
+
+    err_el.innerHTML = err;
+    showElement(err_el);
+  }
+
+  updateGenButton();
+}
+
+const setCustomHeightUnckecked = (new_val) => {
+  const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
+  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.height_err);
+  
+  const old_was_valid = isCustomSizeValid(boardGenState.height);
+  if (!old_was_valid) {
+    boardGenState.error_count -= 1;
+  }
+  boardGenState.height = new_val;
+  el.value = new_val.toString();
+
+  hideElement(err_el);
+
+  updateGenButton();
+}
+
+const parseSizeSelection = (val) => {
+  const ind = val.indexOf("_");
+  const width = parseInt(val.substr(0, ind));
+  const height = parseInt(val.substr(ind + 1));
+  return [width, height];
+}
+
+const setSizeSelection = (new_val) => {
+  const custom_size_field = document.getElementById(ELEMENT_IDS.config.size.custom.main);
+  if (new_val === "custom") {
+    setCustomWidth(boardGenState.width);
+    setCustomHeight(boardGenState.height);
+    showElement(custom_size_field);
+  } else {
+    const r = parseSizeSelection(new_val);
+    setCustomWidthUnckecked(r[0]);
+    setCustomHeightUnckecked(r[1]);
+    hideElement(custom_size_field);
+  }
+}
+
+// adds all handlers to size selection elements
+const initialize_board_size_selection = () => {
   const ids = ELEMENT_IDS.config.size;
   // main <select />
   const main_el = document.getElementById(ids.main);
-  // field that appears on custom size option
-  const main_onchange_fn = getSizeSelectOnChange(
-    document.getElementById(ids.custom.main)
-  );
+  const custom_width = document.getElementById(ids.custom.width);
+  const custom_height = document.getElementById(ids.custom.height);
   main_el.addEventListener("change", (e) => {
-    main_onchange_fn(e.currentTarget.value);
+    setSizeSelection(e.currentTarget.value);
   });
-  main_el.addEventListener("change", (e) => {
-    updateGenButton();
-  });
-  main_onchange_fn(main_el.value);
+  if (main_el.value === "custom") {
+    // if the browser "remembers" custom values, initialize them as that
+    boardGenState.width = custom_width.value;
+    if (!isCustomSizeValid(custom_width.value)) {
+      boardGenState.error_count += 1;
+    }
+    boardGenState.height = custom_height.value;
+    if (!isCustomSizeValid(custom_height.value)) {
+      boardGenState.error_count += 1;
+    }
+  }
+  setSizeSelection(main_el.value);
 
-  // custom size input elements
-  const width_inp_el = document.getElementById(ids.custom.width);
-  const height_inp_el = document.getElementById(ids.custom.height);
-  // if width/height is loaded as invalid
-  if (!isCustomSizeValid(width_inp_el.value)) {
-    width_inp_el.value = "6";
-  }
-  if (!isCustomSizeValid(height_inp_el.value)) {
-    height_inp_el.value = "6";
-  }
-  const width_inp_err_el = document.getElementById(ids.custom.width_err);
-  const height_inp_err_el = document.getElementById(ids.custom.height_err);
-  const width_onchange_fn = getCustomSizeInpOnChange(
-    width_inp_err_el,
-    INVALID_HEIGHT_ERROR_MESSAGES
-  );
-  const height_onchange_fn = getCustomSizeInpOnChange(
-    height_inp_err_el,
-    INVALID_HEIGHT_ERROR_MESSAGES
-  );
-  width_inp_el.addEventListener("change", (e) => {
-    width_onchange_fn(e.currentTarget.value);
+  // custom width and height input fields
+  document.getElementById(ids.custom.width).addEventListener("change", (e) => {
+    setCustomWidth(e.currentTarget.value);
   });
-  height_inp_el.addEventListener("change", (e) => {
-    height_onchange_fn(e.currentTarget.value);
-  });
-  width_inp_el.addEventListener("change", (e) => {
-    updateGenButton();
-  });
-  height_inp_el.addEventListener("change", (e) => {
-    updateGenButton();
+  document.getElementById(ids.custom.height).addEventListener("change", (e) => {
+    setCustomHeight(e.currentTarget.value);
   });
 }
 
-function generate_board(board, width, heigth) {
+const generate_board = (board, width, heigth) => {
   // expects board to be a table containing a tbody
   const body = board.children[0];
   let rows = [];
@@ -163,23 +236,9 @@ function generate_board(board, width, heigth) {
   board.classList.remove("hidden");
 }
 
-function submitBoardGen() {
-  const size = document.getElementById(ELEMENT_IDS.config.size.main);
-  let width;
-  let height;
-  if (size.value === "custom") {
-    width = document.getElementById(ELEMENT_IDS.config.size.custom.width).value;
-    height = document.getElementById(
-      ELEMENT_IDS.config.size.custom.height
-    ).value;
-  } else {
-    const ind = size.value.indexOf("_");
-    width = parseInt(size.value.substr(0, ind));
-    height = parseInt(size.value.substr(ind + 1));
-  }
-
+const submitBoardGen = () => {
   const board = document.getElementById(ELEMENT_IDS.main);
-  generate_board(board, width, height);
+  generate_board(board, boardGenState.width, boardGenState.height);
 }
 
 function main() {
