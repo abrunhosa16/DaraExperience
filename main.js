@@ -16,7 +16,16 @@ const ELEMENT_IDS = {
   main: "board",
   config: {
     main: "b-gen-area",
-
+    player1: {
+      human: "b-player1-human",
+      random: "b-player1-random",
+      ai: "b-player1-ai",
+    },
+    player2: {
+      human: "b-player2-human",
+      random: "b-player2-random",
+      ai: "b-player2-ai",
+    },
     size: {
       main: "b-size-sel",
       custom: {
@@ -36,9 +45,9 @@ const ELEMENT_IDS = {
 var boardGenState = {
   width: "6",
   height: "6",
-  ai_game: false,
-  whites_first: true,
-  error_count: 0
+  player1: "human",
+  player2: "human",
+  error_count: 0,
 };
 
 const showElement = (el) => el.classList.remove("hidden");
@@ -48,15 +57,14 @@ const hideElement = (el) => el.classList.add("hidden");
 const updateGenButton = () => {
   const button = document.getElementById(ELEMENT_IDS.config.gen);
   button.disabled = boardGenState.error_count > 0;
-}
-
+};
 
 // test for validity of a value
 // returns true if valid
 const isCustomSizeValid = (val) => {
   // val expected to be null or Int
   return val && parseInt(val) >= MIN_HEIGHT_WIDTH;
-}
+};
 
 // test for a validity of a value
 // returns null if valid, otherwise an error string
@@ -69,13 +77,15 @@ const getCustomSizeErrorMessage = (val, err_messages) => {
     return err_messages.too_small;
   }
   return null;
-}
+};
 
 // update custom width field with any string, with error notifications
 const setCustomWidth = (new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
-  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.width_err);
-  
+  const err_el = document.getElementById(
+    ELEMENT_IDS.config.size.custom.width_err
+  );
+
   const old_was_valid = isCustomSizeValid(boardGenState.width);
   const err = getCustomSizeErrorMessage(new_val, INVALID_WIDTH_ERROR_MESSAGES);
 
@@ -97,13 +107,15 @@ const setCustomWidth = (new_val) => {
   }
 
   updateGenButton();
-}
+};
 
 // change custom width field with a new value without checking for errors
 const setCustomWidthUnckecked = (new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
-  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.width_err);
-  
+  const err_el = document.getElementById(
+    ELEMENT_IDS.config.size.custom.width_err
+  );
+
   const old_was_valid = isCustomSizeValid(boardGenState.width);
   if (!old_was_valid) {
     boardGenState.error_count -= 1;
@@ -114,13 +126,15 @@ const setCustomWidthUnckecked = (new_val) => {
   hideElement(err_el);
 
   updateGenButton();
-}
+};
 
 // this function should be analogous to the width counterpart
 const setCustomHeight = (new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
-  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.height_err);
-  
+  const err_el = document.getElementById(
+    ELEMENT_IDS.config.size.custom.height_err
+  );
+
   const old_was_valid = isCustomSizeValid(boardGenState.height);
   const err = getCustomSizeErrorMessage(new_val, INVALID_HEIGHT_ERROR_MESSAGES);
 
@@ -142,12 +156,14 @@ const setCustomHeight = (new_val) => {
   }
 
   updateGenButton();
-}
+};
 
 const setCustomHeightUnckecked = (new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
-  const err_el = document.getElementById(ELEMENT_IDS.config.size.custom.height_err);
-  
+  const err_el = document.getElementById(
+    ELEMENT_IDS.config.size.custom.height_err
+  );
+
   const old_was_valid = isCustomSizeValid(boardGenState.height);
   if (!old_was_valid) {
     boardGenState.error_count -= 1;
@@ -158,17 +174,19 @@ const setCustomHeightUnckecked = (new_val) => {
   hideElement(err_el);
 
   updateGenButton();
-}
+};
 
 const parseSizeSelection = (val) => {
   const ind = val.indexOf("_");
   const width = parseInt(val.substr(0, ind));
   const height = parseInt(val.substr(ind + 1));
   return [width, height];
-}
+};
 
 const setSizeSelection = (new_val) => {
-  const custom_size_field = document.getElementById(ELEMENT_IDS.config.size.custom.main);
+  const custom_size_field = document.getElementById(
+    ELEMENT_IDS.config.size.custom.main
+  );
   if (new_val === "custom") {
     setCustomWidth(boardGenState.width);
     setCustomHeight(boardGenState.height);
@@ -179,10 +197,62 @@ const setSizeSelection = (new_val) => {
     setCustomHeightUnckecked(r[1]);
     hideElement(custom_size_field);
   }
-}
+};
+
+const markAsSelected = (element) => {
+  element.classList.add("sel-button");
+  element.disabled = true;
+};
+
+const markAsUnselected = (element) => {
+  element.classList.remove("sel-button");
+  element.disabled = false;
+};
+
+// set player 1 identity
+const setPlayer1 = (new_val) => {
+  const human = document.getElementById(ELEMENT_IDS.config.player1.human);
+  const random = document.getElementById(ELEMENT_IDS.config.player1.random);
+  const ai = document.getElementById(ELEMENT_IDS.config.player1.ai);
+  if (new_val === "human") {
+    markAsSelected(human);
+    markAsUnselected(random);
+    markAsUnselected(ai);
+  } else if (new_val === "random") {
+    markAsUnselected(human);
+    markAsSelected(random);
+    markAsUnselected(ai);
+  } else if (new_val === "ai") {
+    markAsUnselected(human);
+    markAsUnselected(random);
+    markAsSelected(ai);
+  }
+  boardGenState.player1 = new_val;
+};
+
+// set player 2 identity
+const setPlayer2 = (new_val) => {
+  const human = document.getElementById(ELEMENT_IDS.config.player2.human);
+  const random = document.getElementById(ELEMENT_IDS.config.player2.random);
+  const ai = document.getElementById(ELEMENT_IDS.config.player2.ai);
+  if (new_val === "human") {
+    markAsSelected(human);
+    markAsUnselected(random);
+    markAsUnselected(ai);
+  } else if (new_val === "random") {
+    markAsUnselected(human);
+    markAsSelected(random);
+    markAsUnselected(ai);
+  } else if (new_val === "ai") {
+    markAsUnselected(human);
+    markAsUnselected(random);
+    markAsSelected(ai);
+  }
+  boardGenState.player2 = new_val;
+};
 
 // adds all handlers to size selection elements
-const initialize_board_size_selection = () => {
+const initializeBoardSizeSelection = () => {
   const ids = ELEMENT_IDS.config.size;
   // main <select />
   const main_el = document.getElementById(ids.main);
@@ -211,9 +281,28 @@ const initialize_board_size_selection = () => {
   document.getElementById(ids.custom.height).addEventListener("change", (e) => {
     setCustomHeight(e.currentTarget.value);
   });
-}
+};
 
-const generate_board = (board, width, heigth) => {
+const initializePlayerSelectionButtons = () => {
+  // player selection buttons
+  const button_assignments = {
+    [ELEMENT_IDS.config.player1.human]: [setPlayer1, "human"],
+    [ELEMENT_IDS.config.player1.random]: [setPlayer1, "random"],
+    [ELEMENT_IDS.config.player1.ai]: [setPlayer1, "ai"],
+    [ELEMENT_IDS.config.player2.human]: [setPlayer2, "human"],
+    [ELEMENT_IDS.config.player2.random]: [setPlayer2, "random"],
+    [ELEMENT_IDS.config.player2.ai]: [setPlayer2, "ai"],
+  };
+  for (const [id, [fun, par]] of Object.entries(button_assignments)) {
+    document.getElementById(id).addEventListener("click", (e) => {
+      fun(par);
+    });
+  }
+  setPlayer1(boardGenState.player1);
+  setPlayer2(boardGenState.player2);
+};
+
+const generateBoard = (board, width, heigth) => {
   // expects board to be a table containing a tbody
   const body = board.children[0];
   let rows = [];
@@ -234,19 +323,25 @@ const generate_board = (board, width, heigth) => {
 
   body.replaceChildren(...rows);
   board.classList.remove("hidden");
-}
+};
 
 const submitBoardGen = () => {
   const board = document.getElementById(ELEMENT_IDS.main);
-  generate_board(board, boardGenState.width, boardGenState.height);
-}
+  generateBoard(
+    board,
+    parseInt(boardGenState.width),
+    parseInt(boardGenState.height)
+  );
+};
 
 function main() {
   console.log("hello world!");
 
-  initialize_board_size_selection();
-  const button = document.getElementById(ELEMENT_IDS.config.gen);
-  button.addEventListener("click", (e) => {
+  initializeBoardSizeSelection();
+  initializePlayerSelectionButtons();
+
+  const gen = document.getElementById(ELEMENT_IDS.config.gen);
+  gen.addEventListener("click", (e) => {
     submitBoardGen();
   });
 }

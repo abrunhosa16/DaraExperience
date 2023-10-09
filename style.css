@@ -56,3 +56,12 @@ p {
 .err-message {
   color: red;
 }
+
+.form {
+  border: 1px solid black;
+  padding: 1.5%;
+}
+
+.sel-button {
+  color: blue;
+}

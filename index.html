@@ -17,7 +17,7 @@
       Niger and you will be addicted for that.
     </p>
 
-    <div>
+    <div class="form" id="b-gen-area">
       <div>
         <label for="b-size-sel">Choose the board size:</label>
         <select id="b-size-sel">
@@ -38,16 +38,21 @@
           </p>
         </div>
       </div>
-      <br /><br />
 
-      <p>Who is the challenger?</p>
-      <button type="button" onclick="alert('Hello world!')">
-        Player vs Player
-      </button>
-      <button type="button" onclick="alert('Hello world!')">
-        Player vs AI
-      </button>
-      <br /><br />
+      <p>
+        Player 1:
+        <button id="b-player1-human">Human</button>
+        <button id="b-player1-random">Random</button>
+        <button id="b-player1-ai">AI (Minimax)</button>
+      </p>
+
+      <p>
+        Player 2:
+        <button id="b-player2-human">Human</button>
+        <button id="b-player2-random">Random</button>
+        <button id="b-player2-ai">AI (Minimax)</button>
+      </p>
+
       <p>Who starts?</p>
       <button type="button" onclick="alert('Hello world!')">You first</button>
       <button type="button" onclick="alert('Hello world!')">Enemy first</button>
