@@ -64,4 +64,5 @@ p {
 
 .sel-button {
   color: blue;
+  border: 1px solid blue;
 }

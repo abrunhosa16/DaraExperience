@@ -16,15 +16,20 @@ const ELEMENT_IDS = {
   main: "board",
   config: {
     main: "b-gen-area",
-    player1: {
-      human: "b-player1-human",
-      random: "b-player1-random",
-      ai: "b-player1-ai",
+    white: {
+      human: "b-white-human",
+      random: "b-white-random",
+      ai: "b-white-ai",
     },
-    player2: {
-      human: "b-player2-human",
-      random: "b-player2-random",
-      ai: "b-player2-ai",
+    black: {
+      human: "b-black-human",
+      random: "b-black-random",
+      ai: "b-black-ai",
+    },
+    starting_player: {
+      white: "b-white-start",
+      black: "b-black-start",
+      random: "b-random-start",
     },
     size: {
       main: "b-size-sel",
@@ -45,8 +50,9 @@ const ELEMENT_IDS = {
 var boardGenState = {
   width: "6",
   height: "6",
-  player1: "human",
-  player2: "human",
+  white: "human",
+  black: "human",
+  starting_player: "random",
   error_count: 0,
 };
 
@@ -209,47 +215,51 @@ const markAsUnselected = (element) => {
   element.disabled = false;
 };
 
-// set player 1 identity
-const setPlayer1 = (new_val) => {
-  const human = document.getElementById(ELEMENT_IDS.config.player1.human);
-  const random = document.getElementById(ELEMENT_IDS.config.player1.random);
-  const ai = document.getElementById(ELEMENT_IDS.config.player1.ai);
-  if (new_val === "human") {
-    markAsSelected(human);
-    markAsUnselected(random);
-    markAsUnselected(ai);
-  } else if (new_val === "random") {
-    markAsUnselected(human);
-    markAsSelected(random);
-    markAsUnselected(ai);
-  } else if (new_val === "ai") {
-    markAsUnselected(human);
-    markAsUnselected(random);
-    markAsSelected(ai);
-  }
-  boardGenState.player1 = new_val;
+const setButtonOptionDecorator = (
+  button_value_ids,
+  get_last_val,
+  set_current_val
+) => {
+  return (new_val) => {
+    const last_selected = document.getElementById(
+      button_value_ids[get_last_val()]
+    );
+    const selected_now = document.getElementById(button_value_ids[new_val]);
+    markAsUnselected(last_selected);
+    markAsSelected(selected_now);
+    set_current_val(new_val);
+  };
 };
 
-// set player 2 identity
-const setPlayer2 = (new_val) => {
-  const human = document.getElementById(ELEMENT_IDS.config.player2.human);
-  const random = document.getElementById(ELEMENT_IDS.config.player2.random);
-  const ai = document.getElementById(ELEMENT_IDS.config.player2.ai);
-  if (new_val === "human") {
-    markAsSelected(human);
-    markAsUnselected(random);
-    markAsUnselected(ai);
-  } else if (new_val === "random") {
-    markAsUnselected(human);
-    markAsSelected(random);
-    markAsUnselected(ai);
-  } else if (new_val === "ai") {
-    markAsUnselected(human);
-    markAsUnselected(random);
-    markAsSelected(ai);
-  }
-  boardGenState.player2 = new_val;
-};
+const setWhitePlayer = setButtonOptionDecorator(
+  {
+    human: ELEMENT_IDS.config.white.human,
+    random: ELEMENT_IDS.config.white.random,
+    ai: ELEMENT_IDS.config.white.ai,
+  },
+  () => boardGenState.white,
+  (new_val) => (boardGenState.white = new_val)
+);
+
+const setBlackPlayer = setButtonOptionDecorator(
+  {
+    human: ELEMENT_IDS.config.black.human,
+    random: ELEMENT_IDS.config.black.random,
+    ai: ELEMENT_IDS.config.black.ai,
+  },
+  () => boardGenState.black,
+  (new_val) => (boardGenState.black = new_val)
+);
+
+const setStartingPlayer = setButtonOptionDecorator(
+  {
+    white: ELEMENT_IDS.config.starting_player.white,
+    black: ELEMENT_IDS.config.starting_player.black,
+    random: ELEMENT_IDS.config.starting_player.random,
+  },
+  () => boardGenState.starting_player,
+  (new_val) => (boardGenState.starting_player = new_val)
+);
 
 // adds all handlers to size selection elements
 const initializeBoardSizeSelection = () => {
@@ -286,20 +296,24 @@ const initializeBoardSizeSelection = () => {
 const initializePlayerSelectionButtons = () => {
   // player selection buttons
   const button_assignments = {
-    [ELEMENT_IDS.config.player1.human]: [setPlayer1, "human"],
-    [ELEMENT_IDS.config.player1.random]: [setPlayer1, "random"],
-    [ELEMENT_IDS.config.player1.ai]: [setPlayer1, "ai"],
-    [ELEMENT_IDS.config.player2.human]: [setPlayer2, "human"],
-    [ELEMENT_IDS.config.player2.random]: [setPlayer2, "random"],
-    [ELEMENT_IDS.config.player2.ai]: [setPlayer2, "ai"],
+    [ELEMENT_IDS.config.white.human]: [setWhitePlayer, "human"],
+    [ELEMENT_IDS.config.white.random]: [setWhitePlayer, "random"],
+    [ELEMENT_IDS.config.white.ai]: [setWhitePlayer, "ai"],
+    [ELEMENT_IDS.config.black.human]: [setBlackPlayer, "human"],
+    [ELEMENT_IDS.config.black.random]: [setBlackPlayer, "random"],
+    [ELEMENT_IDS.config.black.ai]: [setBlackPlayer, "ai"],
+    [ELEMENT_IDS.config.starting_player.white]: [setStartingPlayer, "white"],
+    [ELEMENT_IDS.config.starting_player.black]: [setStartingPlayer, "black"],
+    [ELEMENT_IDS.config.starting_player.random]: [setStartingPlayer, "random"],
   };
   for (const [id, [fun, par]] of Object.entries(button_assignments)) {
     document.getElementById(id).addEventListener("click", (e) => {
       fun(par);
     });
   }
-  setPlayer1(boardGenState.player1);
-  setPlayer2(boardGenState.player2);
+  setWhitePlayer(boardGenState.white);
+  setBlackPlayer(boardGenState.black);
+  setStartingPlayer(boardGenState.starting_player);
 };
 
 const generateBoard = (board, width, heigth) => {
