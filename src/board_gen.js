@@ -46,24 +46,13 @@ const ELEMENT_IDS = {
   },
 };
 
-// TODO: is using global variables the right choice?
-// contains all board gen info
-var boardGenState = {
-  width: "6",
-  height: "6",
-  white: "human",
-  black: "human",
-  starting_player: "random",
-  error_count: 0,
-};
-
 const showElement = (el) => el.classList.remove("hidden");
 const hideElement = (el) => el.classList.add("hidden");
 
 // should run every time some gen state is updated
-const updateGenButton = () => {
+const updateGenButton = (state) => {
   const button = document.getElementById(ELEMENT_IDS.config.gen);
-  button.disabled = boardGenState.error_count > 0;
+  button.disabled = state.error_count > 0;
 };
 
 // test for validity of a value
@@ -87,100 +76,102 @@ const getCustomSizeErrorMessage = (val, err_messages) => {
 };
 
 // update custom width field with any string, with error notifications
-const setCustomWidth = (new_val) => {
+const setCustomWidth = (state, new_val) => {
+  console.log(state);
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
   const err_el = document.getElementById(
     ELEMENT_IDS.config.size.custom.width_err
   );
 
-  const old_was_valid = isCustomSizeValid(boardGenState.width);
+  const old_was_valid = isCustomSizeValid(state.width);
   const err = getCustomSizeErrorMessage(new_val, INVALID_WIDTH_ERROR_MESSAGES);
 
-  boardGenState.width = new_val;
+  state.width = new_val;
   el.value = new_val;
   if (err === null) {
     if (!old_was_valid) {
-      boardGenState.error_count -= 1;
+      state.error_count -= 1;
     }
 
     hideElement(err_el);
   } else {
     if (old_was_valid) {
-      boardGenState.error_count += 1;
+      state.error_count += 1;
     }
 
     err_el.innerHTML = err;
     showElement(err_el);
   }
 
-  updateGenButton();
+  updateGenButton(state);
 };
 
 // change custom width field with a new value without checking for errors
-const setCustomWidthUnckecked = (new_val) => {
+const setCustomWidthUnckecked = (state, new_val) => {
+  console.log(state);
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
   const err_el = document.getElementById(
     ELEMENT_IDS.config.size.custom.width_err
   );
 
-  const old_was_valid = isCustomSizeValid(boardGenState.width);
+  const old_was_valid = isCustomSizeValid(state.width);
   if (!old_was_valid) {
-    boardGenState.error_count -= 1;
+    state.error_count -= 1;
   }
-  boardGenState.width = new_val;
+  state.width = new_val;
   el.value = new_val;
 
   hideElement(err_el);
 
-  updateGenButton();
+  updateGenButton(state);
 };
 
 // this function should be analogous to the width counterpart
-const setCustomHeight = (new_val) => {
+const setCustomHeight = (state, new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
   const err_el = document.getElementById(
     ELEMENT_IDS.config.size.custom.height_err
   );
 
-  const old_was_valid = isCustomSizeValid(boardGenState.height);
+  const old_was_valid = isCustomSizeValid(state.height);
   const err = getCustomSizeErrorMessage(new_val, INVALID_HEIGHT_ERROR_MESSAGES);
 
-  boardGenState.height = new_val;
+  state.height = new_val;
   el.value = new_val;
   if (err === null) {
     if (!old_was_valid) {
-      boardGenState.error_count -= 1;
+      state.error_count -= 1;
     }
 
     hideElement(err_el);
   } else {
     if (old_was_valid) {
-      boardGenState.error_count += 1;
+      state.error_count += 1;
     }
 
     err_el.innerHTML = err;
     showElement(err_el);
   }
 
-  updateGenButton();
+  updateGenButton(state);
 };
 
-const setCustomHeightUnckecked = (new_val) => {
+const setCustomHeightUnckecked = (state, new_val) => {
   const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
   const err_el = document.getElementById(
     ELEMENT_IDS.config.size.custom.height_err
   );
 
-  const old_was_valid = isCustomSizeValid(boardGenState.height);
+  const old_was_valid = isCustomSizeValid(state.height);
   if (!old_was_valid) {
-    boardGenState.error_count -= 1;
+    state.error_count -= 1;
   }
-  boardGenState.height = new_val;
+  state.height = new_val;
   el.value = new_val.toString();
 
   hideElement(err_el);
 
-  updateGenButton();
+  updateGenButton(state);
 };
 
 const parseSizeSelection = (val) => {
@@ -190,18 +181,18 @@ const parseSizeSelection = (val) => {
   return [width, height];
 };
 
-const setSizeSelection = (new_val) => {
+const setSizeSelection = (state, new_val) => {
   const custom_size_field = document.getElementById(
     ELEMENT_IDS.config.size.custom.main
   );
   if (new_val === "custom") {
-    setCustomWidth(boardGenState.width);
-    setCustomHeight(boardGenState.height);
+    setCustomWidth(state, state.width);
+    setCustomHeight(state, state.height);
     showElement(custom_size_field);
   } else {
     const r = parseSizeSelection(new_val);
-    setCustomWidthUnckecked(r[0]);
-    setCustomHeightUnckecked(r[1]);
+    setCustomWidthUnckecked(state, r[0]);
+    setCustomHeightUnckecked(state, r[1]);
     hideElement(custom_size_field);
   }
 };
@@ -232,89 +223,93 @@ const setButtonOptionDecorator = (
   };
 };
 
-const setWhitePlayer = setButtonOptionDecorator(
+const setWhitePlayer = (state) => setButtonOptionDecorator(
   {
     human: ELEMENT_IDS.config.white.human,
     random: ELEMENT_IDS.config.white.random,
     ai: ELEMENT_IDS.config.white.ai,
   },
-  () => boardGenState.white,
-  (new_val) => (boardGenState.white = new_val)
+  () => state.white,
+  (new_val) => (state.white = new_val)
 );
 
-const setBlackPlayer = setButtonOptionDecorator(
+const setBlackPlayer = (state) => setButtonOptionDecorator(
   {
     human: ELEMENT_IDS.config.black.human,
     random: ELEMENT_IDS.config.black.random,
     ai: ELEMENT_IDS.config.black.ai,
   },
-  () => boardGenState.black,
-  (new_val) => (boardGenState.black = new_val)
+  () => state.black,
+  (new_val) => (state.black = new_val)
 );
 
-const setStartingPlayer = setButtonOptionDecorator(
+const setStartingPlayer = (state) => setButtonOptionDecorator(
   {
     white: ELEMENT_IDS.config.starting_player.white,
     black: ELEMENT_IDS.config.starting_player.black,
     random: ELEMENT_IDS.config.starting_player.random,
   },
-  () => boardGenState.starting_player,
-  (new_val) => (boardGenState.starting_player = new_val)
+  () => state.starting_player,
+  (new_val) => (state.starting_player = new_val)
 );
 
 // adds all handlers to size selection elements
-const initializeBoardSizeSelection = () => {
+const initializeBoardSizeSelection = (state) => {
   const ids = ELEMENT_IDS.config.size;
   // main <select />
   const main_el = document.getElementById(ids.main);
   const custom_width = document.getElementById(ids.custom.width);
   const custom_height = document.getElementById(ids.custom.height);
   main_el.addEventListener("change", (e) => {
-    setSizeSelection(e.currentTarget.value);
+    setSizeSelection(state, e.currentTarget.value);
   });
   if (main_el.value === "custom") {
     // if the browser "remembers" custom values, initialize them as that
-    boardGenState.width = custom_width.value;
+    state.width = custom_width.value;
     if (!isCustomSizeValid(custom_width.value)) {
-      boardGenState.error_count += 1;
+      state.error_count += 1;
     }
-    boardGenState.height = custom_height.value;
+    state.height = custom_height.value;
     if (!isCustomSizeValid(custom_height.value)) {
-      boardGenState.error_count += 1;
+      state.error_count += 1;
     }
   }
-  setSizeSelection(main_el.value);
+  setSizeSelection(state, main_el.value);
 
   // custom width and height input fields
   document.getElementById(ids.custom.width).addEventListener("change", (e) => {
-    setCustomWidth(e.currentTarget.value);
+    setCustomWidth(state, e.currentTarget.value);
   });
   document.getElementById(ids.custom.height).addEventListener("change", (e) => {
-    setCustomHeight(e.currentTarget.value);
+    setCustomHeight(state, e.currentTarget.value);
   });
 };
 
-const initializePlayerSelectionButtons = () => {
+const initializePlayerSelectionButtons = (state) => {
+  const setWhitePlayerWithState = setWhitePlayer(state);
+  const setBlackPlayerWithState = setBlackPlayer(state);
+  const setStartingPlayerWithState = setStartingPlayer(state);
   // player selection buttons
   const button_assignments = {
-    [ELEMENT_IDS.config.white.human]: [setWhitePlayer, "human"],
-    [ELEMENT_IDS.config.white.random]: [setWhitePlayer, "random"],
-    [ELEMENT_IDS.config.white.ai]: [setWhitePlayer, "ai"],
-    [ELEMENT_IDS.config.black.human]: [setBlackPlayer, "human"],
-    [ELEMENT_IDS.config.black.random]: [setBlackPlayer, "random"],
-    [ELEMENT_IDS.config.black.ai]: [setBlackPlayer, "ai"],
-    [ELEMENT_IDS.config.starting_player.white]: [setStartingPlayer, "white"],
-    [ELEMENT_IDS.config.starting_player.black]: [setStartingPlayer, "black"],
-    [ELEMENT_IDS.config.starting_player.random]: [setStartingPlayer, "random"],
+    [ELEMENT_IDS.config.white.human]: [setWhitePlayerWithState, "human"],
+    [ELEMENT_IDS.config.white.random]: [setWhitePlayerWithState, "random"],
+    [ELEMENT_IDS.config.white.ai]: [setWhitePlayerWithState, "ai"],
+    [ELEMENT_IDS.config.black.human]: [setBlackPlayerWithState, "human"],
+    [ELEMENT_IDS.config.black.random]: [setBlackPlayerWithState, "random"],
+    [ELEMENT_IDS.config.black.ai]: [setBlackPlayerWithState, "ai"],
+    [ELEMENT_IDS.config.starting_player.white]: [setStartingPlayerWithState, "white"],
+    [ELEMENT_IDS.config.starting_player.black]: [setStartingPlayerWithState, "black"],
+    [ELEMENT_IDS.config.starting_player.random]: [setStartingPlayerWithState, "random"],
   };
   for (const [id, [fun, par]] of Object.entries(button_assignments)) {
     document.getElementById(id).addEventListener("click", (_) => {
       fun(par);
     });
   }
-  setWhitePlayer(boardGenState.white);
-  setBlackPlayer(boardGenState.black);
-  setStartingPlayer(boardGenState.starting_player);
+  console.log("init");
+  setWhitePlayerWithState(state.white);
+  setBlackPlayerWithState(state.black);
+  setStartingPlayerWithState(state.starting_player);
 };
 
 const generateBoard = (board, width, heigth) => {
@@ -339,12 +334,12 @@ const generateBoard = (board, width, heigth) => {
   body.replaceChildren(...rows);
 };
 
-const submitBoardGen = () => {
+const submitBoardGen = (state) => {
   const board = document.getElementById(ELEMENT_IDS.main);
   generateBoard(
     board,
-    parseInt(boardGenState.width),
-    parseInt(boardGenState.height)
+    parseInt(state.width),
+    parseInt(state.height)
   );
   const config = document.getElementById(ELEMENT_IDS.config.main);
   const reset = document.getElementById(ELEMENT_IDS.config.reset);
@@ -363,12 +358,23 @@ const resetBoard = () => {
 };
 
 export default () => {
-  initializeBoardSizeSelection();
-  initializePlayerSelectionButtons();
+
+// TODO: is using global variables the right choice?
+// contains all board gen info
+  const state = {
+    width: "6",
+    height: "6",
+    white: "human",
+    black: "human",
+    starting_player: "random",
+    error_count: 0,
+  };
+  initializeBoardSizeSelection(state);
+  initializePlayerSelectionButtons(state);
 
   const gen = document.getElementById(ELEMENT_IDS.config.gen);
   gen.addEventListener("click", (_) => {
-    submitBoardGen();
+    submitBoardGen(state);
   });
   const reset = document.getElementById(ELEMENT_IDS.config.reset);
   reset.addEventListener("click", (_) => {
