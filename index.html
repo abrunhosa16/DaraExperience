@@ -17,24 +17,24 @@
       Niger and you will be addicted for that.
     </p>
 
-    <div class="form" id="b-gen-area">
+    <div class="form" id="gen-main">
       <div>
-        <label for="b-size-sel">Choose the board size:</label>
-        <select id="b-size-sel">
+        <label for="gen-size-sel">Choose the board size:</label>
+        <select id="gen-size-sel">
           <option value="5_6">5x6</option>
           <option value="6_6">6x6</option>
           <option value="custom">Custom</option>
         </select>
-        <div id="b-size-sel-custom" class="hidden">
+        <div id="gen-size-sel-custom" class="hidden">
           <p>
             Custom width:
-            <input type="number" id="b-size-sel-w" />
-            <span class="hidden err-message" id="b-size-sel-w-err"></span>
+            <input type="number" id="gen-size-sel-w" />
+            <span class="hidden err-message" id="gen-size-sel-w-err"></span>
           </p>
           <p>
             Custom height:
-            <input type="number" id="b-size-sel-h" />
-            <span class="hidden err-message" id="b-size-sel-h-err"></span>
+            <input type="number" id="gen-size-sel-h" />
+            <span class="hidden err-message" id="gen-size-sel-h-err"></span>
           </p>
         </div>
       </div>
@@ -42,33 +42,33 @@
       <h3>Player assignment</h3>
       <p>
         White pieces:
-        <button id="b-white-human">Human</button>
-        <button id="b-white-random">Play randomly</button>
-        <button id="b-white-ai">AI (Minimax)</button>
+        <button id="gen-white-human">Human</button>
+        <button id="gen-white-random">Play randomly</button>
+        <button id="gen-white-ai">AI (Minimax)</button>
       </p>
 
       <p>
         Black pieces:
-        <button id="b-black-human">Human</button>
-        <button id="b-black-random">Play randomly</button>
-        <button id="b-black-ai">AI (Minimax)</button>
+        <button id="gen-black-human">Human</button>
+        <button id="gen-black-random">Play randomly</button>
+        <button id="gen-black-ai">AI (Minimax)</button>
       </p>
 
       <p>
         Starting pieces:
-        <button id="b-white-start">White</button>
-        <button id="b-black-start">Black</button>
-        <button id="b-random-start">Random</button>
+        <button id="gen-white-start">White</button>
+        <button id="gen-black-start">Black</button>
+        <button id="gen-random-start">Random</button>
       </p>
 
-      <button id="b-gen-button">Let's do this</button>
+      <button id="gen-submit">Let's do this</button>
     </div>
 
     <table id="board" class="board hidden">
       <tbody />
     </table>
 
-    <div id="b-reset" class="hidden"><button>reset</button></div>
+    <div id="reset" class="hidden"><button>reset</button></div>
 
     <p>
       Please feel always free to contact us, the team Dara experience appreciate
@@ -76,6 +76,6 @@
     </p>
 
     <!-- ISTO TEM QUE FICAR EM ÚLTIMO LUGAR -->
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/index.js"></script>
   </body>
 </html>

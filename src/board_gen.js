@@ -1,4 +1,12 @@
-"use strict";
+import {
+  showElement,
+  hideElement,
+  markAsSelected,
+  markAsUnselected,
+} from "./css_h.js";
+import EL_IDS from "./ids.js";
+
+("use strict");
 
 // min board height and width
 const MIN_HEIGHT_WIDTH = 3;
@@ -12,46 +20,10 @@ const INVALID_HEIGHT_ERROR_MESSAGES = {
   required: "This field is required",
 };
 
-const ELEMENT_IDS = {
-  main: "board",
-  config: {
-    main: "b-gen-area",
-    white: {
-      human: "b-white-human",
-      random: "b-white-random",
-      ai: "b-white-ai",
-    },
-    black: {
-      human: "b-black-human",
-      random: "b-black-random",
-      ai: "b-black-ai",
-    },
-    starting_player: {
-      white: "b-white-start",
-      black: "b-black-start",
-      random: "b-random-start",
-    },
-    size: {
-      main: "b-size-sel",
-      custom: {
-        main: "b-size-sel-custom",
-        width: "b-size-sel-w",
-        height: "b-size-sel-h",
-        width_err: "b-size-sel-w-err",
-        height_err: "b-size-sel-h-err",
-      },
-    },
-    gen: "b-gen-button",
-    reset: "b-reset"
-  },
-};
-
-const showElement = (el) => el.classList.remove("hidden");
-const hideElement = (el) => el.classList.add("hidden");
-
 // should run every time some gen state is updated
+// disables the button if there are errors
 const updateGenButton = (state) => {
-  const button = document.getElementById(ELEMENT_IDS.config.gen);
+  const button = document.getElementById(EL_IDS.gen.submit);
   button.disabled = state.error_count > 0;
 };
 
@@ -77,10 +49,9 @@ const getCustomSizeErrorMessage = (val, err_messages) => {
 
 // update custom width field with any string, with error notifications
 const setCustomWidth = (state, new_val) => {
-  console.log(state);
-  const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
+  const el = document.getElementById(EL_IDS.gen.size.custom.width);
   const err_el = document.getElementById(
-    ELEMENT_IDS.config.size.custom.width_err
+    EL_IDS.gen.size.custom.width_err
   );
 
   const old_was_valid = isCustomSizeValid(state.width);
@@ -108,10 +79,9 @@ const setCustomWidth = (state, new_val) => {
 
 // change custom width field with a new value without checking for errors
 const setCustomWidthUnckecked = (state, new_val) => {
-  console.log(state);
-  const el = document.getElementById(ELEMENT_IDS.config.size.custom.width);
+  const el = document.getElementById(EL_IDS.gen.size.custom.width);
   const err_el = document.getElementById(
-    ELEMENT_IDS.config.size.custom.width_err
+    EL_IDS.gen.size.custom.width_err
   );
 
   const old_was_valid = isCustomSizeValid(state.width);
@@ -128,9 +98,9 @@ const setCustomWidthUnckecked = (state, new_val) => {
 
 // this function should be analogous to the width counterpart
 const setCustomHeight = (state, new_val) => {
-  const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
+  const el = document.getElementById(EL_IDS.gen.size.custom.height);
   const err_el = document.getElementById(
-    ELEMENT_IDS.config.size.custom.height_err
+    EL_IDS.gen.size.custom.height_err
   );
 
   const old_was_valid = isCustomSizeValid(state.height);
@@ -157,9 +127,9 @@ const setCustomHeight = (state, new_val) => {
 };
 
 const setCustomHeightUnckecked = (state, new_val) => {
-  const el = document.getElementById(ELEMENT_IDS.config.size.custom.height);
+  const el = document.getElementById(EL_IDS.gen.size.custom.height);
   const err_el = document.getElementById(
-    ELEMENT_IDS.config.size.custom.height_err
+    EL_IDS.gen.size.custom.height_err
   );
 
   const old_was_valid = isCustomSizeValid(state.height);
@@ -183,7 +153,7 @@ const parseSizeSelection = (val) => {
 
 const setSizeSelection = (state, new_val) => {
   const custom_size_field = document.getElementById(
-    ELEMENT_IDS.config.size.custom.main
+    EL_IDS.gen.size.custom.main
   );
   if (new_val === "custom") {
     setCustomWidth(state, state.width);
@@ -195,16 +165,6 @@ const setSizeSelection = (state, new_val) => {
     setCustomHeightUnckecked(state, r[1]);
     hideElement(custom_size_field);
   }
-};
-
-const markAsSelected = (element) => {
-  element.classList.add("sel-button");
-  element.disabled = true;
-};
-
-const markAsUnselected = (element) => {
-  element.classList.remove("sel-button");
-  element.disabled = false;
 };
 
 const setButtonOptionDecorator = (
@@ -223,40 +183,44 @@ const setButtonOptionDecorator = (
   };
 };
 
-const setWhitePlayer = (state) => setButtonOptionDecorator(
-  {
-    human: ELEMENT_IDS.config.white.human,
-    random: ELEMENT_IDS.config.white.random,
-    ai: ELEMENT_IDS.config.white.ai,
-  },
-  () => state.white,
-  (new_val) => (state.white = new_val)
-);
+const setWhitePlayer = (state) =>
+  setButtonOptionDecorator(
+    {
+      human: EL_IDS.gen.white.human,
+      random: EL_IDS.gen.white.random,
+      ai: EL_IDS.gen.white.ai,
+    },
+    () => state.white,
+    (new_val) => (state.white = new_val)
+  );
 
-const setBlackPlayer = (state) => setButtonOptionDecorator(
-  {
-    human: ELEMENT_IDS.config.black.human,
-    random: ELEMENT_IDS.config.black.random,
-    ai: ELEMENT_IDS.config.black.ai,
-  },
-  () => state.black,
-  (new_val) => (state.black = new_val)
-);
+const setBlackPlayer = (state) =>
+  setButtonOptionDecorator(
+    {
+      human: EL_IDS.gen.black.human,
+      random: EL_IDS.gen.black.random,
+      ai: EL_IDS.gen.black.ai,
+    },
+    () => state.black,
+    (new_val) => (state.black = new_val)
+  );
 
-const setStartingPlayer = (state) => setButtonOptionDecorator(
-  {
-    white: ELEMENT_IDS.config.starting_player.white,
-    black: ELEMENT_IDS.config.starting_player.black,
-    random: ELEMENT_IDS.config.starting_player.random,
-  },
-  () => state.starting_player,
-  (new_val) => (state.starting_player = new_val)
-);
+const setStartingPlayer = (state) =>
+  setButtonOptionDecorator(
+    {
+      white: EL_IDS.gen.starting_player.white,
+      black: EL_IDS.gen.starting_player.black,
+      random: EL_IDS.gen.starting_player.random,
+    },
+    () => state.starting_player,
+    (new_val) => (state.starting_player = new_val)
+  );
 
 // adds all handlers to size selection elements
 const initializeBoardSizeSelection = (state) => {
-  const ids = ELEMENT_IDS.config.size;
+  const ids = EL_IDS.gen.size;
   // main <select />
+  console.log(ids.main);
   const main_el = document.getElementById(ids.main);
   const custom_width = document.getElementById(ids.custom.width);
   const custom_height = document.getElementById(ids.custom.height);
@@ -291,22 +255,30 @@ const initializePlayerSelectionButtons = (state) => {
   const setStartingPlayerWithState = setStartingPlayer(state);
   // player selection buttons
   const button_assignments = {
-    [ELEMENT_IDS.config.white.human]: [setWhitePlayerWithState, "human"],
-    [ELEMENT_IDS.config.white.random]: [setWhitePlayerWithState, "random"],
-    [ELEMENT_IDS.config.white.ai]: [setWhitePlayerWithState, "ai"],
-    [ELEMENT_IDS.config.black.human]: [setBlackPlayerWithState, "human"],
-    [ELEMENT_IDS.config.black.random]: [setBlackPlayerWithState, "random"],
-    [ELEMENT_IDS.config.black.ai]: [setBlackPlayerWithState, "ai"],
-    [ELEMENT_IDS.config.starting_player.white]: [setStartingPlayerWithState, "white"],
-    [ELEMENT_IDS.config.starting_player.black]: [setStartingPlayerWithState, "black"],
-    [ELEMENT_IDS.config.starting_player.random]: [setStartingPlayerWithState, "random"],
+    [EL_IDS.gen.white.human]: [setWhitePlayerWithState, "human"],
+    [EL_IDS.gen.white.random]: [setWhitePlayerWithState, "random"],
+    [EL_IDS.gen.white.ai]: [setWhitePlayerWithState, "ai"],
+    [EL_IDS.gen.black.human]: [setBlackPlayerWithState, "human"],
+    [EL_IDS.gen.black.random]: [setBlackPlayerWithState, "random"],
+    [EL_IDS.gen.black.ai]: [setBlackPlayerWithState, "ai"],
+    [EL_IDS.gen.starting_player.white]: [
+      setStartingPlayerWithState,
+      "white",
+    ],
+    [EL_IDS.gen.starting_player.black]: [
+      setStartingPlayerWithState,
+      "black",
+    ],
+    [EL_IDS.gen.starting_player.random]: [
+      setStartingPlayerWithState,
+      "random",
+    ],
   };
   for (const [id, [fun, par]] of Object.entries(button_assignments)) {
     document.getElementById(id).addEventListener("click", (_) => {
       fun(par);
     });
   }
-  console.log("init");
   setWhitePlayerWithState(state.white);
   setBlackPlayerWithState(state.black);
   setStartingPlayerWithState(state.starting_player);
@@ -335,32 +307,25 @@ const generateBoard = (board, width, heigth) => {
 };
 
 const submitBoardGen = (state) => {
-  const board = document.getElementById(ELEMENT_IDS.main);
-  generateBoard(
-    board,
-    parseInt(state.width),
-    parseInt(state.height)
-  );
-  const config = document.getElementById(ELEMENT_IDS.config.main);
-  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  const board = document.getElementById(EL_IDS.main);
+  generateBoard(board, parseInt(state.width), parseInt(state.height));
+  const config = document.getElementById(EL_IDS.gen.main);
+  const reset = document.getElementById(EL_IDS.reset);
   showElement(board);
   showElement(reset);
   hideElement(config);
 };
 
 const resetBoard = () => {
-  const board = document.getElementById(ELEMENT_IDS.main);
-  const config = document.getElementById(ELEMENT_IDS.config.main);
-  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  const board = document.getElementById(EL_IDS.main);
+  const config = document.getElementById(EL_IDS.gen.main);
+  const reset = document.getElementById(EL_IDS.reset);
   showElement(config);
   hideElement(board);
   hideElement(reset);
 };
 
 export default () => {
-
-// TODO: is using global variables the right choice?
-// contains all board gen info
   const state = {
     width: "6",
     height: "6",
@@ -372,13 +337,12 @@ export default () => {
   initializeBoardSizeSelection(state);
   initializePlayerSelectionButtons(state);
 
-  const gen = document.getElementById(ELEMENT_IDS.config.gen);
+  const gen = document.getElementById(EL_IDS.gen.submit);
   gen.addEventListener("click", (_) => {
     submitBoardGen(state);
   });
-  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  const reset = document.getElementById(EL_IDS.reset);
   reset.addEventListener("click", (_) => {
     resetBoard();
   });
-}
-
+};
