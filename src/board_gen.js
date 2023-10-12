@@ -284,48 +284,7 @@ const initializePlayerSelectionButtons = (state) => {
   setStartingPlayerWithState(state.starting_player);
 };
 
-const generateBoard = (board, width, heigth) => {
-  // expects board to be a table containing a tbody
-  const body = board.children[0];
-  const rows = [];
-  for (let i = 0; i < heigth; i++) {
-    const row = document.createElement("tr");
-    row.id = `b-row-${i}`;
-    const cells = [];
-
-    for (let j = 0; j < width; j++) {
-      const cell = document.createElement("td");
-      cell.id = `b-cell-${i}-${j}`;
-      cells.push(cell);
-    }
-
-    row.replaceChildren(...cells);
-    rows.push(row);
-  }
-
-  body.replaceChildren(...rows);
-};
-
-const submitBoardGen = (state) => {
-  const board = document.getElementById(EL_IDS.main);
-  generateBoard(board, parseInt(state.width), parseInt(state.height));
-  const config = document.getElementById(EL_IDS.gen.main);
-  const reset = document.getElementById(EL_IDS.reset);
-  showElement(board);
-  showElement(reset);
-  hideElement(config);
-};
-
-const resetBoard = () => {
-  const board = document.getElementById(EL_IDS.main);
-  const config = document.getElementById(EL_IDS.gen.main);
-  const reset = document.getElementById(EL_IDS.reset);
-  showElement(config);
-  hideElement(board);
-  hideElement(reset);
-};
-
-export default () => {
+export default (genBoardCalback) => {
   const state = {
     width: "6",
     height: "6",
@@ -339,10 +298,12 @@ export default () => {
 
   const gen = document.getElementById(EL_IDS.gen.submit);
   gen.addEventListener("click", (_) => {
-    submitBoardGen(state);
-  });
-  const reset = document.getElementById(EL_IDS.reset);
-  reset.addEventListener("click", (_) => {
-    resetBoard();
+    genBoardCalback({
+      width: state.width,
+      height: state.height,
+      white_player: state.white,
+      black_player: state.black,
+      starting_player: state.starting_player
+    });
   });
 };
