@@ -308,7 +308,7 @@ const initializePlayerSelectionButtons = () => {
     [ELEMENT_IDS.config.starting_player.random]: [setStartingPlayer, "random"],
   };
   for (const [id, [fun, par]] of Object.entries(button_assignments)) {
-    document.getElementById(id).addEventListener("click", (e) => {
+    document.getElementById(id).addEventListener("click", (_) => {
       fun(par);
     });
   }
@@ -320,11 +320,11 @@ const initializePlayerSelectionButtons = () => {
 const generateBoard = (board, width, heigth) => {
   // expects board to be a table containing a tbody
   const body = board.children[0];
-  let rows = [];
+  const rows = [];
   for (let i = 0; i < heigth; i++) {
     const row = document.createElement("tr");
     row.id = `b-row-${i}`;
-    let cells = [];
+    const cells = [];
 
     for (let j = 0; j < width; j++) {
       const cell = document.createElement("td");
@@ -362,20 +362,17 @@ const resetBoard = () => {
   hideElement(reset);
 };
 
-function main() {
-  console.log("hello world!");
-
+export default () => {
   initializeBoardSizeSelection();
   initializePlayerSelectionButtons();
 
   const gen = document.getElementById(ELEMENT_IDS.config.gen);
-  gen.addEventListener("click", (e) => {
+  gen.addEventListener("click", (_) => {
     submitBoardGen();
   });
   const reset = document.getElementById(ELEMENT_IDS.config.reset);
-  reset.addEventListener("click", (e) => {
+  reset.addEventListener("click", (_) => {
     resetBoard();
   });
 }
 
-main();
