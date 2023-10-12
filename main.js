@@ -42,6 +42,7 @@ const ELEMENT_IDS = {
       },
     },
     gen: "b-gen-button",
+    reset: "b-reset"
   },
 };
 
@@ -336,7 +337,6 @@ const generateBoard = (board, width, heigth) => {
   }
 
   body.replaceChildren(...rows);
-  board.classList.remove("hidden");
 };
 
 const submitBoardGen = () => {
@@ -346,6 +346,20 @@ const submitBoardGen = () => {
     parseInt(boardGenState.width),
     parseInt(boardGenState.height)
   );
+  const config = document.getElementById(ELEMENT_IDS.config.main);
+  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  showElement(board);
+  showElement(reset);
+  hideElement(config);
+};
+
+const resetBoard = () => {
+  const board = document.getElementById(ELEMENT_IDS.main);
+  const config = document.getElementById(ELEMENT_IDS.config.main);
+  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  showElement(config);
+  hideElement(board);
+  hideElement(reset);
 };
 
 function main() {
@@ -357,6 +371,10 @@ function main() {
   const gen = document.getElementById(ELEMENT_IDS.config.gen);
   gen.addEventListener("click", (e) => {
     submitBoardGen();
+  });
+  const reset = document.getElementById(ELEMENT_IDS.config.reset);
+  reset.addEventListener("click", (e) => {
+    resetBoard();
   });
 }
 
