@@ -78,7 +78,7 @@ const setCustomWidth = (state, new_val) => {
 };
 
 // change custom width field with a new value without checking for errors
-const setCustomWidthUnckecked = (state, new_val) => {
+const setCustomWidthUnchecked = (state, new_val) => {
   const el = document.getElementById(EL_IDS.gen.size.custom.width);
   const err_el = document.getElementById(
     EL_IDS.gen.size.custom.width_err
@@ -126,7 +126,7 @@ const setCustomHeight = (state, new_val) => {
   updateGenButton(state);
 };
 
-const setCustomHeightUnckecked = (state, new_val) => {
+const setCustomHeightUnchecked = (state, new_val) => {
   const el = document.getElementById(EL_IDS.gen.size.custom.height);
   const err_el = document.getElementById(
     EL_IDS.gen.size.custom.height_err
@@ -161,8 +161,8 @@ const setSizeSelection = (state, new_val) => {
     showElement(custom_size_field);
   } else {
     const r = parseSizeSelection(new_val);
-    setCustomWidthUnckecked(state, r[0]);
-    setCustomHeightUnckecked(state, r[1]);
+    setCustomWidthUnchecked(state, r[0]);
+    setCustomHeightUnchecked(state, r[1]);
     hideElement(custom_size_field);
   }
 };
@@ -284,7 +284,7 @@ const initializePlayerSelectionButtons = (state) => {
   setStartingPlayerWithState(state.starting_player);
 };
 
-export default (genBoardCalback) => {
+export default (genBoardCallback) => {
   const state = {
     width: "6",
     height: "6",
@@ -298,7 +298,7 @@ export default (genBoardCalback) => {
 
   const gen = document.getElementById(EL_IDS.gen.submit);
   gen.addEventListener("click", (_) => {
-    genBoardCalback({
+    genBoardCallback({
       width: state.width,
       height: state.height,
       white_player: state.white,

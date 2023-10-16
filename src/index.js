@@ -13,11 +13,11 @@ const debug = (subj, message) => {
   document.getElementById("debug").innerHTML = JSON.stringify(debugData, null, 2);
 };
 
-const generateBoard = (board, width, heigth) => {
+const generateBoard = (board, width, height) => {
   // expects board to be a table containing a tbody
   const body = board.children[0];
   const rows = [];
-  for (let i = 0; i < heigth; i++) {
+  for (let i = 0; i < height; i++) {
     const row = document.createElement("tr");
     row.id = `b-row-${i}`;
     const cells = [];
@@ -37,6 +37,74 @@ const generateBoard = (board, width, heigth) => {
   body.replaceChildren(...rows);
 };
 
+const isBoardCell = (id) => {
+  return id.startsWith("b-cell");
+}
+
+const getCellCoors = (board, width, height, e) => {
+  const x = e.pageX - e.currentTarget.offsetLeft;
+  const y = e.pageY - e.currentTarget.offsetTop;
+  const bounds = board.getBoundingClientRect();
+  const cell_x = ((width * x) / bounds.width)>>0;
+  const cell_y = ((height * y) / bounds.height)>>0;
+  return [cell_x, cell_y];
+}
+
+const handleBoardEvents = (gen_data) => {
+  let last_selected_id = "b-cell-0-0";
+  let mouse_down = false;
+  let dragging = null;
+
+  board.addEventListener("click", (e) => {
+    console.log("click!");
+    console.log(e);
+  })
+  board.addEventListener("mousedown", (e) => {
+    debug("mouse_down", true);
+    mouse_down = true;
+  });
+  board.addEventListener("mouseup", (e) => {
+    debug("mouse_down", false)
+    mouse_down = false;
+    if (dragging) {
+      console.log("drag cancel!");
+      debug("dragging", dragging);
+      debug("dragged_onto", e.target.id);
+    }
+  });
+  board.addEventListener("mouseleave", (_) => {
+    debug("mouse_inside", false);
+    debug("mouse_down", false);
+    mouse_down = false;
+    dragging = null;
+    debug("dragging", dragging);
+  });
+  board.addEventListener("mouseenter", (_) => {
+    debug("mouse_inside", true);
+  });
+  board.addEventListener("mousemove", (e) => {
+    if (!isBoardCell(e.target.id)) {
+      return;
+    }
+    const cur_id = e.target.id;
+    debug("hover_id", cur_id);
+    if (mouse_down && dragging === null) {
+      dragging = cur_id;
+      debug("dragging", dragging);
+    }
+
+    if (cur_id !== last_selected_id) {
+      console.log("setting new hover!");
+      const last_selected = document.getElementById(last_selected_id);
+      last_selected.classList.remove("hovered");
+      last_selected_id = cur_id;
+      const new_el = document.getElementById(cur_id);
+      new_el.classList.add("hovered");
+    }
+  });
+  
+}
+
 const initializeBoardSpace = (gen_data) => {
   console.log("creating board with data", gen_data);
   const board = document.getElementById(EL_IDS.main);
@@ -47,44 +115,7 @@ const initializeBoardSpace = (gen_data) => {
   showElement(reset);
   hideElement(config);
 
-  let last_selected_id = "b-cell-0-0";
-
-  board.addEventListener("mousedown", (e) => {
-    debug("mouse_down", true);
-    console.log(e);
-  });
-  board.addEventListener("mouseup", (_) => debug("mouse_down", false));
-  board.addEventListener("mouseleave", (_) => {
-    debug("mouse_inside", false);
-    debug("mouse_down", false);
-  });
-  board.addEventListener("mouseenter", (_) => {
-    debug("mouse_inside", true);
-  });
-  board.addEventListener("mousemove", (e) => {
-    const x = e.pageX - e.currentTarget.offsetLeft;
-    const y = e.pageY - e.currentTarget.offsetTop;
-    const bounds = board.getBoundingClientRect();
-    const width = bounds.width;
-    const height = bounds.height;
-    const cell_x = ((gen_data.width * x) / width)>>0;
-    const cell_y = ((gen_data.height * y) / height)>>0;
-
-    debug("x", x);
-    debug("y", y);
-    debug("cell_x", cell_x);
-    debug("cell_y", cell_y);
-
-    const new_id = `b-cell-${cell_y}-${cell_x}`;
-    if (new_id !== last_selected_id) {
-      console.log("setting new hover!");
-      const last_selected = document.getElementById(last_selected_id);
-      last_selected.classList.remove("hovered");
-      last_selected_id = new_id;
-      const new_el = document.getElementById(new_id);
-      new_el.classList.add("hovered");
-    }
-  });
+  handleBoardEvents(gen_data);
 };
 
 const resetBoard = () => {
