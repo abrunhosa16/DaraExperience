@@ -25,9 +25,11 @@ const generateBoard = (board, width, heigth) => {
     for (let j = 0; j < width; j++) {
       const cell = document.createElement("td");
       cell.id = `b-cell-${i}-${j}`;
+      const evenOdd = (i+j) % 2 === 0;
+      cell.classList.add(evenOdd ? "orange" : "bege"); 
       cells.push(cell);
     }
-
+    
     row.replaceChildren(...cells);
     rows.push(row);
   }

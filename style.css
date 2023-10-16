@@ -6,8 +6,9 @@ body {
 }
 
 h1 {
+  text-align: center;
   font-size: 3vw; /* make our h1 tag larger */
-  font-family: sans-serif; /* choosing our font */
+  font-family: Arial, Helvetica, sans-serif; /* choosing our font */
   background: linear-gradient(
       to right,
       orange,
@@ -45,9 +46,18 @@ p {
   border-collapse: collapse;
   border: 1px solid black;
 }
+
 .board th {
   padding: 0.5em;
 }
+.orange {
+  background-color: #E28E51;
+}
+
+.bege {
+  background-color: #E7E0DB;
+}
+
 .board td {
   border: 1px solid;
   width: 2em;
