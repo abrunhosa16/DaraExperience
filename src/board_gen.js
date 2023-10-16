@@ -299,11 +299,13 @@ export default (genBoardCallback) => {
   const gen = document.getElementById(EL_IDS.gen.submit);
   gen.addEventListener("click", (_) => {
     genBoardCallback({
-      width: state.width,
-      height: state.height,
+      width: parseInt(state.width),
+      height: parseInt(state.height),
       white_player: state.white,
       black_player: state.black,
-      starting_player: state.starting_player
+      starting_player: state.starting_player,
+      white_count: 25,
+      black_count: 25
     });
   });
 };

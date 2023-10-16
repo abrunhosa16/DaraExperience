@@ -1,16 +1,21 @@
 import board_gen from "./board_gen.js";
-import {
-  showElement,
-  hideElement,
-} from "./css_h.js";
+import { showElement, hideElement } from "./css_h.js";
 import EL_IDS from "./ids.js";
+import { default as boardGameStart } from "./board_game.js";
 
 ("use strict");
+
+const ROW_ID = "b-row";
+const CELL_ID = "b-cell";
 
 var debugData = {};
 const debug = (subj, message) => {
   debugData[subj] = message;
-  document.getElementById("debug").innerHTML = JSON.stringify(debugData, null, 2);
+  document.getElementById("debug").innerHTML = JSON.stringify(
+    debugData,
+    null,
+    2
+  );
 };
 
 const generateBoard = (board, width, height) => {
@@ -19,17 +24,17 @@ const generateBoard = (board, width, height) => {
   const rows = [];
   for (let i = 0; i < height; i++) {
     const row = document.createElement("tr");
-    row.id = `b-row-${i}`;
+    row.id = `${ROW_ID}-${i}`;
     const cells = [];
 
     for (let j = 0; j < width; j++) {
       const cell = document.createElement("td");
-      cell.id = `b-cell-${i}-${j}`;
-      const evenOdd = (i+j) % 2 === 0;
-      cell.classList.add(evenOdd ? "orange" : "bege"); 
+      cell.id = `${CELL_ID}-${i}-${j}`;
+      const evenOdd = (i + j) % 2 === 0;
+      cell.classList.add(evenOdd ? "orange" : "bege");
       cells.push(cell);
     }
-    
+
     row.replaceChildren(...cells);
     rows.push(row);
   }
@@ -38,17 +43,16 @@ const generateBoard = (board, width, height) => {
 };
 
 const isBoardCell = (id) => {
-  return id.startsWith("b-cell");
-}
+  return id.startsWith(CELL_ID);
+};
 
-const getCellCoors = (board, width, height, e) => {
-  const x = e.pageX - e.currentTarget.offsetLeft;
-  const y = e.pageY - e.currentTarget.offsetTop;
-  const bounds = board.getBoundingClientRect();
-  const cell_x = ((width * x) / bounds.width)>>0;
-  const cell_y = ((height * y) / bounds.height)>>0;
-  return [cell_x, cell_y];
-}
+const getCoorsFromId = (id) => {
+  const sliced = id.slice(CELL_ID.length + 1);
+  const sep_i = sliced.indexOf("-");
+  const y = parseInt(sliced.slice(0, sep_i));
+  const x = parseInt(sliced.slice(sep_i + 1));
+  return [x, y];
+};
 
 const handleBoardEvents = (gen_data) => {
   let last_selected_id = "b-cell-0-0";
@@ -58,13 +62,13 @@ const handleBoardEvents = (gen_data) => {
   board.addEventListener("click", (e) => {
     console.log("click!");
     console.log(e);
-  })
+  });
   board.addEventListener("mousedown", (e) => {
     debug("mouse_down", true);
     mouse_down = true;
   });
   board.addEventListener("mouseup", (e) => {
-    debug("mouse_down", false)
+    debug("mouse_down", false);
     mouse_down = false;
     if (dragging) {
       console.log("drag cancel!");
@@ -102,8 +106,7 @@ const handleBoardEvents = (gen_data) => {
       new_el.classList.add("hovered");
     }
   });
-  
-}
+};
 
 const initializeBoardSpace = (gen_data) => {
   console.log("creating board with data", gen_data);
@@ -115,7 +118,24 @@ const initializeBoardSpace = (gen_data) => {
   showElement(reset);
   hideElement(config);
 
-  handleBoardEvents(gen_data);
+  const on_play = (fun) => {
+    board.addEventListener("click", (e) => {
+      if (!isBoardCell(e.target.id)) {
+        return;
+      }
+      const [x, y] = getCoorsFromId(e.target.id);
+
+      const result = fun(x, y);
+      if (result === null) {
+        console.log("Invalid!");s
+      } else {
+        e.target.innerHTML = result ? 'W' : 'B';
+      }
+    });
+  };
+
+  //handleBoardEvents(gen_data);
+  boardGameStart(gen_data, on_play);
 };
 
 const resetBoard = () => {
@@ -135,7 +155,6 @@ function main() {
   reset.addEventListener("click", (_) => {
     resetBoard();
   });
-
 }
 
 main();
