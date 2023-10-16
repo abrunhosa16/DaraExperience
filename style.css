@@ -89,3 +89,11 @@ p {
 .hovered {
   background-color: yellow;
 }
+
+.clicked {
+  background-color: green;
+}
+
+.dragged {
+  background-color: black;
+}
