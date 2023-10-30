@@ -304,8 +304,8 @@ export default (genBoardCallback) => {
       white_player: state.white,
       black_player: state.black,
       starting_player: state.starting_player,
-      white_count: 25,
-      black_count: 25
+      white_count: 12,
+      black_count: 12
     });
   });
 };

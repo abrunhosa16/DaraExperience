@@ -40,6 +40,57 @@ const playDropPhase = (state, x, y) => {
 }
 
 
+const countAdjacent = (row, col, turn) =>{
+    const width = board.length;
+    let acc = 0;
+    for (let i = row; i > 0; i-- ){
+        if (board[i - 1][col] === turn){
+            acc += 1;
+        }
+        else{
+            break;
+        }
+    }
+    for (let j = row + 1; j < width; j++ ){
+        if (board[j][col] === turn){
+            acc += 1;
+    }
+        else{
+            break;
+        }
+
+    }
+    if (acc < 3){
+        return true;
+    }
+}
+
+const countColumn = (row, col, turn) =>{
+    const height = board[0].length;
+    let acc = 0;
+    for (let i = col - 1; i > 0; i-- ){
+        if (board[row][col] === turn){
+            acc += 1;
+        }
+        else{
+            break;
+        }
+    }
+    for (let j = col + 1; j < height; j++ ){
+        if (board[row][j] === turn){
+            acc += 1;
+    }
+        else{
+            break;
+        }
+
+    }
+    if (acc < 3){
+        return true;
+    }
+}
+
+
 export default (gen_data, setOnPlay) => {
     const state = {
         black_drop_count: gen_data.black_count,
