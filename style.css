@@ -54,7 +54,7 @@ p {
   background-color: #E28E51;
 }
 
-.bege {
+.beige {
   background-color: #E7E0DB;
 }
 
@@ -96,4 +96,8 @@ p {
 
 .dragged {
   background-color: black;
+}
+
+.invalid {
+  background-color: red;
 }
