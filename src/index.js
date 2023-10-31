@@ -25,6 +25,8 @@ const resetBoard = () => {
   showElement(config);
   hideElement(board);
   hideElement(reset);
+
+  // TODO: this should remove all event callbacks from board
 };
 
 function main() {

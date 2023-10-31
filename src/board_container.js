@@ -15,9 +15,11 @@ const paintBeige = (cell) => {
 
 export class BoardContainer {
   constructor(board_el, configs) {
-    this._hovered = null;
-    this._invalid = null;
-    this.board_el = board_el;
+    console.log("configs", configs);
+
+    this._hovered = null;  // HTMLElement | null
+    this._invalid = null;  // {cell: HTMLElement, timeout_id: number} | null
+    this.board_el = board_el;  // HTMLElement
 
     BoardContainer.generateBoard(board_el, configs);
 
@@ -65,38 +67,41 @@ export class BoardContainer {
   };
 
   set invalid(cell) {
-    if (this.hovered.id === cell.id) {
-      this.hovered = null;
-    }
-  
-    if (this._invalid === null) {
-      if (cell === null) {
+    if (this._invalid !== null) {
+      // if selected cell is already invalid
+      if (cell && this._invalid.cell.id === cell.id) {
         return;
       }
 
-      cell.classList.add("invalid");
-  
-      const timeout_id = setTimeout(() => {
-        cell.classList.remove("invalid");
-        this._invalid = null;
-      }, INVALID_FLASH_TIME);
-  
-      this._invalid = {
-        cell: cell,
-        timeout_id: timeout_id
-      }
-    } else {
-      if (this._invalid.cell.id === cell.id) {
-        return;
-      }
       // clear previous invalid
       clearTimeout(this._invalid.timeout_id);
-      state._invalid.cell.classList.remove("invalid");
-      state._invalid = null;
-  
-      // set new invalid cell (everything was cleared)
-      state.invalid = cell;
+      this._invalid.cell.classList.remove("invalid");
+      this._invalid = null;
     }
+
+    if (cell === null) {
+      return;
+    }
+
+    // remove hovered status
+    if (this.hovered && this.hovered.id === cell.id) {
+      this.hovered = null;
+    }
+  
+    cell.classList.add("invalid");
+    // set timeout to clear invalid
+    const timeout_id = setTimeout(() => {
+      this.invalid = null;
+    }, INVALID_FLASH_TIME);
+    
+    this._invalid = {
+      cell: cell,
+      timeout_id: timeout_id
+    };
+  }
+
+  get invalid() {
+    return this._invalid ? this._invalid.cell : null;
   }
 
   static generateBoard(board_el, configs) {
@@ -127,6 +132,10 @@ export class BoardContainer {
     body.replaceChildren(...rows);
   }
 
+  initializeMovePhase() {
+    console.log("INITIALIZE MOVE PHASE");
+  }
+
   getDropPhaseOnClick() {
     return (e) => {
       const cell = e.target;
@@ -145,7 +154,8 @@ export class BoardContainer {
         console.log(err.message);
         return;
       }
-  
+
+      console.log(turn, drop_phase_ended);
       if (drop_phase_ended) {
         this.initializeMovePhase();
       } else {
@@ -154,7 +164,7 @@ export class BoardContainer {
     }
   }
   
-  getOnMouseOver(state) {
+  getOnMouseOver() {
     return (e) => {
       const cell = e.target;
       if (!BoardContainer.isBoardCell(cell)) {
