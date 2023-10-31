@@ -27,70 +27,77 @@ const createBoard = (width, height) => {
   return rows;
 }
 
-const playDropPhase = (state, x, y) => {
-  // TODO: test 3+ rule
-  if (state.board[y][x] !== null) {
+const playDropPhase = (state, row, col) => {
+  if (!countAdjacent(state, row, col)  ||  !countColumn(state, row, col)){
+    throw new Error("Not possible more than 3 in line")
+  }
+  if (state.board[row][col] !== null) {
     throw new Error("This cell is already occupied");
   }
   const black_turn = state.black_turn;
 
-  state.board[y][x] = black_turn;
+  state.board[row][col] = black_turn;
   state.black_turn = !black_turn;
 
   return [black_turn, false];
 }
 
 
-const countAdjacent = (row, col, turn) => {
-  const width = board.length;
-  let acc = 0;
-  for (let i = row; i > 0; i--) {
-    if (board[i - 1][col] === turn) {
-      acc += 1;
+const countAdjacent = (state, row, col) => {
+    const width = state.board.length;
+    let acc = 0;
+    for (let i = row - 1; i > 0; i--) {
+      if (state.board[i][col] === state.black_turn) {
+        acc += 1;
+      }
+      else {
+        break;
+      }
     }
-    else {
-      break;
+    for (let j = row + 1; j < width; j++) {
+      if (state.board[j][col] === state.black_turn) {
+        acc += 1;
+      }
+      else {
+        break;
+      }
+  
     }
-  }
-  for (let j = row + 1; j < width; j++) {
-    if (board[j][col] === turn) {
-      acc += 1;
+    if (acc < 3) {
+      return true;
     }
-    else {
-      break;
-    }
-
-  }
-  if (acc < 3) {
-    return true;
-  }
-}
-
-const countColumn = (row, col, turn) => {
-  const height = board[0].length;
-  let acc = 0;
-  for (let i = col - 1; i > 0; i--) {
-    if (board[row][col] === turn) {
-      acc += 1;
-    }
-    else {
-      break;
+    else{
+        return false;
     }
   }
-  for (let j = col + 1; j < height; j++) {
-    if (board[row][j] === turn) {
-      acc += 1;
+  
+  const countColumn = (state, row, col) => {
+    const height = state.board[0].length;
+    let acc = 0;
+    for (let i = col - 1; i > 0; i--) {
+      if (board[row][col] === state.black_turn) {
+        acc += 1;
+      }
+      else {
+        break;
+      }
     }
-    else {
-      break;
+    for (let j = col + 1; j < height; j++) {
+      if (state.board[row][j] === state.black_turn) {
+        acc += 1;
+      }
+      else {
+        break;
+      }
+  
     }
-
-  }
-  if (acc < 3) {
-    return true;
-  }
-}
-
+    if (acc < 3) {
+      return true;
+    }
+    else{
+        return false;
+    }
+    }
 
 export default (configs) => {
   const state = {
@@ -109,6 +116,6 @@ export default (configs) => {
   // Throws an error if the operation is invalid (with a message)
 
   return {
-    playDropPhase: (x, y) => playDropPhase(state, x, y)
+    playDropPhase: (row, col) => playDropPhase(state, row, col)
   }
 }
