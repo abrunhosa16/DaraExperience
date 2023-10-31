@@ -10,64 +10,76 @@ export class Board {
   }
 
   static getStartingTurnFromGenData(gen_data) {
-    // returns true if black or false if white
-    if (gen_data.starting_player === "black") {
-      return true
-    }
-    if (gen_data.starting_player === "white") {
-      return false;
-    }
-    if (gen_data.starting_player === "random") {
-      return Math.random() > 0.5;
-    }
-    throw new Error('Starting Player Data is invalid')
+  // returns true if black or false if white
+  if (gen_data.starting_player === "black") {
+    return true
   }
-
-  static createBoard(width, height) {
-    const rows = [];
-    for (let i = 0; i < height; i++) {
-      const row = [];
-      for (let j = 0; j < width; j++) {
-        row.push(null);
-      }
-      rows.push(row);
-    }
-    return rows;
+  if (gen_data.starting_player === "white") {
+    return false;
   }
+  if (gen_data.starting_player === "random") {
+    return Math.random() > 0.5;
+  }
+  throw new Error('Starting Player Data is invalid')
+}
 
-  playDropPhase(row, col) {
+static createBoard(width, height) {
+  const rows = [];
+  for (let i = 0; i < height; i++) {
+    const row = [];
+    for (let j = 0; j < width; j++) {
+      row.push(null);
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+playDropPhase(row, col) {
     // Should play as current players's turn and return if the game drop phase has ended
     // ----------------
     // Returns [<true if black's turn, false otherwise>, drop_phase_ended]
     // Throws an error if the operation is invalid (with a message)
 
-    if (this.board[row][col] !== null) {
-      throw new Error("This cell is already occupied");
-    }
-    if (!this.countAdjacent(row, col) || !this.countColumn(row, col)) {
-      throw new Error("Not possible more than 3 in line")
-    }
-    const black_turn = this.black_turn;
-
-    this.board[row][col] = black_turn;
-    this.black_turn = !black_turn;
-
-    return [black_turn, false];
+  if (this.board[row][col] !== null) {
+    throw new Error("This cell is already occupied");
   }
+  if (!this.countHorizontal(row, col) || !this.countVertical(row, col)) {
+    throw new Error("Not possible more than 3 in line")
+  }
+  const black_turn = this.black_turn;
+  this.board[row][col] = black_turn;
+  if (black_turn){
+    if (black_count > 0){
+      return [true, true];
+    }
+    else{
+      return [true, false];
+    }
+  }
+  else{
+    if (white_count > 0){
+      return [false, true];
+    }
+    else{
+      return [false, false];
+    }
+  }
+}
 
-  countAdjacent(row, col) {
+countVertical(row, col) {
     const width = this.board.length;
     let acc = 0;
-    for (let i = row - 1; i > 0; i--) {
-      if (this.board[i][col] === this.black_turn) {
+    for (let i = row; i > 0; i--) {
+      if (this.board[i - 1][col] === this.black_turn) {
         acc += 1;
       }
       else {
         break;
       }
     }
-    for (let j = row + 1; j < width; j++) {
-      if (this.board[j][col] === this.black_turn) {
+    for (let j = row; j < width - 1; j++) {
+      if (this.board[j + 1][col] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -76,21 +88,21 @@ export class Board {
   
     }
     return acc < 3;
-  }
+}
   
-  countColumn(row, col) {
+  countHorizontal(row, col) {
     const height = this.board[0].length;
     let acc = 0;
-    for (let i = col - 1; i > 0; i--) {
-      if (board[row][col] === this.black_turn) {
+    for (let i = col; i > 0; i--) {
+      if (this.board[row][i - 1] === this.black_turn) {
         acc += 1;
       }
       else {
         break;
       }
     }
-    for (let j = col + 1; j < height; j++) {
-      if (this.board[row][j] === this.black_turn) {
+    for (let j = col; j < height - 1; j++) {
+      if (this.board[row][j + 1] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -98,11 +110,6 @@ export class Board {
       }
   
     }
-    if (acc < 3) {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+    return acc < 3;
+}
 }
