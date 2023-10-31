@@ -1,7 +1,7 @@
 import board_gen from "./board_gen.js";
 import { showElement, hideElement } from "./css_h.js";
 import EL_IDS from "./ids.js";
-import board_container from "./board_container.js";
+import {BoardContainer} from "./board_container.js";
 
 ("use strict");
 
@@ -15,7 +15,7 @@ const initializeBoardSpace = (configs) => {
   hideElement(config);
 
   // start game
-  board_container(board, configs);
+  new BoardContainer(board, configs);
 };
 
 const resetBoard = () => {

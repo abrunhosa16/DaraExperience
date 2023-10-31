@@ -1,4 +1,4 @@
-import board_game from "./board_game.js";
+import {Board} from "./board_game.js";
 
 
 const ROW_ID = "b-row";
@@ -13,158 +13,155 @@ const paintBeige = (cell) => {
   cell.classList.add("beige");
 }
 
-// hover a specific cell
-// this cell should not have other statuses (like invalid)
-const setHovered = (state, cell) => {
-  if (state.hovered !== null) {
-    if (state.hovered.id === cell.id) {
+export class BoardContainer {
+  constructor(board_el, configs) {
+    this._hovered = null;
+    this._invalid = null;
+    this.board_el = board_el;
+
+    BoardContainer.generateBoard(board_el, configs);
+
+    this.board = new Board(configs);
+    const drop_phase_on_click = this.getDropPhaseOnClick();
+    board_el.addEventListener("click", drop_phase_on_click);
+  
+    const on_mouse_over = this.getOnMouseOver();
+    board_el.addEventListener("mouseover", on_mouse_over);
+  }
+
+  set hovered(cell) {
+    // unset previous cell
+    if (this._hovered !== null) {
+      if (cell !== null && this._hovered.id === cell.id) {
+        return;
+      }
+      this._hovered.classList.remove("hovered");
+    }
+    
+    // test if cell is null or cannot be set
+    if (cell === null || this.invalid?.cell?.id === cell.id) {
+      this._hovered = null;
       return;
     }
-    state.hovered.classList.remove("hovered");
+
+    cell.classList.add("hovered");
+    this._hovered = cell;
   }
-  cell.classList.add("hovered");
-  state.hovered = cell;
-}
 
-const unsetHovered = (state) => {
-  if (state.hovered === null) {
-    return;
+  get hovered() {
+    return this._hovered;
   }
-  state.hovered.classList.remove("hovered");
-  state.hovered = null;
-}
 
-const isBoardCell = (cell) => {
-  return cell.id.startsWith(CELL_ID);
-};
+  static isBoardCell(cell) {
+    return cell.id.startsWith(CELL_ID);
+  }
 
-const getCoorsFromId = (id) => {
-  const sliced = id.slice(CELL_ID.length + 1);
-  const sep_i = sliced.indexOf("-");
-  const y = parseInt(sliced.slice(0, sep_i));
-  const x = parseInt(sliced.slice(sep_i + 1));
-  return [x, y];
-};
+  static getCoorsFromId(id) {
+    const sliced = id.slice(CELL_ID.length + 1);
+    const sep_i = sliced.indexOf("-");
+    const y = parseInt(sliced.slice(0, sep_i));
+    const x = parseInt(sliced.slice(sep_i + 1));
+    return [x, y];
+  };
 
-const flash_invalid = (state, cell) => {
-  unsetHovered(state);
-
-  if (state.invalid === null) {
-    cell.classList.add("invalid");
-
-    const timeout_id = setTimeout(() => {
-      cell.classList.remove("invalid");
-      state.invalid = null;
-    }, INVALID_FLASH_TIME);
-
-    state.invalid = {
-      cell: cell,
-      timeout_id: timeout_id
+  set invalid(cell) {
+    if (this.hovered.id === cell.id) {
+      this.hovered = null;
     }
-  } else {
-    if (state.invalid.cell.id === cell.id) {
-      return;
-    }
-    // clear previous invalid
-    clearTimeout(state.invalid.timeout_id);
-    state.invalid.cell.classList.remove("invalid");
-    state.invalid = null;
-
-    // set new invalid cell (everything was cleared)
-    flash_invalid(state, cell);
-  }
-}
-
-const generateBoard = (board, configs) => {
-  // expects board to be a table containing a tbody
-  const body = board.children[0];
-  const rows = [];
-  for (let i = 0; i < configs.height; i++) {
-    const row = document.createElement("tr");
-    row.id = `${ROW_ID}-${i}`;
-    const cells = [];
-
-    for (let j = 0; j < configs.width; j++) {
-      const cell = document.createElement("td");
-      cell.id = `${CELL_ID}-${i}-${j}`;
-      if ((i + j) % 2 === 0) {
-        paintOrange(cell);
-      } else {
-        paintBeige(cell);
+  
+    if (this._invalid === null) {
+      if (cell === null) {
+        return;
       }
 
-      cells.push(cell);
-    }
-
-    row.replaceChildren(...cells);
-    rows.push(row);
-  }
-
-  body.replaceChildren(...rows);
-};
-
-const initializeMovePhase = (state) => {
-  // todo
-  console.log("Initialize the move phase!");
-}
-
-const getDropPhaseOnClick = (state, intr_fun) => {
-  return (e) => {
-    const cell = e.target;
-    if (!isBoardCell(cell)) {
-      return;
-    }
-    const [x, y] = getCoorsFromId(e.target.id);
-
-    let turn, drop_phase_ended;
-    try {
-      // returns true if drop phase has finished, false if just succeeded
-      [turn, drop_phase_ended] = intr_fun(x, y);
-    } catch (err) {
-      flash_invalid(state, cell);
-      // TODO: the message should appear to the user as a notification
-      console.log(err.message);
-      return;
-    }
-
-    if (drop_phase_ended) {
-      initializeMovePhase(state);
+      cell.classList.add("invalid");
+  
+      const timeout_id = setTimeout(() => {
+        cell.classList.remove("invalid");
+        this._invalid = null;
+      }, INVALID_FLASH_TIME);
+  
+      this._invalid = {
+        cell: cell,
+        timeout_id: timeout_id
+      }
     } else {
-      e.target.innerHTML = turn ? 'B' : 'W';
+      if (this._invalid.cell.id === cell.id) {
+        return;
+      }
+      // clear previous invalid
+      clearTimeout(this._invalid.timeout_id);
+      state._invalid.cell.classList.remove("invalid");
+      state._invalid = null;
+  
+      // set new invalid cell (everything was cleared)
+      state.invalid = cell;
     }
   }
-}
 
-const getOnMouseOver = (state) => {
-  return (e) => {
-    const cell = e.target;
-    if (!isBoardCell(cell)) {
-      return;
+  static generateBoard(board_el, configs) {
+    // expects board to be a table containing a tbody
+    const body = board_el.children[0];
+    const rows = [];
+    for (let i = 0; i < configs.height; i++) {
+      const row = document.createElement("tr");
+      row.id = `${ROW_ID}-${i}`;
+      const cells = [];
+  
+      for (let j = 0; j < configs.width; j++) {
+        const cell = document.createElement("td");
+        cell.id = `${CELL_ID}-${i}-${j}`;
+        if ((i + j) % 2 === 0) {
+          paintOrange(cell);
+        } else {
+          paintBeige(cell);
+        }
+  
+        cells.push(cell);
+      }
+  
+      row.replaceChildren(...cells);
+      rows.push(row);
     }
+  
+    body.replaceChildren(...rows);
+  }
 
-    if (state.invalid?.cell?.id === cell.id) {
-      return;
+  getDropPhaseOnClick() {
+    return (e) => {
+      const cell = e.target;
+      if (!BoardContainer.isBoardCell(cell)) {
+        return;
+      }
+      const [x, y] = BoardContainer.getCoorsFromId(e.target.id);
+  
+      let turn, drop_phase_ended;
+      try {
+        // returns true if drop phase has finished, false if just succeeded
+        [turn, drop_phase_ended] = this.board.playDropPhase(x, y);
+      } catch (err) {
+        this.invalid = cell;
+        // TODO: the message should appear to the user as a notification
+        console.log(err.message);
+        return;
+      }
+  
+      if (drop_phase_ended) {
+        this.initializeMovePhase();
+      } else {
+        e.target.innerHTML = turn ? 'B' : 'W';
+      }
     }
-
-    setHovered(state, cell);
   }
-}
-
-
-export default (board, configs) => {
-  const state = {
-    board: board,
-    hovered: null,
-    invalid: null,
+  
+  getOnMouseOver(state) {
+    return (e) => {
+      const cell = e.target;
+      if (!BoardContainer.isBoardCell(cell)) {
+        return;
+      }
+  
+      this.hovered = cell;
+    }
   }
-  generateBoard(board, configs);
-
-  let internal_funcs = board_game(configs);
-
-  // drop phase initialization
-  const drop_phase_on_click = getDropPhaseOnClick(state, internal_funcs.playDropPhase);
-  board.addEventListener("click", drop_phase_on_click);
-
-  const on_mouse_over = getOnMouseOver(state);
-  board.addEventListener("mouseover", on_mouse_over);
 }

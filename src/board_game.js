@@ -1,53 +1,65 @@
 
 ("use strict");
 
-const getStartingTurnFromGenData = (gen_data) => {
-  // returns true if black or false if white
-  if (gen_data.starting_player === "black") {
-    return true
+export class Board {
+  constructor(configs) {
+    this.black_drop_count = configs.black_count;
+    this.white_drop_count = configs.white_count;
+    this.black_turn = Board.getStartingTurnFromGenData(configs);
+    this.board = Board.createBoard(configs.width, configs.height);
   }
-  if (gen_data.starting_player === "white") {
-    return false;
-  }
-  if (gen_data.starting_player === "random") {
-    return Math.random() > 0.5;
-  }
-  throw new Error('Starting Player Data is invalid')
-}
 
-const createBoard = (width, height) => {
-  const rows = [];
-  for (let i = 0; i < height; i++) {
-    const row = [];
-    for (let j = 0; j < width; j++) {
-      row.push(null);
+  static getStartingTurnFromGenData(gen_data) {
+    // returns true if black or false if white
+    if (gen_data.starting_player === "black") {
+      return true
     }
-    rows.push(row);
+    if (gen_data.starting_player === "white") {
+      return false;
+    }
+    if (gen_data.starting_player === "random") {
+      return Math.random() > 0.5;
+    }
+    throw new Error('Starting Player Data is invalid')
   }
-  return rows;
-}
 
-const playDropPhase = (state, row, col) => {
-  if (!countAdjacent(state, row, col)  ||  !countColumn(state, row, col)){
-    throw new Error("Not possible more than 3 in line")
+  static createBoard(width, height) {
+    const rows = [];
+    for (let i = 0; i < height; i++) {
+      const row = [];
+      for (let j = 0; j < width; j++) {
+        row.push(null);
+      }
+      rows.push(row);
+    }
+    return rows;
   }
-  if (state.board[row][col] !== null) {
-    throw new Error("This cell is already occupied");
+
+  playDropPhase(row, col) {
+    // Should play as current players's turn and return if the game drop phase has ended
+    // ----------------
+    // Returns [<true if black's turn, false otherwise>, drop_phase_ended]
+    // Throws an error if the operation is invalid (with a message)
+
+    if (this.board[row][col] !== null) {
+      throw new Error("This cell is already occupied");
+    }
+    if (!this.countAdjacent(row, col) || !this.countColumn(row, col)) {
+      throw new Error("Not possible more than 3 in line")
+    }
+    const black_turn = this.black_turn;
+
+    this.board[row][col] = black_turn;
+    this.black_turn = !black_turn;
+
+    return [black_turn, false];
   }
-  const black_turn = state.black_turn;
 
-  state.board[row][col] = black_turn;
-  state.black_turn = !black_turn;
-
-  return [black_turn, false];
-}
-
-
-const countAdjacent = (state, row, col) => {
-    const width = state.board.length;
+  countAdjacent(row, col) {
+    const width = this.board.length;
     let acc = 0;
     for (let i = row - 1; i > 0; i--) {
-      if (state.board[i][col] === state.black_turn) {
+      if (this.board[i][col] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -55,7 +67,7 @@ const countAdjacent = (state, row, col) => {
       }
     }
     for (let j = row + 1; j < width; j++) {
-      if (state.board[j][col] === state.black_turn) {
+      if (this.board[j][col] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -63,19 +75,14 @@ const countAdjacent = (state, row, col) => {
       }
   
     }
-    if (acc < 3) {
-      return true;
-    }
-    else{
-        return false;
-    }
+    return acc < 3;
   }
   
-  const countColumn = (state, row, col) => {
-    const height = state.board[0].length;
+  countColumn(row, col) {
+    const height = this.board[0].length;
     let acc = 0;
     for (let i = col - 1; i > 0; i--) {
-      if (board[row][col] === state.black_turn) {
+      if (board[row][col] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -83,7 +90,7 @@ const countAdjacent = (state, row, col) => {
       }
     }
     for (let j = col + 1; j < height; j++) {
-      if (state.board[row][j] === state.black_turn) {
+      if (this.board[row][j] === this.black_turn) {
         acc += 1;
       }
       else {
@@ -94,28 +101,8 @@ const countAdjacent = (state, row, col) => {
     if (acc < 3) {
       return true;
     }
-    else{
-        return false;
+    else {
+      return false;
     }
-    }
-
-export default (configs) => {
-  const state = {
-    black_drop_count: configs.black_count,
-    white_drop_count: configs.white_count,
-    black_turn: getStartingTurnFromGenData(configs),
-    board: createBoard(configs.width, configs.height),
-  };
-
-  // expected return functions:
-
-  // playDropPhase
-  // Should play as current players's turn and return if the game drop phase has ended
-  // ----------------
-  // Returns [<true if black's turn, false otherwise>, drop_phase_ended]
-  // Throws an error if the operation is invalid (with a message)
-
-  return {
-    playDropPhase: (row, col) => playDropPhase(state, row, col)
   }
 }
