@@ -35,48 +35,97 @@ export class Board {
     return rows;
   }
 
+  get(x, y) {
+    return this.board[y][x];
+  }
+
+  set(x, y, val) {
+    this.board[y][x] = val;
+  }
+
+  width() {
+    return this.board[0].length;
+  }
+
+  height() {
+    return this.board.length;
+  }
+
   playDropPhase(x, y) {
     // Should play as current players's turn and return if the game drop phase has ended
     // ----------------
     // Returns [<true if black's turn, false otherwise>, drop_phase_ended]
     // Throws an error if the operation is invalid (with a message)
 
-    if (this.board[y][x] !== null) {
+    if (this.get(x, y) !== null) {
       throw new Error("This cell is already occupied");
     }
-    if (this.countHorizontal(x, y) >= 3 || this.countVertical(x, y) >= 3) {
+
+    const up = this.countUp(x, y);
+    const down = this.countDown(x, y);
+    const left = this.countLeft(x, y);
+    const right = this.countRight(x, y);
+
+    if (up + down >= 3 || left + right >= 3) {
       throw new Error("Not possible more than 3 in line")
     }
-    const black_turn = this.black_turn;
-    this.board[y][x] = black_turn;
-    if (black_turn) {
+
+    const cur_black_turn = this.black_turn;
+    this.set(x, y, cur_black_turn);
+    if (cur_black_turn) {
       this.black_drop_count -= 1;
     } else {
       this.white_drop_count -= 1;
     }
 
-    this.black_turn = !black_turn;
-
-    return [black_turn, this.black_drop_count + this.white_drop_count === 0];
-  }
-
-  // counts adjacent vertical pieces if one is placed in that position
-  countVertical(x, y) {
-    let count = 0;
-
-    // count up
-    for (let y_c = y - 1; y_c > 0; y_c--) {
-      if (this.board[y_c][x] === this.black_turn) {
-        count += 1;
-      } else {
-        break;
-      }
+    // TODO: maybe simplify this
+    let new_invalid = [];
+    const ver_size = up + down + 1;
+    const hor_size = left + right + 1;
+    if (y > up &&                                           // inside bounds
+      this.get(x, y - up - 1) === null && (                 // it's empty
+        ver_size == 3 ||                                    // the size is already 3
+        this.countUp(x, y - up - 1) + ver_size >= 3)        // the size counting with adjacent is 3 or bigger
+    ) {
+      new_invalid.push([x, y - up - 1]);
     }
 
-    // count down
-    const height = this.board.length;
-    for (let y_c = y + 1; y_c < height - 1; y_c++) {
-      if (this.board[y_c][x] === this.black_turn) {
+    if (y + down + 1 < this.height() &&                     // inside bounds
+      this.get(x, y + down + 1) === null && (               // it's empty
+        ver_size == 3 ||                                    // the size is already 3
+        this.countDown(x, y + down + 1) + ver_size >= 3)    // the size counting with adjacent is 3 or bigger
+    ) {
+      new_invalid.push([x, y + down + 1]);
+    }
+
+    if (x > left &&                                         // inside bounds
+      this.get(x - left - 1, y) === null && (               // it's empty
+        hor_size == 3 ||                                    // the size is already 3
+        this.countLeft(x - left - 1, y) + hor_size >= 3)    // the size counting with adjacent is 3 or bigger
+    ) {
+      new_invalid.push([x - left - 1, y]);
+    }
+
+    if (x + right + 1 < this.width() &&                     // inside bounds
+      this.get(x + right + 1, y) === null && (              // it's empty
+      hor_size == 3 ||                                      // the size is already 3
+        this.countRight(x + right + 1, y) + hor_size >= 3)  // the size counting with adjacent is 3 or bigger
+    ) {
+      new_invalid.push([x + right + 1, y]);
+    }
+
+    this.black_turn = !cur_black_turn;
+
+    return {
+      phase_ended: this.black_drop_count + this.white_drop_count === 0,
+      new_invalid: new_invalid
+    };
+  }
+
+  countUp(x, y) {
+    let count = 0;
+    for (let y_c = y - 1; y_c >= 0; y_c--) {
+      if (this.get(x, y_c) === this.black_turn) {
         count += 1;
       } else {
         break;
@@ -86,23 +135,36 @@ export class Board {
     return count;
   }
 
-  // counts adjacent horizontal pieces if one is placed in that position
-  countHorizontal(x, y) {
+  countDown(x, y) {
     let count = 0;
-
-    // count left
-    for (let x_c = x - 1; x_c > 0; x_c--) {
-      if (this.board[y][x_c] === this.black_turn) {
+    for (let y_c = y + 1; y_c < this.height(); y_c++) {
+      if (this.get(x, y_c) === this.black_turn) {
         count += 1;
       } else {
         break;
       }
     }
 
-    // count right
-    const width = this.board[0].length;
-    for (let x_c = x + 1; x_c < width - 1; x_c++) {
-      if (this.board[y][x_c] === this.black_turn) {
+    return count;
+  }
+
+  countLeft(x, y) {
+    let count = 0;
+    for (let x_c = x - 1; x_c >= 0; x_c--) {
+      if (this.get(x_c, y) === this.black_turn) {
+        count += 1;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  countRight(x, y) {
+    let count = 0;
+    for (let x_c = x + 1; x_c < this.width(); x_c++) {
+      if (this.get(x_c, y) === this.black_turn) {
         count += 1;
       } else {
         break;
