@@ -149,6 +149,8 @@ export class BoardContainer {
       if (!BoardContainer.isBoardCell(cell)) {
         return;
       }
+      this.invalid_flash = null;
+
       const [x, y] = BoardContainer.getCoorsFromId(e.target.id);
 
       const cur_turn_black = this.board.black_turn;
@@ -164,24 +166,9 @@ export class BoardContainer {
         return;
       }
 
-      if (cur_turn_black) {
-        const white_inv_i = this.white_invalid.findIndex(([x_c, y_c]) => x === x_c && y === y_c);
-        if (white_inv_i !== -1) {
-          // remove white invalid
-          this.white_invalid.splice(white_inv_i, 1);
-        }
-        this.black_invalid.push(...results.new_invalid);
-      } else {
-        const black_inv_i = this.black_invalid.findIndex(([x_c, y_c]) => x === x_c && y === y_c);
-        if (black_inv_i !== -1) {
-          // remove white invalid
-          this.black_invalid.splice(black_inv_i, 1);
-        }
-        this.white_invalid.push(...results.new_invalid);
-      }
-
       if (results.phase_ended) {
         this.initializeMovePhase();
+        return;
       } else {
         const image = document.createElement("img");
         if (cur_turn_black) {
@@ -190,24 +177,36 @@ export class BoardContainer {
           image.src = "./iconesDara/coin/white_coin.png";
         }
         cell.appendChild(image);
-
+        cell.classList.add("filled");
       }
 
-      if (cur_turn_black) {
-        this.black_invalid.forEach(([x_c, y_c]) => {
-          BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
-        });
-        this.white_invalid.forEach(([x_c, y_c]) => {
-          BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
-        });
-      } else {
-        this.white_invalid.forEach(([x_c, y_c]) => {
-          BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
-        });
-        this.black_invalid.forEach(([x_c, y_c]) => {
-          BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
-        });
+      const [invalid, other_invalid] = cur_turn_black ? [this.black_invalid, this.white_invalid] : [this.white_invalid, this.black_invalid];
+
+      // remove classes
+      invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
+      });
+      other_invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
+      });
+
+      // test if the current move was played on other invalid
+      const other_i = other_invalid.findIndex(([x_c, y_c]) => x === x_c && y === y_c);
+      if (other_i !== -1) {
+        // if so remove
+        other_invalid.splice(other_i, 1);
       }
+
+      // add new invalids
+      invalid.push(...results.new_invalid);
+
+      // add classes back (this time reversed)
+      invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid-other");
+      });
+      other_invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
+      });
     }
   }
 
