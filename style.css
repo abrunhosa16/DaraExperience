@@ -5,7 +5,7 @@ body {
   margin-left: 90px;
 }
 
-h1 {
+#title {
   text-align: center;
   font-size: 3vw; /* make our h1 tag larger */
   font-family: Arial, Helvetica, sans-serif; /* choosing our font */
@@ -102,4 +102,9 @@ p {
 /* TODO: looks stupid */
 .hovered.buzz.invalid-flash, .invalid.buzz.invalid-flash {
   background-color: red;
+}
+
+.board img {
+  width: 100%;
+  padding: auto;
 }

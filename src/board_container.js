@@ -183,7 +183,14 @@ export class BoardContainer {
       if (results.phase_ended) {
         this.initializeMovePhase();
       } else {
-        e.target.innerHTML = cur_turn_black ? 'B' : 'W';
+        const image = document.createElement("img");
+        if (cur_turn_black) {
+          image.src = "./iconesDara/coin/black_coin.png";
+        } else {
+          image.src = "./iconesDara/coin/white_coin.png";
+        }
+        cell.appendChild(image);
+
       }
 
       if (cur_turn_black) {

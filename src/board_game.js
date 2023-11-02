@@ -5,6 +5,8 @@ export class Board {
   constructor(configs) {
     this.black_drop_count = configs.black_count;
     this.white_drop_count = configs.white_count;
+    this.black_play_count = configs.black_count;
+    this.white_play_count = configs.white_count;
     this.black_turn = Board.getStartingTurnFromGenData(configs);
     this.board = Board.createBoard(configs.width, configs.height);
   }
@@ -122,6 +124,103 @@ export class Board {
     };
   }
 
+  playMovePhase(coordI, coordF) {
+    // Turn
+    const play_black_turn = this.black_turn;
+    const play_white_turn = !this.black_turn;
+    // Coordenadas iniciais e finais, diferença indica a direção
+    const xI = coordI[0];
+    const yI = coordI[1];
+    const xF = coordF[0];
+    const yF = coordF[1];
+    const xDiff = xF - xI;
+    const yDiff = yF - yI;
+    // Se o movimento for valido realiza o movimento
+    if (play_black_turn) {
+      if (xDiff === 0 && yDiff === -1) {
+        this.moveUp(coordI, coordF, play_black_turn);
+      }
+      else if (xDiff === 0 && yDiff === 1) {
+        this.moveDown(coordI, coordF, play_black_turn);
+      }
+      else if (yDiff === 0 && xDiff === 1) {
+        this.moveRight(coordI, coordF, play_black_turn);
+      }
+      else if (yDiff === 0 && xDiff === -1){
+        this.moveLeft(coordI, coordF, play_black_turn);
+      }
+      else {
+        throw new Error("Not possible move")
+      }
+    }
+    else {
+      if (xDiff === 0 && yDiff === -1) {
+        this.moveUp(coordI, coordF, play_white_turn);
+      }
+      else if (xDiff === 0 && yDiff === 1) {
+        this.moveDown(coordI, coordF, play_white_turn);
+      }
+      else if (yDiff === 0 && xDiff === 1) {
+        this.moveRight(coordI, coordF, play_white_turn);
+      }
+      else if (yDiff === 0 && xDiff === -1){
+        this.moveLeft(coordI, coordF, play_white_turn);
+      }
+      else {
+        throw new Error("Not possible move")
+      }
+    }
+
+  }
+  // Testa se a casa esta vazia e realiza o movimento
+  moveUp(coordI, coordF, val) {
+    const xI = coordI[0];
+    const yI = coordI[1];
+    const xF = coordF[0];
+    const yF = coordF[1];
+    const cUp = this.canMoveUp(xI, yI);
+    if (cUp) {
+      this.set(xF, yF, val)
+      this.set(xI, yI, null)
+    }
+  }
+
+  moveDown(coordI, coordF, val) {
+    const xI = coordI[0];
+    const yI = coordI[1];
+    const xF = coordF[0];
+    const yF = coordF[1];
+    const cDown = this.canMoveDown(xI, yI);
+    if (cDown && yDiff === 1 && xDiff === 0) {
+      this.set(xF, yF, val)
+      this.set(xI, yI, null)
+    }
+  }
+
+  moveRight(coordI, coordF, val) {
+    const xI = coordI[0];
+    const yI = coordI[1];
+    const xF = coordF[0];
+    const yF = coordF[1];
+    const cRight = this.canMoveRight(xI, yI);
+    if (cRight) {
+      this.set(xF, yF, val)
+      this.set(xI, yI, null)
+    }
+  }
+
+  moveLeft(coordI, coordF, val) {
+    const xI = coordI[0];
+    const yI = coordI[1];
+    const xF = coordF[0];
+    const yF = coordF[1];
+    const cLeft = this.canMoveLeft(xI, yI);
+    if (cLeft) {
+      this.set(xF, yF, val)
+      this.set(xI, yI, null)
+    }
+  }
+
   countUp(x, y) {
     let count = 0;
     for (let y_c = y - 1; y_c >= 0; y_c--) {
@@ -172,5 +271,46 @@ export class Board {
     }
 
     return count;
+  }
+
+  // Testa se a casa esta vazia e dentro das margens
+  canMoveUp(x, y) {
+    if (y === 0) {
+      return false;
+    }
+    if (this.get(x, y - 1) !== null) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveDown(x, y) {
+    if (y + 1 === this.height) {
+      return false;
+    }
+    if (this.get(x, y + 1) !== null) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveRight(x, y) {
+    if (x + 1 === this.width) {
+      return false;
+    }
+    if (this.get(x + 1, y) !== null) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveLeft(x, y) {
+    if (x === 0) {
+      return false;
+    }
+    if (this.get(x - 1, y) !== null) {
+      return false;
+    }
+    return true;
   }
 }
