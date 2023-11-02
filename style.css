@@ -87,19 +87,27 @@ p {
   background-color: #E7E0DB;
 }
 
-.hovered.fizz {
+.fizz.hovered:not(.filled, .invalid) {
   background-color: #bd7644;
 }
 
-.hovered.buzz {
+.buzz.hovered:not(.filled, .invalid) {
   background-color: #c2bcb8;
 }
 
-.invalid.fizz, .invalid.buzz {
+.fizz.invalid, .buzz.invalid {
   background-color: #bd5644;
 }
 
-/* TODO: looks stupid */
-.hovered.buzz.invalid-flash, .invalid.buzz.invalid-flash {
-  background-color: red;
+.fizz.invalid-other, .buzz.invalid-other {
+  background-color: #b38d87;
+}
+
+.fizz.invalid-other.hovered, .buzz.buzz.invalid-other.hovered {
+  background-color: #997c77;
+}
+
+/* TODO: make this work without using important */
+.invalid-flash {
+  background-color: red !important;
 }

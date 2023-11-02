@@ -65,8 +65,10 @@ export class Board {
     const down = this.countDown(x, y);
     const left = this.countLeft(x, y);
     const right = this.countRight(x, y);
+    const ver_size = up + down + 1;
+    const hor_size = left + right + 1;
 
-    if (up + down >= 3 || left + right >= 3) {
+    if (ver_size > 3 || hor_size > 3) {
       throw new Error("Not possible more than 3 in line")
     }
 
@@ -80,8 +82,6 @@ export class Board {
 
     // TODO: maybe simplify this
     let new_invalid = [];
-    const ver_size = up + down + 1;
-    const hor_size = left + right + 1;
     if (y > up &&                                           // inside bounds
       this.get(x, y - up - 1) === null && (                 // it's empty
         ver_size == 3 ||                                    // the size is already 3
