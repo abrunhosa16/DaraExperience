@@ -1,12 +1,131 @@
 
 ("use strict");
+export class MoveBoard extends Board{
+  constructor(drop_board) {
+    this.board = drop_board.board;
+    this.black_play_count = drop_board.black_total_pieces;
+    this.white_play_count = drop_board.white_total_pieces;
+    this.black_turn = drop_board.black_turn;
+    this.last_black = null;
+    this.last_white = null; 
 
-export class Board {
+  }
+
+  playMovePhase(xi, yi, xf, yf) {
+  
+    const x_diff = xf - xi;
+    const y_diff = yf - yi;
+
+    // Se o movimento for valido realiza o movimento
+    
+    if (x_diff === 0 && y_diff === -1) {
+      this.moveUp(x, y);
+    }
+    else if (x_diff === 0 && y_diff === 1) {
+      this.moveDown(x, y);
+    }
+    else if (y_diff === 0 && x_diff === 1) {
+      this.moveRight(x, y);
+    }
+    else if (y_diff === 0 && x_diff === -1){
+      this.moveLeft(x, y);
+    }
+    else {
+      throw new Error("Not possible move")
+    }
+  }
+  // Testa se a casa esta vazia e realiza o movimento
+  moveUp(x, y) {
+    if (this.canMoveUp(x, y)) {
+      this.set(x, y - 1, this.get(x, y));
+      this.set(x, y, null);
+    }
+  }
+
+  moveDown(x, y) {
+    if (this.canMoveDown(x, y)) {
+      this.set(x , y + 1, this.get(x, y))
+      this.set(x, y, null)
+    }
+  }
+
+  moveRight(x, y) {
+    if (this.canMoveRight(x, y)) {
+      this.set(x + 1, y, this.get(x, y))
+      this.set(x, y, null)
+    }
+  }
+
+  moveLeft(x, y) {
+    if (this.canMoveLeft(x, y)) {
+      this.set(x - 1, y, this.get(x, y))
+      this.set(x, y, null)
+    }
+  }
+  // Testa se a casa esta vazia e dentro das margens
+  canMoveUp(x, y) {
+    if (y === 0) {
+      return false;
+    }
+    if (this.get(x, y - 1) !== null) {
+      return false;
+    }
+    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    if (last_move[0] === x && last_move[1] === y - 1) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveDown(x, y) {
+    if (y + 1 === this.height) {
+      return false;
+    }
+    if (this.get(x, y + 1) !== null) {
+      return false;
+    }
+    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    if (last_move[0] === x && last_move[1] === y + 1) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveRight(x, y) {
+    if (x + 1 === this.width) {
+      return false;
+    }
+    if (this.get(x + 1, y) !== null) {
+      return false;
+    }
+    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    if (last_move[0] === x + 1 && last_move[1] === y) {
+      return false;
+    }
+    return true;
+  }
+
+  canMoveLeft(x, y) {
+    if (x === 0) {
+      return false;
+    }
+    if (this.get(x - 1, y) !== null) {
+      return false;
+    }
+    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    if (last_move[0] === x - 1 && last_move[1] === y ) {
+      return false;
+    }
+    return true;
+  }
+}
+
+export class DropBoard extends Board {
   constructor(configs) {
     this.black_drop_count = configs.black_count;
     this.white_drop_count = configs.white_count;
-    this.black_play_count = configs.black_count;
-    this.white_play_count = configs.white_count;
+    this.black_total_pieces = configs.black_count;
+    this.white_total_pieces = configs.white_count;
     this.black_turn = Board.getStartingTurnFromGenData(configs);
     this.board = Board.createBoard(configs.width, configs.height);
   }
@@ -35,22 +154,6 @@ export class Board {
       rows.push(row);
     }
     return rows;
-  }
-
-  get(x, y) {
-    return this.board[y][x];
-  }
-
-  set(x, y, val) {
-    this.board[y][x] = val;
-  }
-
-  width() {
-    return this.board[0].length;
-  }
-
-  height() {
-    return this.board.length;
   }
 
   playDropPhase(x, y) {
@@ -124,103 +227,6 @@ export class Board {
     };
   }
 
-  playMovePhase(coordI, coordF) {
-    // Turn
-    const play_black_turn = this.black_turn;
-    const play_white_turn = !this.black_turn;
-    // Coordenadas iniciais e finais, diferença indica a direção
-    const xI = coordI[0];
-    const yI = coordI[1];
-    const xF = coordF[0];
-    const yF = coordF[1];
-    const xDiff = xF - xI;
-    const yDiff = yF - yI;
-    // Se o movimento for valido realiza o movimento
-    if (play_black_turn) {
-      if (xDiff === 0 && yDiff === -1) {
-        this.moveUp(coordI, coordF, play_black_turn);
-      }
-      else if (xDiff === 0 && yDiff === 1) {
-        this.moveDown(coordI, coordF, play_black_turn);
-      }
-      else if (yDiff === 0 && xDiff === 1) {
-        this.moveRight(coordI, coordF, play_black_turn);
-      }
-      else if (yDiff === 0 && xDiff === -1){
-        this.moveLeft(coordI, coordF, play_black_turn);
-      }
-      else {
-        throw new Error("Not possible move")
-      }
-    }
-    else {
-      if (xDiff === 0 && yDiff === -1) {
-        this.moveUp(coordI, coordF, play_white_turn);
-      }
-      else if (xDiff === 0 && yDiff === 1) {
-        this.moveDown(coordI, coordF, play_white_turn);
-      }
-      else if (yDiff === 0 && xDiff === 1) {
-        this.moveRight(coordI, coordF, play_white_turn);
-      }
-      else if (yDiff === 0 && xDiff === -1){
-        this.moveLeft(coordI, coordF, play_white_turn);
-      }
-      else {
-        throw new Error("Not possible move")
-      }
-    }
-
-  }
-  // Testa se a casa esta vazia e realiza o movimento
-  moveUp(coordI, coordF, val) {
-    const xI = coordI[0];
-    const yI = coordI[1];
-    const xF = coordF[0];
-    const yF = coordF[1];
-    const cUp = this.canMoveUp(xI, yI);
-    if (cUp) {
-      this.set(xF, yF, val)
-      this.set(xI, yI, null)
-    }
-  }
-
-  moveDown(coordI, coordF, val) {
-    const xI = coordI[0];
-    const yI = coordI[1];
-    const xF = coordF[0];
-    const yF = coordF[1];
-    const cDown = this.canMoveDown(xI, yI);
-    if (cDown && yDiff === 1 && xDiff === 0) {
-      this.set(xF, yF, val)
-      this.set(xI, yI, null)
-    }
-  }
-
-  moveRight(coordI, coordF, val) {
-    const xI = coordI[0];
-    const yI = coordI[1];
-    const xF = coordF[0];
-    const yF = coordF[1];
-    const cRight = this.canMoveRight(xI, yI);
-    if (cRight) {
-      this.set(xF, yF, val)
-      this.set(xI, yI, null)
-    }
-  }
-
-  moveLeft(coordI, coordF, val) {
-    const xI = coordI[0];
-    const yI = coordI[1];
-    const xF = coordF[0];
-    const yF = coordF[1];
-    const cLeft = this.canMoveLeft(xI, yI);
-    if (cLeft) {
-      this.set(xF, yF, val)
-      this.set(xI, yI, null)
-    }
-  }
-
   countUp(x, y) {
     let count = 0;
     for (let y_c = y - 1; y_c >= 0; y_c--) {
@@ -272,45 +278,22 @@ export class Board {
 
     return count;
   }
+}
 
-  // Testa se a casa esta vazia e dentro das margens
-  canMoveUp(x, y) {
-    if (y === 0) {
-      return false;
-    }
-    if (this.get(x, y - 1) !== null) {
-      return false;
-    }
-    return true;
+class Board {
+  get(x, y) {
+    return this.board[y][x];
   }
 
-  canMoveDown(x, y) {
-    if (y + 1 === this.height) {
-      return false;
-    }
-    if (this.get(x, y + 1) !== null) {
-      return false;
-    }
-    return true;
+  set(x, y, val) {
+    this.board[y][x] = val;
   }
 
-  canMoveRight(x, y) {
-    if (x + 1 === this.width) {
-      return false;
-    }
-    if (this.get(x + 1, y) !== null) {
-      return false;
-    }
-    return true;
+  width() {
+    return this.board[0].length;
   }
 
-  canMoveLeft(x, y) {
-    if (x === 0) {
-      return false;
-    }
-    if (this.get(x - 1, y) !== null) {
-      return false;
-    }
-    return true;
+  height() {
+    return this.board.length;
   }
 }

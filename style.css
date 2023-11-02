@@ -50,11 +50,12 @@ p {
 .board th {
   padding: 0.5em;
 }
-
+  
 .board td {
   border: 1px solid;
-  width: 2em;
-  height: 2em;
+  width: 4em;
+  height: 4em;
+  padding: 0;
 }
 
 .err-message {
@@ -113,6 +114,6 @@ p {
 }
 
 .board img {
-  width: 100%;
-  padding: auto;
+  width: 80%;
+  margin: 5%;
 }
