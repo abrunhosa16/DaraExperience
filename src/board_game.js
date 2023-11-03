@@ -1,37 +1,49 @@
-
 ("use strict");
-export class MoveBoard extends Board{
+
+class Board {
+  get(x, y) {
+    return this.board[y][x];
+  }
+
+  set(x, y, val) {
+    this.board[y][x] = val;
+  }
+
+  width() {
+    return this.board[0].length;
+  }
+
+  height() {
+    return this.board.length;
+  }
+}
+
+export class MoveBoard extends Board {
   constructor(drop_board) {
     this.board = drop_board.board;
     this.black_play_count = drop_board.black_total_pieces;
     this.white_play_count = drop_board.white_total_pieces;
     this.black_turn = drop_board.black_turn;
     this.last_black = null;
-    this.last_white = null; 
-
+    this.last_white = null;
   }
 
   playMovePhase(xi, yi, xf, yf) {
-  
     const x_diff = xf - xi;
     const y_diff = yf - yi;
 
     // Se o movimento for valido realiza o movimento
-    
+
     if (x_diff === 0 && y_diff === -1) {
       this.moveUp(x, y);
-    }
-    else if (x_diff === 0 && y_diff === 1) {
+    } else if (x_diff === 0 && y_diff === 1) {
       this.moveDown(x, y);
-    }
-    else if (y_diff === 0 && x_diff === 1) {
+    } else if (y_diff === 0 && x_diff === 1) {
       this.moveRight(x, y);
-    }
-    else if (y_diff === 0 && x_diff === -1){
+    } else if (y_diff === 0 && x_diff === -1) {
       this.moveLeft(x, y);
-    }
-    else {
-      throw new Error("Not possible move")
+    } else {
+      throw new Error("Not possible move");
     }
   }
   // Testa se a casa esta vazia e realiza o movimento
@@ -44,22 +56,22 @@ export class MoveBoard extends Board{
 
   moveDown(x, y) {
     if (this.canMoveDown(x, y)) {
-      this.set(x , y + 1, this.get(x, y))
-      this.set(x, y, null)
+      this.set(x, y + 1, this.get(x, y));
+      this.set(x, y, null);
     }
   }
 
   moveRight(x, y) {
     if (this.canMoveRight(x, y)) {
-      this.set(x + 1, y, this.get(x, y))
-      this.set(x, y, null)
+      this.set(x + 1, y, this.get(x, y));
+      this.set(x, y, null);
     }
   }
 
   moveLeft(x, y) {
     if (this.canMoveLeft(x, y)) {
-      this.set(x - 1, y, this.get(x, y))
-      this.set(x, y, null)
+      this.set(x - 1, y, this.get(x, y));
+      this.set(x, y, null);
     }
   }
   // Testa se a casa esta vazia e dentro das margens
@@ -70,7 +82,7 @@ export class MoveBoard extends Board{
     if (this.get(x, y - 1) !== null) {
       return false;
     }
-    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    const last_move = this.black_turn ? this.last_black : this.last_white;
     if (last_move[0] === x && last_move[1] === y - 1) {
       return false;
     }
@@ -84,7 +96,7 @@ export class MoveBoard extends Board{
     if (this.get(x, y + 1) !== null) {
       return false;
     }
-    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    const last_move = this.black_turn ? this.last_black : this.last_white;
     if (last_move[0] === x && last_move[1] === y + 1) {
       return false;
     }
@@ -98,7 +110,7 @@ export class MoveBoard extends Board{
     if (this.get(x + 1, y) !== null) {
       return false;
     }
-    const last_move = this.black_turn ? this.last_black : this.last_white; 
+    const last_move = this.black_turn ? this.last_black : this.last_white;
     if (last_move[0] === x + 1 && last_move[1] === y) {
       return false;
     }
@@ -112,8 +124,8 @@ export class MoveBoard extends Board{
     if (this.get(x - 1, y) !== null) {
       return false;
     }
-    const last_move = this.black_turn ? this.last_black : this.last_white; 
-    if (last_move[0] === x - 1 && last_move[1] === y ) {
+    const last_move = this.black_turn ? this.last_black : this.last_white;
+    if (last_move[0] === x - 1 && last_move[1] === y) {
       return false;
     }
     return true;
@@ -133,7 +145,7 @@ export class DropBoard extends Board {
   static getStartingTurnFromGenData(gen_data) {
     // returns true if black or false if white
     if (gen_data.starting_player === "black") {
-      return true
+      return true;
     }
     if (gen_data.starting_player === "white") {
       return false;
@@ -141,7 +153,7 @@ export class DropBoard extends Board {
     if (gen_data.starting_player === "random") {
       return Math.random() > 0.5;
     }
-    throw new Error('Starting Player Data is invalid')
+    throw new Error("Starting Player Data is invalid");
   }
 
   static createBoard(width, height) {
@@ -174,7 +186,7 @@ export class DropBoard extends Board {
     const hor_size = left + right + 1;
 
     if (ver_size > 3 || hor_size > 3) {
-      throw new Error("Not possible more than 3 in line")
+      throw new Error("Not possible more than 3 in line");
     }
 
     const cur_black_turn = this.black_turn;
@@ -187,34 +199,38 @@ export class DropBoard extends Board {
 
     // TODO: maybe simplify this
     let new_invalid = [];
-    if (y > up &&                                           // inside bounds
-      this.get(x, y - up - 1) === null && (                 // it's empty
-        ver_size == 3 ||                                    // the size is already 3
-        this.countUp(x, y - up - 1) + ver_size >= 3)        // the size counting with adjacent is 3 or bigger
+    if (
+      y > up && // inside bounds
+      this.get(x, y - up - 1) === null && // it's empty
+      (ver_size == 3 || // the size is already 3
+        this.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y - up - 1]);
     }
 
-    if (y + down + 1 < this.height() &&                     // inside bounds
-      this.get(x, y + down + 1) === null && (               // it's empty
-        ver_size == 3 ||                                    // the size is already 3
-        this.countDown(x, y + down + 1) + ver_size >= 3)    // the size counting with adjacent is 3 or bigger
+    if (
+      y + down + 1 < this.height() && // inside bounds
+      this.get(x, y + down + 1) === null && // it's empty
+      (ver_size == 3 || // the size is already 3
+        this.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y + down + 1]);
     }
 
-    if (x > left &&                                         // inside bounds
-      this.get(x - left - 1, y) === null && (               // it's empty
-        hor_size == 3 ||                                    // the size is already 3
-        this.countLeft(x - left - 1, y) + hor_size >= 3)    // the size counting with adjacent is 3 or bigger
+    if (
+      x > left && // inside bounds
+      this.get(x - left - 1, y) === null && // it's empty
+      (hor_size == 3 || // the size is already 3
+        this.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x - left - 1, y]);
     }
 
-    if (x + right + 1 < this.width() &&                     // inside bounds
-      this.get(x + right + 1, y) === null && (              // it's empty
-      hor_size == 3 ||                                      // the size is already 3
-        this.countRight(x + right + 1, y) + hor_size >= 3)  // the size counting with adjacent is 3 or bigger
+    if (
+      x + right + 1 < this.width() && // inside bounds
+      this.get(x + right + 1, y) === null && // it's empty
+      (hor_size == 3 || // the size is already 3
+        this.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x + right + 1, y]);
     }
@@ -223,7 +239,7 @@ export class DropBoard extends Board {
 
     return {
       phase_ended: this.black_drop_count + this.white_drop_count === 0,
-      new_invalid: new_invalid
+      new_invalid: new_invalid,
     };
   }
 
@@ -277,23 +293,5 @@ export class DropBoard extends Board {
     }
 
     return count;
-  }
-}
-
-class Board {
-  get(x, y) {
-    return this.board[y][x];
-  }
-
-  set(x, y, val) {
-    this.board[y][x] = val;
-  }
-
-  width() {
-    return this.board[0].length;
-  }
-
-  height() {
-    return this.board.length;
   }
 }

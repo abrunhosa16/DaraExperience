@@ -1,5 +1,4 @@
-import { Board } from "./board_game.js";
-
+import { DropBoard } from "./board_game.js";
 
 const ROW_ID = "b-row";
 const CELL_ID = "b-cell";
@@ -7,30 +6,58 @@ const INVALID_FLASH_TIME = 1000;
 
 const paintFizz = (cell) => {
   cell.classList.add("fizz");
-}
+};
 
 const paintBuzz = (cell) => {
   cell.classList.add("buzz");
-}
+};
 
 export class BoardContainer {
   constructor(board_el, configs) {
     console.log("configs", configs);
 
-    this._hovered = null;  // HTMLElement | null
-    this._invalid_flash = null;  // {cell: HTMLElement, timeout_id: number} | null
-    this.board_el = board_el;  // HTMLElement
-    this.black_invalid = []  // [(number, number)]
-    this.white_invalid = []  // [(number, number)]
+    this._hovered = null; // HTMLElement | null
+    this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
+    this.board_el = board_el; // HTMLElement
+    this.eventListeners = {};
+
+    this.black_invalid = []; // [(number, number)]
+    this.white_invalid = []; // [(number, number)]
 
     BoardContainer.generateBoard(board_el, configs);
 
-    this.board = new Board(configs);
-    const drop_phase_on_click = this.getDropPhaseOnClick();
-    board_el.addEventListener("click", drop_phase_on_click);
+    this.board = new DropBoard(configs);
+  }
 
-    const on_mouse_over = this.getOnMouseOver();
-    board_el.addEventListener("mouseover", on_mouse_over);
+  initializeDropPhase() {
+    this.addEventListener(
+      "drop_phase_on_click",
+      "click",
+      this.getDropPhaseOnClick()
+    );
+    this.addEventListener("on_mouse_over", "mouseover", this.getOnMouseOver());
+  }
+
+  initializeMovePhase() {
+    console.log("INITIALIZE MOVE PHASE");
+    this.removeEventListener("drop_phase_on_click");
+  }
+
+  addEventListener(name, type, func) {
+    this.eventListeners[name] = [type, func];
+    this.board_el.addEventListener(type, func);
+  }
+
+  removeEventListener(name) {
+    const [type, func] = this.eventListeners[name];
+    this.board_el.removeEventListener(type, func);
+    delete this.eventListeners[name];
+  }
+
+  removeAllEventListeners() {
+    Object.keys(this.eventListeners).forEach((name) => {
+      this.removeEventListener(name);
+    });
   }
 
   set hovered(cell) {
@@ -70,7 +97,7 @@ export class BoardContainer {
     const y = parseInt(sliced.slice(0, sep_i));
     const x = parseInt(sliced.slice(sep_i + 1));
     return [x, y];
-  };
+  }
 
   set invalid_flash(cell) {
     if (this._invalid_flash !== null) {
@@ -102,7 +129,7 @@ export class BoardContainer {
 
     this._invalid_flash = {
       cell: cell,
-      timeout_id: timeout_id
+      timeout_id: timeout_id,
     };
   }
 
@@ -138,11 +165,6 @@ export class BoardContainer {
     body.replaceChildren(...rows);
   }
 
-  initializeMovePhase() {
-    console.log("INITIALIZE MOVE PHASE");
-    this.board_el.innerHTML = "<h1>\"Here I stand, reduced to a mere quote\"</h1>";
-  }
-
   getDropPhaseOnClick() {
     return (e) => {
       const cell = e.target;
@@ -166,6 +188,18 @@ export class BoardContainer {
         return;
       }
 
+      const [invalid, other_invalid] = cur_turn_black
+        ? [this.black_invalid, this.white_invalid]
+        : [this.white_invalid, this.black_invalid];
+
+      // remove classes
+      invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
+      });
+      other_invalid.forEach(([x_c, y_c]) => {
+        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
+      });
+
       if (results.phase_ended) {
         this.initializeMovePhase();
         return;
@@ -180,18 +214,18 @@ export class BoardContainer {
         cell.classList.add("filled");
       }
 
-      const [invalid, other_invalid] = cur_turn_black ? [this.black_invalid, this.white_invalid] : [this.white_invalid, this.black_invalid];
-
-      // remove classes
-      invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
-      });
-      other_invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
-      });
+      if (results.phase_ended) {
+        this.initializeMovePhase();
+        return;
+      } else {
+        cell.innerHTML = cur_turn_black ? "B" : "W";
+        cell.classList.add("filled");
+      }
 
       // test if the current move was played on other invalid
-      const other_i = other_invalid.findIndex(([x_c, y_c]) => x === x_c && y === y_c);
+      const other_i = other_invalid.findIndex(
+        ([x_c, y_c]) => x === x_c && y === y_c
+      );
       if (other_i !== -1) {
         // if so remove
         other_invalid.splice(other_i, 1);
@@ -207,7 +241,7 @@ export class BoardContainer {
       other_invalid.forEach(([x_c, y_c]) => {
         BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
       });
-    }
+    };
   }
 
   getOnMouseOver() {
@@ -218,6 +252,8 @@ export class BoardContainer {
       }
 
       this.hovered = cell;
-    }
+    };
   }
+
+  getMovePhaseOnClick() {}
 }
