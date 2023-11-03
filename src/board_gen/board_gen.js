@@ -37,9 +37,7 @@ import MultiButtonSelection from "./multi_button_selection.js";
 
 export default class BoardGen {
   static createElements() {
-    const size_input = new BoardSizeInput((err_count) => {
-      this.error_count = err_count;
-    });
+    const size_input = new BoardSizeInput();
 
     const player_assignment_header = document.createElement("h3");
     player_assignment_header.innerHTML = "Player assignment";
@@ -112,6 +110,10 @@ export default class BoardGen {
     this.player2 = player2;
     this.starting_player = starting_player;
     this.submit = submit;
+
+    this.size_input.set_error_update_callback((err_count) => {
+      this.error_count = err_count;
+    });
 
     submit.addEventListener("click", (e) => {
       const [width, height] = this.size_input.getParsedSize();

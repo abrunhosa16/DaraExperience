@@ -7,21 +7,20 @@ export default class BoardSizeInput {
   static MIN_WIDTH = 3;
 
   // the options need to be arrays of a width and a height
-  static DEFAULT_OPTIONS = [
+  static OPTIONS = [
     [5, 6],
     [6, 6],
     [50, 50],
   ];
   static CUSTOM_OPTION_VALUE = "custom";
   static CUSTOM_OPTION_TEXT = "Custom";
-  static OPTION_VAL_SEPARATOR = "_";
 
   static INVALID_WIDTH_ERROR_MESSAGES = {
-    too_small: `Please input a width of at least ${BoardSizeInput.MIN_HEIGHT_WIDTH}`,
+    too_small: `Please input a width of at least ${BoardSizeInput.MIN_HEIGHT}`,
     required: "This field is required",
   };
   static INVALID_HEIGHT_ERROR_MESSAGES = {
-    too_small: `Please input a height of at least ${BoardSizeInput.MIN_HEIGHT_WIDTH}`,
+    too_small: `Please input a height of at least ${BoardSizeInput.MIN_WIDTH}`,
     required: "This field is required",
   };
 
@@ -50,13 +49,6 @@ export default class BoardSizeInput {
       BoardSizeInput.MIN_HEIGHT,
       BoardSizeInput.INVALID_HEIGHT_ERROR_MESSAGES
     );
-
-  static parseSizeSelection = (val) => {
-    const ind = val.indexOf(BoardSizeInput.OPTION_VAL_SEPARATOR);
-    const width = parseInt(val.substr(0, ind));
-    const height = parseInt(val.substr(ind + 1));
-    return [width, height];
-  };
 
   static createElements() {
     /* 
@@ -114,9 +106,9 @@ export default class BoardSizeInput {
     const select = document.createElement("select");
 
     // default options
-    BoardSizeInput.DEFAULT_OPTIONS.forEach(([width, height]) => {
+    BoardSizeInput.OPTIONS.forEach(([width, height], i) => {
       const opt = document.createElement("option");
-      opt.value = `${width}_${height}`;
+      opt.value = i.toString();
       opt.innerHTML = `${width}x${height}`;
       select.appendChild(opt);
     });
@@ -163,17 +155,16 @@ export default class BoardSizeInput {
     };
   }
 
-  constructor(err_update_callback) {
-    this.err_update_callback = err_update_callback;
+  constructor() {
+    this.err_update_callback = null;
     this.els = BoardSizeInput.createElements();
 
     this.error_count = 0;
-    this.custom_size = ["", ""];
-    const initial_opt = BoardSizeInput.DEFAULT_OPTIONS[0];
-    this.val = `${initial_opt[0]}${BoardSizeInput.OPTION_VAL_SEPARATOR}${initial_opt[1]}`;
+    this.option_i = 0;
+    this._custom_size = undefined;
 
     this.els.select.addEventListener("change", (e) => {
-      this.val = e.currentTarget.value;
+      this.option_i = e.currentTarget.value;
     });
     this.els.width.addEventListener("change", (e) => {
       this.custom_size = [e.target.value, this.custom_size[1]];
@@ -182,37 +173,58 @@ export default class BoardSizeInput {
       this.custom_size = [this.custom_size[0], e.target.value];
     });
   }
-
-  getParsedSize() {
-    console.log(this);
-    if (this.error_count > 0) {
-      throw Error("Tried to get size while in a invalid state");
-    }
-
-    const [width, height] =
-      this.val === BoardSizeInput.CUSTOM_OPTION_VALUE
-        ? this.custom_size
-        : BoardSizeInput.parseSizeSelection(this.val);
-    return [parseInt(width), parseInt(height)];
-  }
-
+  
   el() {
     return this.els.target;
   }
 
-  get val() {
-    return this._val;
+  set_error_update_callback(func) {
+    this.err_update_callback = func;
   }
 
-  set val(val) {
-    if (val === BoardSizeInput.CUSTOM_OPTION_VALUE) {
-      this.custom_size = BoardSizeInput.parseSizeSelection(this._val);
-      showElement(this.els.custom_field);
-    } else {
+  static val(i) {
+    // value is invalid if set to custom
+    if (i === -1) {
+      return undefined;
+    }
+    return BoardSizeInput.OPTIONS[i];
+  }
+
+  get option_i() {
+    // returns index of current option, or -1 if custom
+    return this._option_i;
+  }
+
+  set option_i(i_s) {
+    // option will be equivalent to the option index
+    const prev = this._option_i;
+    this._option_i =
+      i_s === BoardSizeInput.CUSTOM_OPTION_VALUE ? -1 : parseInt(i_s);
+
+    if (prev === -1 && this._option_i !== -1) {
+      // was custom before, now it's normal
+      // val will be defined because the option index exists
       hideElement(this.els.custom_field);
+      // custom field will get updated if chosen again
+      this.error_count = 0;
+    } else if (prev !== -1 && this._option_i === -1) {
+      // was normal before, now it's custom
+      const val = BoardSizeInput.val(prev);
+      this.custom_size = [val[0].toString(), val[1].toString()];
+      showElement(this.els.custom_field);
+    }
+  }
+
+  getParsedSize() {
+    if (this.error_count > 0) {
+      throw Error("Tried to get size while in a invalid state");
     }
 
-    this._val = val;
+    // custom size will be valid if there are no errors
+    const val = BoardSizeInput.val(this.option_i);
+    return val
+      ? val
+      : [parseInt(this.custom_size[0]), parseInt(this.custom_size[1])];
   }
 
   get error_count() {
@@ -221,39 +233,48 @@ export default class BoardSizeInput {
 
   set error_count(val) {
     this._error_count = val;
-    this.err_update_callback(val);
+    if (this.err_update_callback !== null) {
+      this.err_update_callback(val);
+    }
   }
 
   get custom_size() {
     return this._custom_size;
   }
 
-  set custom_size(val) {
-    const [new_width, new_height] = val;
-    const [old_width, old_height] = this._custom_size ? this._custom_size : ["5", "6"];
+  // width / height need to be strings of numbers (or empty)
+  set custom_size(size) {
+    const [new_width, new_height] = size;
+    const [old_width, old_height] = this._custom_size
+      ? this._custom_size
+      : [null, null];
 
-    this._custom_size = val;
+    this._custom_size = size;
 
-    console.log(new_width, old_width, new_height, old_height);
     if (new_width !== old_width) {
       this.els.width.value = new_width;
 
-      const old_invalid = BoardSizeInput.customWidthInvalid(old_width) !== null;
+      const old_invalid =
+        old_width !== null
+          ? BoardSizeInput.customWidthInvalid(old_width) !== null
+          : false;
       const new_invalid_message = BoardSizeInput.customWidthInvalid(new_width);
       const new_invalid = new_invalid_message !== null;
 
-      console.log(old_invalid, new_invalid_message, new_invalid);
-
       if (new_invalid) {
+        // show error message
         this.els.width_err.innerHTML = new_invalid_message;
-        hideElement(this.els.width_err);
-      } else {
         showElement(this.els.width_err);
+      } else {
+        // hide previously shown error message
+        hideElement(this.els.width_err);
       }
 
       if (old_invalid && !new_invalid) {
+        // new has no errors while old had
         this.error_count -= 1;
       } else if (!old_invalid && new_invalid) {
+        // new has errors while old hadn't
         this.error_count += 1;
       }
     }
@@ -262,15 +283,20 @@ export default class BoardSizeInput {
       this.els.height.value = new_height;
 
       const old_invalid =
-        BoardSizeInput.customHeightInvalid(old_height) !== null;
-      const new_invalid_message = BoardSizeInput.customHeightInvalid(new_height);
+        old_height !== null
+          ? BoardSizeInput.customHeightInvalid(old_height) !== null
+          : false;
+      const new_invalid_message =
+        BoardSizeInput.customHeightInvalid(new_height);
       const new_invalid = new_invalid_message !== null;
 
       if (new_invalid) {
+        // show error message
         this.els.height_err.innerHTML = new_invalid_message;
-        hideElement(this.els.height_err);
-      } else {
         showElement(this.els.height_err);
+      } else {
+        // hide previously shown error message
+        hideElement(this.els.height_err);
       }
 
       if (old_invalid && !new_invalid) {

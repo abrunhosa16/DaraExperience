@@ -5,14 +5,13 @@ import {BoardContainer} from "./board_container.js";
 
 ("use strict");
 
-const initializeBoardSpace = (configs) => {
+const initializeBoardSpace = (gen, configs) => {
   console.log("creating board with data", configs);
-  const board = document.getElementById(EL_IDS.main);
-  const config = document.getElementById(EL_IDS.gen.main);
+  const board = document.getElementById("board");
   const reset = document.getElementById(EL_IDS.reset);
   showElement(board);
   showElement(reset);
-  hideElement(config);
+  hideElement(gen.el());
 
   // start game
   new BoardContainer(board, configs);
@@ -30,8 +29,8 @@ const resetBoard = () => {
 
 function main() {
   console.log("hello world!");
-  const gen = new BoardGen(initializeBoardSpace);
-  document.getElementById("board-gen").replaceWith(gen.el());
+  const gen = new BoardGen((configs) => initializeBoardSpace(gen, configs));
+  document.getElementById("board-gen").appendChild(gen.el());
 
   // const reset = document.getElementById("reset");
   // reset.addEventListener("click", (_) => {
