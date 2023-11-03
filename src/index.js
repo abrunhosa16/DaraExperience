@@ -1,4 +1,4 @@
-import board_gen from "./board_gen.js";
+import BoardGen from "./board_gen/board_gen.js";
 import { showElement, hideElement } from "./css_h.js";
 import EL_IDS from "./ids.js";
 import {BoardContainer} from "./board_container.js";
@@ -26,17 +26,17 @@ const resetBoard = () => {
   hideElement(board);
   hideElement(reset);
 
-  // TODO: this should remove all event callbacks from board
 };
 
 function main() {
   console.log("hello world!");
-  board_gen(initializeBoardSpace);
+  const gen = new BoardGen(initializeBoardSpace);
+  document.getElementById("board-gen").replaceWith(gen.el());
 
-  const reset = document.getElementById(EL_IDS.reset);
-  reset.addEventListener("click", (_) => {
-    resetBoard();
-  });
+  // const reset = document.getElementById("reset");
+  // reset.addEventListener("click", (_) => {
+  //   resetBoard();
+  // });
 }
 
 main();
