@@ -1,5 +1,6 @@
 import BoardSizeInput from "./size_input.js";
 import MultiButtonSelection from "./multi_button_selection.js";
+import Component from "../../component.js";
 
 ("use strict");
 
@@ -35,7 +36,7 @@ import MultiButtonSelection from "./multi_button_selection.js";
 </div>
 */
 
-export default class BoardGen {
+export default class BoardGen extends Component {
   static createElements() {
     const size_input = new BoardSizeInput();
 
@@ -78,7 +79,7 @@ export default class BoardGen {
     );
 
     const submit_button = document.createElement("button");
-    submit_button.innerHTML = "Let's do this";
+    submit_button.innerHTML = "I am ready to cause d̷̹͍̼̺͒ ̸̥̫̟̯̈́̂̎̀̌̈́͂͠͝ȉ̵͎̻̹̹̘̱̺̈̊ ̵̜̳͍̀̔̌͑͌̌͆͠s̸̢͇̪͇̼̜͙̳̦͎̓͆̂̈́ ̶̡̻͙̭̻̜̔͂t̴̤̮̩̭͕̞͚̬̺͂͜͜ ̴̢̘͍̮̤̔̆̿̽̆͛̅ù̶̡͕̬̭̞͗̀̅̕ ̸̡̛̛̦͌͛̆͠ͅr̴͇͝ ̷̦͖̩͓̻̳̬̭̣̆͑̈́͗̚b̴̺͘ ̶̤̄̽͗͠͝͠a̷̢͇͚̬̝̋̆̈̈́̒ ̴̡͒̿͗̓̒͆̀̀́͘͠n̷̡̨̛̟̞͔͔͓̮͓̹͆̃͌̂̌̓͘͝͝ ̸̰̟̥̩͈͍͙͓̱̞̬̿c̶͈̎̃̎̇ ̶̗̣͍̖̯́e̸͈̙͎̦̹̎̂͠ ̸̨̞̱̗̀̑̚̚s̵̞̙͋̍͂̿̎";
 
     const target = document.createElement("div");
     target.classList.add("form");
@@ -104,7 +105,7 @@ export default class BoardGen {
   constructor(submit_callback) {
     const { target, submit, size_input, player1, player2, starting_player } =
       BoardGen.createElements();
-    this.target = target;
+    super(target);
     this.size_input = size_input;
     this.player1 = player1;
     this.player2 = player2;
@@ -128,10 +129,6 @@ export default class BoardGen {
         black_count: 12,
       });
     });
-  }
-
-  el() {
-    return this.target;
   }
 
   get error_count() {

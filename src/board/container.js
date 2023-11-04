@@ -1,8 +1,9 @@
-import { DropBoard } from "./board_game.js";
+import Component from "../component.js";
+import { DropBoard } from "./game.js";
 
 const ROW_ID = "b-row";
 const CELL_ID = "b-cell";
-const INVALID_FLASH_TIME = 1000;
+const INVALID_FLASH_TIME = 2000;
 
 const paintFizz = (cell) => {
   cell.classList.add("fizz");
@@ -12,24 +13,74 @@ const paintBuzz = (cell) => {
   cell.classList.add("buzz");
 };
 
-export class BoardContainer {
-  constructor(board_el, configs) {
+export class BoardContainer extends Component {
+  static generateBoard(configs) {
+    /* 
+    <table class="board unselectable">
+      <tbody> 
+        <Rows>
+      </tbody>
+    </table>
+    */
+
+    const target = document.createElement("table");
+    target.classList.add("board", "unselectable");
+
+    const body = document.createElement("tbody");
+    target.appendChild(body);
+
+    const rows = [];
+    for (let i = 0; i < configs.height; i++) {
+      const row = document.createElement("tr");
+      row.id = `${ROW_ID}-${i}`;
+      const cells = [];
+
+      for (let j = 0; j < configs.width; j++) {
+        const cell = document.createElement("td");
+        cell.id = `${CELL_ID}-${i}-${j}`;
+        if ((i + j) % 2 === 0) {
+          paintFizz(cell);
+        } else {
+          paintBuzz(cell);
+        }
+
+        cells.push(cell);
+      }
+
+      row.replaceChildren(...cells);
+      rows.push(row);
+    }
+
+    body.replaceChildren(...rows);
+
+    return target;
+  }
+
+  constructor(configs, phaseChangeCallback, invalidMessageCallback) {
+    super(BoardContainer.generateBoard(configs));
+
     console.log("configs", configs);
+
+    this.phaseChangeCallback = phaseChangeCallback;
+    this.invalidMessageCallback = invalidMessageCallback;
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
-    this.board_el = board_el; // HTMLElement
     this.eventListeners = {};
 
     this.black_invalid = []; // [(number, number)]
     this.white_invalid = []; // [(number, number)]
 
-    BoardContainer.generateBoard(board_el, configs);
-
     this.board = new DropBoard(configs);
   }
 
+  start() {
+    this.initializeDropPhase();
+  }
+
   initializeDropPhase() {
+    this.phaseChangeCallback("Drop");
+
     this.addEventListener(
       "drop_phase_on_click",
       "click",
@@ -39,18 +90,19 @@ export class BoardContainer {
   }
 
   initializeMovePhase() {
-    console.log("INITIALIZE MOVE PHASE");
+    this.phaseChangeCallback("Move");
+
     this.removeEventListener("drop_phase_on_click");
   }
 
   addEventListener(name, type, func) {
     this.eventListeners[name] = [type, func];
-    this.board_el.addEventListener(type, func);
+    super.el().addEventListener(type, func);
   }
 
   removeEventListener(name) {
     const [type, func] = this.eventListeners[name];
-    this.board_el.removeEventListener(type, func);
+    super.el().removeEventListener(type, func);
     delete this.eventListeners[name];
   }
 
@@ -99,7 +151,10 @@ export class BoardContainer {
     return [x, y];
   }
 
-  set invalid_flash(cell) {
+  set invalid_flash(obj) {
+    const { cell, message } =
+      obj === null ? { cell: null, message: null } : obj;
+
     if (this._invalid_flash !== null) {
       // if selected cell is already invalid
       if (cell && this._invalid_flash.cell.id === cell.id) {
@@ -110,6 +165,7 @@ export class BoardContainer {
       clearTimeout(this._invalid_flash.timeout_id);
       this._invalid_flash.cell.classList.remove("invalid-flash");
       this._invalid_flash = null;
+      this.invalidMessageCallback(null);
     }
 
     if (cell === null) {
@@ -131,38 +187,11 @@ export class BoardContainer {
       cell: cell,
       timeout_id: timeout_id,
     };
+    this.invalidMessageCallback(message);
   }
 
   get invalid_flash() {
     return this._invalid_flash ? this._invalid_flash.cell : null;
-  }
-
-  static generateBoard(board_el, configs) {
-    // expects board to be a table containing a tbody
-    const body = board_el.children[0];
-    const rows = [];
-    for (let i = 0; i < configs.height; i++) {
-      const row = document.createElement("tr");
-      row.id = `${ROW_ID}-${i}`;
-      const cells = [];
-
-      for (let j = 0; j < configs.width; j++) {
-        const cell = document.createElement("td");
-        cell.id = `${CELL_ID}-${i}-${j}`;
-        if ((i + j) % 2 === 0) {
-          paintFizz(cell);
-        } else {
-          paintBuzz(cell);
-        }
-
-        cells.push(cell);
-      }
-
-      row.replaceChildren(...cells);
-      rows.push(row);
-    }
-
-    body.replaceChildren(...rows);
   }
 
   getDropPhaseOnClick() {
@@ -181,9 +210,7 @@ export class BoardContainer {
         // returns true if drop phase has finished, false if just succeeded
         results = this.board.playDropPhase(x, y);
       } catch (err) {
-        console.log(err);
-        this.invalid_flash = cell;
-        // TODO: the message should appear to the user as a notification
+        this.invalid_flash = {cell: cell, message: err.message};
         console.log(err.message);
         return;
       }

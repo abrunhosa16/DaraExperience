@@ -1,8 +1,9 @@
 ("use strict");
 
-import { showElement, hideElement } from "../css_h.js";
+import Component from "../../component.js";
+import { showElement, hideElement } from "../../css_h.js";
 
-export default class BoardSizeInput {
+export default class BoardSizeInput extends Component {
   static MIN_HEIGHT = 3;
   static MIN_WIDTH = 3;
 
@@ -156,8 +157,11 @@ export default class BoardSizeInput {
   }
 
   constructor() {
+    const {target, ...els} = BoardSizeInput.createElements();
+    super(target);
+
     this.err_update_callback = null;
-    this.els = BoardSizeInput.createElements();
+    this.els = els;
 
     this.error_count = 0;
     this.option_i = 0;
@@ -172,10 +176,6 @@ export default class BoardSizeInput {
     this.els.height.addEventListener("change", (e) => {
       this.custom_size = [this.custom_size[0], e.target.value];
     });
-  }
-  
-  el() {
-    return this.els.target;
   }
 
   set_error_update_callback(func) {
