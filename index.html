@@ -23,72 +23,25 @@
       <div class="titulo">
         <h1 id="title">Dara game night experience</h1>
       </div>
-      <hr style="border-bottom: 2px solid black" />
-      <p>
-        This web page was designed for the practical evaluation of the Web
-        Technologies course (CC3008), with the current instructor being José
-        Paulo Leal, during the academic year 2023/24. The creators of this page
-        are students Beatriz Marques (202109552), Vínicius Abrunhosa
-        (202106889), and Zakhar Starinski (202105229), who are enrolled in the
-        Mathematics and Computer Science programs at the Faculty of Sciences,
-        University of Porto.
-      </p>
-      <div class="menu1">
-        <div class="texto">
+      <div class="linha"></div>
           <h2>About Dara</h2>
-          <p>
-            "Dara" is an ancient strategy game that originated in West Africa
+        <div class="wrapper">
+          <div><p>"Dara" is an ancient strategy game that originated in West Africa
             long before the proliferation of modern board games. This game,
             often referred to as "Dara" or "Draughts," stands as one of the most
             notable examples of how games can transcend borders and cultures,
             carrying with them a rich historical heritage and intellectual
             challenges. The history of "Dara" dates back centuries, and its
-            strategic complexity continues to captivate players of all ages.
-          </p>
-          <p>
-            "Dara" is a traditional African game with deep roots in the Sahel
-            region, encompassing territories that now include Senegal, Mali,
-            Burkina Faso, Ghana, and Ivory Coast. It is believed that the game
-            was originally created by the Soninke, a people of West Africa, and
-            its history can be traced back to ancient civilizations, such as the
-            Empire of Ghana, one of the earliest African empires. The game was
-            so highly esteemed that in some cultures, kings and tribal chiefs
-            kept advisors trained in "Dara" to develop strategic thinking
-            skills. Furthermore, "Dara" played a significant role in preserving
-            the history and culture of the region, as game pieces were often
-            intricately carved with depictions of animals, tribal symbols, and
-            elements of nature.
-          </p>
+            strategic complexity continues to captivate players of all ages.</p></div>
+          <div><img  class="tabuleiro" src='tabuleiro.png'/></div>
         </div>
-        <div class="imagem">
-          <img class="tabuleiro" src="tabuleiro.png" />
-        </div>
-      </div>
-
-      <div class="menu2">
-        <br /><br />
-        <hr style="border-bottom: 2px solid black; max-width: 100%;" />
-        <br />
-        <h2>About us and the web page</h2>
-        <p style="display: block">
-          The main purpose of designing the website was to apply the methods and
-          knowledge acquired during theoretical classes. Throughout the project,
-          we used languages such as HTML, CSS, and JavaScript. During the entire
-          process, Professor José Leal was very helpful and always available to
-          assist. The goal was to create a single-page application that would
-          provide an online version of the Dara game (explained earlier). The
-          project is divided into three delivery phases, and it is currently in
-          the first phase.
-        </p>
-        <hr style="border-bottom: 2px solid black" />
-        <br /><br /><br /><br /><br />
-      </div>
+        <div class="margem"></div>
+        <div class="linha"></div>
       <div>
         <a href="#" class="start-button">Start Playing</a>
       </div>
       <div class="container" id="registration-form">
         <h2>Registro de Conta</h2>
-        <br />
         <form>
           <label for="username">Nome de Usuário:</label>
           <input type="text" id="username" name="username" required />
@@ -104,6 +57,7 @@
       </div>
 
       <div id="board-gen"></div>
+      <div id="board-area" />
 
       <table id="board" class="board hidden unselectable">
         <tbody></tbody>
@@ -114,10 +68,48 @@
       <button id="reset" class="hidden">reset</button>
 
       <p>
+        "Dara" is a traditional African game with deep roots in the Sahel
+        region, encompassing territories that now include Senegal, Mali,
+        Burkina Faso, Ghana, and Ivory Coast. It is believed that the game
+        was originally created by the Soninke, a people of West Africa, and
+        its history can be traced back to ancient civilizations, such as the
+        Empire of Ghana, one of the earliest African empires. The game was
+        so highly esteemed that in some cultures, kings and tribal chiefs
+        kept advisors trained in "Dara" to develop strategic thinking
+        skills. Furthermore, "Dara" played a significant role in preserving
+        the history and culture of the region, as game pieces were often
+        intricately carved with depictions of animals, tribal symbols, and
+        elements of nature.
+      </p>
+
+      <p>
         Please feel always free to contact us, the team Dara experience
         appreciate your message.
       </p>
     </div>
+    <footer>
+      <h2>About us and the web page</h2>
+        <p>
+          The main purpose of designing the website was to apply the methods and
+          knowledge acquired during theoretical classes. Throughout the project,
+          we used languages such as HTML, CSS, and JavaScript. During the entire
+          process, Professor José Leal was very helpful and always available to
+          assist. The goal was to create a single-page application that would
+          provide an online version of the Dara game (explained earlier). The
+          project is divided into three delivery phases, and it is currently in
+          the first phase.
+        </p>
+
+      <div class="linha"></div>
+
+      <p>This web page was designed for the practical evaluation of the Web
+        Technologies course (CC3008), with the current instructor being José
+        Paulo Leal, during the academic year 2023/24. The creators of this page
+        are students Beatriz Marques (202109552), Vínicius Abrunhosa
+        (202106889), and Zakhar Starinski (202105229), who are enrolled in the
+        Mathematics and Computer Science programs at the Faculty of Sciences,
+        University of Porto.</p>
+    </footer>
     <!-- ISTO TEM QUE FICAR EM ÚLTIMO LUGAR -->
     <script type="module" src="/src/index.js"></script>
   </body>
