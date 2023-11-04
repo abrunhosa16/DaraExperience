@@ -1,3 +1,4 @@
+import Component from "../component.js";
 import { DropBoard } from "./game.js";
 
 const ROW_ID = "b-row";
@@ -12,7 +13,7 @@ const paintBuzz = (cell) => {
   cell.classList.add("buzz");
 };
 
-export class BoardContainer {
+export class BoardContainer extends Component {
   static generateBoard(configs) {
     /* 
     <table class="board unselectable">
@@ -55,10 +56,12 @@ export class BoardContainer {
     return target;
   }
 
-  constructor(configs) {
-    this.target = BoardContainer.generateBoard(configs);
+  constructor(configs, phaseChangeCallback) {
+    super(BoardContainer.generateBoard(configs));
 
     console.log("configs", configs);
+
+    this.phaseChangeCallback = phaseChangeCallback;
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
@@ -70,15 +73,13 @@ export class BoardContainer {
     this.board = new DropBoard(configs);
   }
 
-  el() {
-    return this.target;
-  }
-
   start() {
     this.initializeDropPhase();
   }
 
   initializeDropPhase() {
+    this.phaseChangeCallback("Drop");
+
     this.addEventListener(
       "drop_phase_on_click",
       "click",
@@ -88,18 +89,19 @@ export class BoardContainer {
   }
 
   initializeMovePhase() {
-    console.log("INITIALIZE MOVE PHASE");
+    this.phaseChangeCallback("Move");
+
     this.removeEventListener("drop_phase_on_click");
   }
 
   addEventListener(name, type, func) {
     this.eventListeners[name] = [type, func];
-    this.target.addEventListener(type, func);
+    super.el().addEventListener(type, func);
   }
 
   removeEventListener(name) {
     const [type, func] = this.eventListeners[name];
-    this.target.removeEventListener(type, func);
+    super.el().removeEventListener(type, func);
     delete this.eventListeners[name];
   }
 

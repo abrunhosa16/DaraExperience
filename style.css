@@ -5,6 +5,10 @@ body {
   margin-left: 90px;
 }
 
+.red {
+  color: red;
+}
+
 #title {
   text-align: center;
   font-size: 3vw; /* make our h1 tag larger */

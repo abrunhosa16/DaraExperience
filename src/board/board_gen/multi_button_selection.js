@@ -1,3 +1,5 @@
+import Component from "../../component.js";
+
 ("use strict");
 
 const markAsSelected = (element) => {
@@ -10,7 +12,7 @@ const markAsUnselected = (element) => {
   element.disabled = false;
 };
 
-export default class MultiButtonSelection {
+export default class MultiButtonSelection extends Component {
   static createElements(id, label_text, button_id_texts) {
     /* 
     <p>
@@ -42,7 +44,7 @@ export default class MultiButtonSelection {
       label,
       button_id_texts
     );
-    this.target = target;
+    super(target)
     this.buttons = buttons;
     this.selected = initial_button_id;
 
@@ -68,9 +70,5 @@ export default class MultiButtonSelection {
 
   get selected() {
     return this._selected;
-  }
-
-  el() {
-    return this.target;
   }
 }

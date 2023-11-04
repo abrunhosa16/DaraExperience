@@ -1,5 +1,6 @@
 import BoardSizeInput from "./size_input.js";
 import MultiButtonSelection from "./multi_button_selection.js";
+import Component from "../../component.js";
 
 ("use strict");
 
@@ -35,7 +36,7 @@ import MultiButtonSelection from "./multi_button_selection.js";
 </div>
 */
 
-export default class BoardGen {
+export default class BoardGen extends Component {
   static createElements() {
     const size_input = new BoardSizeInput();
 
@@ -104,7 +105,7 @@ export default class BoardGen {
   constructor(submit_callback) {
     const { target, submit, size_input, player1, player2, starting_player } =
       BoardGen.createElements();
-    this.target = target;
+    super(target);
     this.size_input = size_input;
     this.player1 = player1;
     this.player2 = player2;
@@ -128,10 +129,6 @@ export default class BoardGen {
         black_count: 12,
       });
     });
-  }
-
-  el() {
-    return this.target;
   }
 
   get error_count() {
