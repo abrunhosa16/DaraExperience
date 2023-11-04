@@ -1,6 +1,22 @@
 ("use strict");
 
+const createBoard = (width, height) => {
+  const rows = [];
+  for (let i = 0; i < height; i++) {
+    const row = [];
+    for (let j = 0; j < width; j++) {
+      row.push(null);
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
 class Board {
+  constructor(board) {
+    this.board = board;
+  }
+
   get(x, y) {
     return this.board[y][x];
   }
@@ -18,128 +34,129 @@ class Board {
   }
 }
 
-export class MoveBoard extends Board {
-  constructor(drop_board) {
-    this.board = drop_board.board;
-    this.black_play_count = drop_board.black_total_pieces;
-    this.white_play_count = drop_board.white_total_pieces;
-    this.black_turn = drop_board.black_turn;
-    this.last_black = null;
-    this.last_white = null;
-  }
+// export class MoveBoard extends Board {
+//   constructor(drop_board) {
+//     this.board = drop_board.board;
+//     this.black_play_count = drop_board.black_total_pieces;
+//     this.white_play_count = drop_board.white_total_pieces;
+//     this.black_turn = drop_board.black_turn;
+//     this.last_black = null;
+//     this.last_white = null;
+//   }
 
-  playMovePhase(xi, yi, xf, yf) {
-    const x_diff = xf - xi;
-    const y_diff = yf - yi;
+//   playMovePhase(xi, yi, xf, yf) {
+//     const x_diff = xf - xi;
+//     const y_diff = yf - yi;
 
-    // Se o movimento for valido realiza o movimento
+//     // Se o movimento for valido realiza o movimento
 
-    if (x_diff === 0 && y_diff === -1) {
-      this.moveUp(x, y);
-    } else if (x_diff === 0 && y_diff === 1) {
-      this.moveDown(x, y);
-    } else if (y_diff === 0 && x_diff === 1) {
-      this.moveRight(x, y);
-    } else if (y_diff === 0 && x_diff === -1) {
-      this.moveLeft(x, y);
-    } else {
-      throw new Error("Not possible move");
-    }
-  }
-  // Testa se a casa esta vazia e realiza o movimento
-  moveUp(x, y) {
-    if (this.canMoveUp(x, y)) {
-      this.set(x, y - 1, this.get(x, y));
-      this.set(x, y, null);
-    }
-  }
+//     if (x_diff === 0 && y_diff === -1) {
+//       this.moveUp(x, y);
+//     } else if (x_diff === 0 && y_diff === 1) {
+//       this.moveDown(x, y);
+//     } else if (y_diff === 0 && x_diff === 1) {
+//       this.moveRight(x, y);
+//     } else if (y_diff === 0 && x_diff === -1) {
+//       this.moveLeft(x, y);
+//     } else {
+//       throw new Error("Not possible move");
+//     }
+//   }
+//   // Testa se a casa esta vazia e realiza o movimento
+//   moveUp(x, y) {
+//     if (this.canMoveUp(x, y)) {
+//       this.set(x, y - 1, this.get(x, y));
+//       this.set(x, y, null);
+//     }
+//   }
 
-  moveDown(x, y) {
-    if (this.canMoveDown(x, y)) {
-      this.set(x, y + 1, this.get(x, y));
-      this.set(x, y, null);
-    }
-  }
+//   moveDown(x, y) {
+//     if (this.canMoveDown(x, y)) {
+//       this.set(x, y + 1, this.get(x, y));
+//       this.set(x, y, null);
+//     }
+//   }
 
-  moveRight(x, y) {
-    if (this.canMoveRight(x, y)) {
-      this.set(x + 1, y, this.get(x, y));
-      this.set(x, y, null);
-    }
-  }
+//   moveRight(x, y) {
+//     if (this.canMoveRight(x, y)) {
+//       this.set(x + 1, y, this.get(x, y));
+//       this.set(x, y, null);
+//     }
+//   }
 
-  moveLeft(x, y) {
-    if (this.canMoveLeft(x, y)) {
-      this.set(x - 1, y, this.get(x, y));
-      this.set(x, y, null);
-    }
-  }
-  // Testa se a casa esta vazia e dentro das margens
-  canMoveUp(x, y) {
-    if (y === 0) {
-      return false;
-    }
-    if (this.get(x, y - 1) !== null) {
-      return false;
-    }
-    const last_move = this.black_turn ? this.last_black : this.last_white;
-    if (last_move[0] === x && last_move[1] === y - 1) {
-      return false;
-    }
-    return true;
-  }
+//   moveLeft(x, y) {
+//     if (this.canMoveLeft(x, y)) {
+//       this.set(x - 1, y, this.get(x, y));
+//       this.set(x, y, null);
+//     }
+//   }
+//   // Testa se a casa esta vazia e dentro das margens
+//   canMoveUp(x, y) {
+//     if (y === 0) {
+//       return false;
+//     }
+//     if (this.get(x, y - 1) !== null) {
+//       return false;
+//     }
+//     const last_move = this.black_turn ? this.last_black : this.last_white;
+//     if (last_move[0] === x && last_move[1] === y - 1) {
+//       return false;
+//     }
+//     return true;
+//   }
 
-  canMoveDown(x, y) {
-    if (y + 1 === this.height) {
-      return false;
-    }
-    if (this.get(x, y + 1) !== null) {
-      return false;
-    }
-    const last_move = this.black_turn ? this.last_black : this.last_white;
-    if (last_move[0] === x && last_move[1] === y + 1) {
-      return false;
-    }
-    return true;
-  }
+//   canMoveDown(x, y) {
+//     if (y + 1 === this.height) {
+//       return false;
+//     }
+//     if (this.get(x, y + 1) !== null) {
+//       return false;
+//     }
+//     const last_move = this.black_turn ? this.last_black : this.last_white;
+//     if (last_move[0] === x && last_move[1] === y + 1) {
+//       return false;
+//     }
+//     return true;
+//   }
 
-  canMoveRight(x, y) {
-    if (x + 1 === this.width) {
-      return false;
-    }
-    if (this.get(x + 1, y) !== null) {
-      return false;
-    }
-    const last_move = this.black_turn ? this.last_black : this.last_white;
-    if (last_move[0] === x + 1 && last_move[1] === y) {
-      return false;
-    }
-    return true;
-  }
+//   canMoveRight(x, y) {
+//     if (x + 1 === this.width) {
+//       return false;
+//     }
+//     if (this.get(x + 1, y) !== null) {
+//       return false;
+//     }
+//     const last_move = this.black_turn ? this.last_black : this.last_white;
+//     if (last_move[0] === x + 1 && last_move[1] === y) {
+//       return false;
+//     }
+//     return true;
+//   }
 
-  canMoveLeft(x, y) {
-    if (x === 0) {
-      return false;
-    }
-    if (this.get(x - 1, y) !== null) {
-      return false;
-    }
-    const last_move = this.black_turn ? this.last_black : this.last_white;
-    if (last_move[0] === x - 1 && last_move[1] === y) {
-      return false;
-    }
-    return true;
-  }
-}
+//   canMoveLeft(x, y) {
+//     if (x === 0) {
+//       return false;
+//     }
+//     if (this.get(x - 1, y) !== null) {
+//       return false;
+//     }
+//     const last_move = this.black_turn ? this.last_black : this.last_white;
+//     if (last_move[0] === x - 1 && last_move[1] === y) {
+//       return false;
+//     }
+//     return true;
+//   }
+// }
 
 export class DropBoard extends Board {
   constructor(configs) {
+    super(createBoard(configs.width, configs.height));
+
     this.black_drop_count = configs.black_count;
     this.white_drop_count = configs.white_count;
     this.black_total_pieces = configs.black_count;
     this.white_total_pieces = configs.white_count;
-    this.black_turn = Board.getStartingTurnFromGenData(configs);
-    this.board = Board.createBoard(configs.width, configs.height);
+    this.black_turn = DropBoard.getStartingTurnFromGenData(configs);
   }
 
   static getStartingTurnFromGenData(gen_data) {
@@ -154,18 +171,6 @@ export class DropBoard extends Board {
       return Math.random() > 0.5;
     }
     throw new Error("Starting Player Data is invalid");
-  }
-
-  static createBoard(width, height) {
-    const rows = [];
-    for (let i = 0; i < height; i++) {
-      const row = [];
-      for (let j = 0; j < width; j++) {
-        row.push(null);
-      }
-      rows.push(row);
-    }
-    return rows;
   }
 
   playDropPhase(x, y) {

@@ -67,11 +67,15 @@ export class BoardContainer {
     this.black_invalid = []; // [(number, number)]
     this.white_invalid = []; // [(number, number)]
 
-    // this.board = new DropBoard(configs);
+    this.board = new DropBoard(configs);
   }
 
   el() {
     return this.target;
+  }
+
+  start() {
+    this.initializeDropPhase();
   }
 
   initializeDropPhase() {

@@ -26,6 +26,7 @@ export default class BoardArea {
   initializeContainer(configs) {
     this.gen = null;
     this.container = new BoardContainer(configs);
+    this.container.start();
   }
 
   set gen(obj) {
