@@ -1,24 +1,32 @@
 ("use strict");
 
-const createBoard = (width, height) => {
-  const rows = [];
-  for (let i = 0; i < height; i++) {
-    const row = [];
-    for (let j = 0; j < width; j++) {
-      row.push(null);
-    }
-    rows.push(row);
-  }
-  return rows;
-}
-
 class Board {
+  static createBoard(width, height) {
+    const rows = [];
+    for (let i = 0; i < height; i++) {
+      const row = [];
+      for (let j = 0; j < width; j++) {
+        row.push(null);
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  static create(width, height) {
+    return new Board(Board.createBoard(width, height));
+  }
+
   constructor(board) {
     this.board = board;
   }
 
   get(x, y) {
     return this.board[y][x];
+  }
+
+  isNull(x, y) {
+    return this.get(x, y) === null;
   }
 
   set(x, y, val) {
@@ -150,12 +158,11 @@ class Board {
 
 export class DropBoard extends Board {
   constructor(configs) {
-    super(createBoard(configs.width, configs.height));
+    // TODO: use Board.create(width, height) instead
+    super(Board.createBoard(configs.width, configs.height));
 
     this.black_drop_count = configs.black_count;
     this.white_drop_count = configs.white_count;
-    this.black_total_pieces = configs.black_count;
-    this.white_total_pieces = configs.white_count;
     this.black_turn = DropBoard.getStartingTurnFromGenData(configs);
   }
 
@@ -202,11 +209,10 @@ export class DropBoard extends Board {
       this.white_drop_count -= 1;
     }
 
-    // TODO: maybe simplify this
     let new_invalid = [];
     if (
       y > up && // inside bounds
-      this.get(x, y - up - 1) === null && // it's empty
+      this.isNull(x, y - up - 1) && // it's empty
       (ver_size == 3 || // the size is already 3
         this.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -215,7 +221,7 @@ export class DropBoard extends Board {
 
     if (
       y + down + 1 < this.height() && // inside bounds
-      this.get(x, y + down + 1) === null && // it's empty
+      this.isNull(x, y + down + 1) && // it's empty
       (ver_size == 3 || // the size is already 3
         this.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -224,7 +230,7 @@ export class DropBoard extends Board {
 
     if (
       x > left && // inside bounds
-      this.get(x - left - 1, y) === null && // it's empty
+      this.isNull(x - left - 1, y) && // it's empty
       (hor_size == 3 || // the size is already 3
         this.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -233,7 +239,7 @@ export class DropBoard extends Board {
 
     if (
       x + right + 1 < this.width() && // inside bounds
-      this.get(x + right + 1, y) === null && // it's empty
+      this.isNull(x + right + 1, y) && // it's empty
       (hor_size == 3 || // the size is already 3
         this.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
