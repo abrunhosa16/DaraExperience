@@ -28,9 +28,11 @@ export default class BoardArea extends Component {
     super(document.createElement("div"));
 
     // I haven't tough of any not convoluted way to do this
+    // maybe generate getters and setters dynamically in the constructor?
     this._gen = [null, dummy()];
     this._phase_announcement = [null, dummy()];
     this._container = [null, dummy()];
+    this._error_announcement = [null, dummy()];
     this._reset_button = [null, dummy()];
 
     // the order here is the order that the elements appear on the page
@@ -40,25 +42,11 @@ export default class BoardArea extends Component {
         this._gen[1],
         this._phase_announcement[1],
         this._container[1],
+        this._error_announcement[1],
         this._reset_button[1]
       );
 
     this.resetUniverse();
-  }
-
-  initializeContainer(configs) {
-    this.gen = null;
-
-    this.phase_announcement = new Component(document.createElement("h3"));
-    this.container = new BoardContainer(configs, (phase) => {
-      const bacon = document.createElement("span");
-      bacon.innerHTML = phase;
-      bacon.classList.add("red");
-      this.phase_announcement.el().replaceChildren("Welcome! Behold the ", bacon, " Phase!");
-    });
-    this.reset_button = new ResetButton(() => this.resetUniverse());
-
-    this.container.start();
   }
 
   resetUniverse() {
@@ -67,6 +55,37 @@ export default class BoardArea extends Component {
     });
     this.container = null;
     this.reset_button = null;
+  }
+
+  initializeContainer(configs) {
+    this.gen = null;
+
+    this.phase_announcement = new Component(document.createElement("h3"));
+    this.container = new BoardContainer(
+      configs,
+      (phase) => {
+        const bacon = document.createElement("span");
+        bacon.innerHTML = phase;
+        bacon.classList.add("red");
+        this.phase_announcement
+          .el()
+          .replaceChildren("Welcome! Behold the ", bacon, " Phase!");
+      },
+      (sauce) => {
+        if (sauce === null) {
+          this.error_announcement = null;
+        } else {
+          const pasta = document.createElement("p");
+          pasta.innerHTML = `ERROR: ${sauce}`;
+          pasta.classList.add("red");
+          const salted_pasta = new Component(pasta);
+          this.error_announcement = salted_pasta;
+        }
+      }
+    );
+    this.reset_button = new ResetButton(() => this.resetUniverse());
+
+    this.container.start();
   }
 
   set gen(obj) {
@@ -123,5 +142,19 @@ export default class BoardArea extends Component {
 
   get phase_announcement() {
     return this._phase_announcement[0];
+  }
+
+  set error_announcement(obj) {
+    setComponent(
+      super.el(),
+      () => this._error_announcement,
+      (val) => {
+        this._error_announcement = val;
+      }
+    )(obj);
+  }
+
+  get error_announcement() {
+    return this._error_announcement[0];
   }
 }

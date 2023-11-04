@@ -1,8 +1,51 @@
 body {
-  background: #eec3a4;
   display: block;
+  margin: 0;
+  background-color: rgb(193, 223, 233);
+  
+
+}
+
+
+#content {
+  background: #eec3a4;
   margin-right: 150px;
   margin-left: 90px;
+  padding: 3% 5% 5% 10%;
+}
+
+.topbar {
+  background-color:  rgb(34, 144, 181);
+  color: white;
+}
+.topbar img{
+  width: 3.2%;
+}
+
+.topbar-inner {
+  max-width: 1000px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: auto;
+}
+
+.login-form {
+  display: flex;
+}
+
+.submit-button {
+  margin-left: 10px;
+  align-self: flex-end;
+}
+
+.input-container + .input-container {
+  margin-left: 10px;
+}
+
+.input-container label {
+  display: block;
 }
 
 .red {

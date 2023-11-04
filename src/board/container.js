@@ -3,7 +3,7 @@ import { DropBoard } from "./game.js";
 
 const ROW_ID = "b-row";
 const CELL_ID = "b-cell";
-const INVALID_FLASH_TIME = 1000;
+const INVALID_FLASH_TIME = 2000;
 
 const paintFizz = (cell) => {
   cell.classList.add("fizz");
@@ -25,7 +25,7 @@ export class BoardContainer extends Component {
 
     const target = document.createElement("table");
     target.classList.add("board", "unselectable");
-    
+
     const body = document.createElement("tbody");
     target.appendChild(body);
 
@@ -56,12 +56,13 @@ export class BoardContainer extends Component {
     return target;
   }
 
-  constructor(configs, phaseChangeCallback) {
+  constructor(configs, phaseChangeCallback, invalidMessageCallback) {
     super(BoardContainer.generateBoard(configs));
 
     console.log("configs", configs);
 
     this.phaseChangeCallback = phaseChangeCallback;
+    this.invalidMessageCallback = invalidMessageCallback;
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
@@ -150,7 +151,10 @@ export class BoardContainer extends Component {
     return [x, y];
   }
 
-  set invalid_flash(cell) {
+  set invalid_flash(obj) {
+    const { cell, message } =
+      obj === null ? { cell: null, message: null } : obj;
+
     if (this._invalid_flash !== null) {
       // if selected cell is already invalid
       if (cell && this._invalid_flash.cell.id === cell.id) {
@@ -161,6 +165,7 @@ export class BoardContainer extends Component {
       clearTimeout(this._invalid_flash.timeout_id);
       this._invalid_flash.cell.classList.remove("invalid-flash");
       this._invalid_flash = null;
+      this.invalidMessageCallback(null);
     }
 
     if (cell === null) {
@@ -182,6 +187,7 @@ export class BoardContainer extends Component {
       cell: cell,
       timeout_id: timeout_id,
     };
+    this.invalidMessageCallback(message);
   }
 
   get invalid_flash() {
@@ -204,9 +210,7 @@ export class BoardContainer extends Component {
         // returns true if drop phase has finished, false if just succeeded
         results = this.board.playDropPhase(x, y);
       } catch (err) {
-        console.log(err);
-        this.invalid_flash = cell;
-        // TODO: the message should appear to the user as a notification
+        this.invalid_flash = {cell: cell, message: err.message};
         console.log(err.message);
         return;
       }
