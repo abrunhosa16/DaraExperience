@@ -1,4 +1,4 @@
-import { DropBoard } from "./board_game.js";
+import { DropBoard } from "./game.js";
 
 const ROW_ID = "b-row";
 const CELL_ID = "b-cell";
@@ -13,20 +13,65 @@ const paintBuzz = (cell) => {
 };
 
 export class BoardContainer {
-  constructor(board_el, configs) {
+  static generateBoard(configs) {
+    /* 
+    <table class="board unselectable">
+      <tbody> 
+        <Rows>
+      </tbody>
+    </table>
+    */
+
+    const target = document.createElement("table");
+    target.classList.add("board", "unselectable");
+    
+    const body = document.createElement("tbody");
+    target.appendChild(body);
+
+    const rows = [];
+    for (let i = 0; i < configs.height; i++) {
+      const row = document.createElement("tr");
+      row.id = `${ROW_ID}-${i}`;
+      const cells = [];
+
+      for (let j = 0; j < configs.width; j++) {
+        const cell = document.createElement("td");
+        cell.id = `${CELL_ID}-${i}-${j}`;
+        if ((i + j) % 2 === 0) {
+          paintFizz(cell);
+        } else {
+          paintBuzz(cell);
+        }
+
+        cells.push(cell);
+      }
+
+      row.replaceChildren(...cells);
+      rows.push(row);
+    }
+
+    body.replaceChildren(...rows);
+
+    return target;
+  }
+
+  constructor(configs) {
+    this.target = BoardContainer.generateBoard(configs);
+
     console.log("configs", configs);
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
-    this.board_el = board_el; // HTMLElement
     this.eventListeners = {};
 
     this.black_invalid = []; // [(number, number)]
     this.white_invalid = []; // [(number, number)]
 
-    BoardContainer.generateBoard(board_el, configs);
+    // this.board = new DropBoard(configs);
+  }
 
-    this.board = new DropBoard(configs);
+  el() {
+    return this.target;
   }
 
   initializeDropPhase() {
@@ -45,12 +90,12 @@ export class BoardContainer {
 
   addEventListener(name, type, func) {
     this.eventListeners[name] = [type, func];
-    this.board_el.addEventListener(type, func);
+    this.target.addEventListener(type, func);
   }
 
   removeEventListener(name) {
     const [type, func] = this.eventListeners[name];
-    this.board_el.removeEventListener(type, func);
+    this.target.removeEventListener(type, func);
     delete this.eventListeners[name];
   }
 
@@ -135,34 +180,6 @@ export class BoardContainer {
 
   get invalid_flash() {
     return this._invalid_flash ? this._invalid_flash.cell : null;
-  }
-
-  static generateBoard(board_el, configs) {
-    // expects board to be a table containing a tbody
-    const body = board_el.children[0];
-    const rows = [];
-    for (let i = 0; i < configs.height; i++) {
-      const row = document.createElement("tr");
-      row.id = `${ROW_ID}-${i}`;
-      const cells = [];
-
-      for (let j = 0; j < configs.width; j++) {
-        const cell = document.createElement("td");
-        cell.id = `${CELL_ID}-${i}-${j}`;
-        if ((i + j) % 2 === 0) {
-          paintFizz(cell);
-        } else {
-          paintBuzz(cell);
-        }
-
-        cells.push(cell);
-      }
-
-      row.replaceChildren(...cells);
-      rows.push(row);
-    }
-
-    body.replaceChildren(...rows);
   }
 
   getDropPhaseOnClick() {

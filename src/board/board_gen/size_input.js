@@ -1,6 +1,6 @@
 ("use strict");
 
-import { showElement, hideElement } from "../css_h.js";
+import { showElement, hideElement } from "../../css_h.js";
 
 export default class BoardSizeInput {
   static MIN_HEIGHT = 3;
