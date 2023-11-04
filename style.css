@@ -1,5 +1,5 @@
 body {
-  background-color: lightblue;
+  background: #eec3a4;
   display: block;
   margin-right: 150px;
   margin-left: 90px;
@@ -37,6 +37,7 @@ body {
 }
 
 p {
+  text-align: justify;
   font-family: arial;
   font-size: 20px;
 }
@@ -120,4 +121,25 @@ p {
 .board img {
   width: 80%;
   margin: 5%;
+}
+
+.imagem {
+  margin-left: 10px;
+  display: flex;
+  max-width: 50%; /* Limite a largura da imagem a 50% */
+  text-align: center; /* Alinhe a imagem à direita */
+}
+
+.tabuleiro {
+  max-width: 65%; /* Garanta que a imagem não seja maior que a largura da coluna */
+}
+
+.menu1 {
+  display: flex; /* Use flexbox para centralizar horizontalmente */
+}
+
+.texto {
+  flex: 1; /* Faça o texto ocupar metade do espaço disponível */
+  max-width: 50%; /* Limite a largura do texto a 50% *//* Adicione algum espaço interno ao texto */
+  box-sizing: border-box; /* Garanta que o espaço interno não afete a largura total */
 }
