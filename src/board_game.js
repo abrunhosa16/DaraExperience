@@ -20,6 +20,8 @@ class Board {
 
 export class MoveBoard extends Board {
   constructor(drop_board) {
+    super();
+
     this.board = drop_board.board;
     this.black_play_count = drop_board.black_total_pieces;
     this.white_play_count = drop_board.white_total_pieces;
@@ -134,12 +136,13 @@ export class MoveBoard extends Board {
 
 export class DropBoard extends Board {
   constructor(configs) {
+    super();
     this.black_drop_count = configs.black_count;
     this.white_drop_count = configs.white_count;
     this.black_total_pieces = configs.black_count;
     this.white_total_pieces = configs.white_count;
-    this.black_turn = Board.getStartingTurnFromGenData(configs);
-    this.board = Board.createBoard(configs.width, configs.height);
+    this.black_turn = DropBoard.getStartingTurnFromGenData(configs);
+    this.board = DropBoard.createBoard(configs.width, configs.height);
   }
 
   static getStartingTurnFromGenData(gen_data) {
