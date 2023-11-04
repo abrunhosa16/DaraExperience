@@ -78,7 +78,7 @@ export default class BoardGen {
     );
 
     const submit_button = document.createElement("button");
-    submit_button.innerHTML = "Let's do this";
+    submit_button.innerHTML = "I am ready to cause d̷̹͍̼̺͒ ̸̥̫̟̯̈́̂̎̀̌̈́͂͠͝ȉ̵͎̻̹̹̘̱̺̈̊ ̵̜̳͍̀̔̌͑͌̌͆͠s̸̢͇̪͇̼̜͙̳̦͎̓͆̂̈́ ̶̡̻͙̭̻̜̔͂t̴̤̮̩̭͕̞͚̬̺͂͜͜ ̴̢̘͍̮̤̔̆̿̽̆͛̅ù̶̡͕̬̭̞͗̀̅̕ ̸̡̛̛̦͌͛̆͠ͅr̴͇͝ ̷̦͖̩͓̻̳̬̭̣̆͑̈́͗̚b̴̺͘ ̶̤̄̽͗͠͝͠a̷̢͇͚̬̝̋̆̈̈́̒ ̴̡͒̿͗̓̒͆̀̀́͘͠n̷̡̨̛̟̞͔͔͓̮͓̹͆̃͌̂̌̓͘͝͝ ̸̰̟̥̩͈͍͙͓̱̞̬̿c̶͈̎̃̎̇ ̶̗̣͍̖̯́e̸͈̙͎̦̹̎̂͠ ̸̨̞̱̗̀̑̚̚s̵̞̙͋̍͂̿̎";
 
     const target = document.createElement("div");
     target.classList.add("form");
