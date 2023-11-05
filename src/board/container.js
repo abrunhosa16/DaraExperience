@@ -14,7 +14,7 @@ const paintBuzz = (cell) => {
 };
 
 export class BoardContainer extends Component {
-  static generateBoard(configs) {
+  static generateBoard(config) {
     /* 
     <table class="board unselectable">
       <tbody> 
@@ -31,12 +31,12 @@ export class BoardContainer extends Component {
 
     let cell_matrix = [];
     const rows = [];
-    for (let i = 0; i < configs.height; i++) {
+    for (let i = 0; i < config.height; i++) {
       const row = document.createElement("tr");
       row.id = `${ROW_ID}-${i}`;
       const cells = [];
 
-      for (let j = 0; j < configs.width; j++) {
+      for (let j = 0; j < config.width; j++) {
         const cell = document.createElement("td");
         cell.id = `${CELL_ID}-${i}-${j}`;
         if ((i + j) % 2 === 0) {
@@ -66,20 +66,22 @@ export class BoardContainer extends Component {
 
     body.replaceChildren(...rows);
 
-    return {target: target, cells: cell_matrix};
+    return { target: target, cells: cell_matrix };
   }
 
   // callbacks
   // phaseChange: (phase: string) => void;
   // invalidMessage: (message: string) => void;
   // turn: (turn: string) => void;
-  constructor(configs, callbacks) {
-    const {target, cells} = BoardContainer.generateBoard(configs);
+  constructor(config, callbacks) {
+    const { target, cells } = BoardContainer.generateBoard(config);
     super(target);
 
     this.cells = cells;
 
-    console.log("configs", configs);
+    console.log("config", config);
+
+    this.config = config;
 
     this.callbacks = callbacks;
 
@@ -90,13 +92,30 @@ export class BoardContainer extends Component {
     this.black_invalid = []; // [(number, number)]
     this.white_invalid = []; // [(number, number)]
 
-    this.board = new DropBoard(configs);
+    this.board = new DropBoard(config);
 
-    this.initializeDropPhase(configs);
+    const images = this.createImages();
+    this.black_image = images[0];
+    this.white_image = images[1];
+
+    this.initializeDropPhase();
   }
 
   static isBoardCell(cell) {
     return cell.id.startsWith(CELL_ID);
+  }
+
+  createImages() {
+    const black = document.createElement("img");
+    black.src = `./playable_pieces/${this.config.black_piece_type}/black.png`;
+    const white = document.createElement("img");
+    white.src = `./playable_pieces/${this.config.white_piece_type}/white.png`;
+
+    return [black, white];
+  }
+
+  getImage(black_turn) {
+    return (black_turn ? this.black_image : this.white_image).cloneNode();
   }
 
   getBoardCell(x, y) {
@@ -111,23 +130,17 @@ export class BoardContainer extends Component {
     return [x, y];
   }
 
-  initializeDropPhase(configs) {
+  initializeDropPhase() {
     this.callbacks.phaseChange("Drop");
     this.callbacks.turn(this.board.getCurrentTurn());
 
-    if (configs.skip_drop_phase) {
+    if (this.config.skip_drop_phase) {
       while (true) {
         const cur_turn_black = this.board.isTurnBlack();
         const { phase_ended, x, y } = this.board.playRandomly();
 
         const cell = this.getBoardCell(x, y);
-        const image = document.createElement("img");
-        if (cur_turn_black) {
-          image.src = "./iconesDara/coin/black_coin.png";
-        } else {
-          image.src = "./iconesDara/coin/white_coin.png";
-        }
-        cell.childNodes[0].appendChild(image);
+        cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
 
         if (phase_ended) {
           this.initializeMovePhase();
@@ -193,13 +206,7 @@ export class BoardContainer extends Component {
       cell.classList.add("hovered-invalid");
     }
 
-    const image = document.createElement("img");
-    if (this.board.isTurnBlack()) {
-      image.src = "./iconesDara/coin/black_coin.png";
-    } else {
-      image.src = "./iconesDara/coin/white_coin.png";
-    }
-    cell.childNodes[1].appendChild(image);
+    cell.childNodes[1].appendChild(this.getImage(this.board.isTurnBlack()));
 
     this._hovered = cell;
   }
@@ -277,19 +284,13 @@ export class BoardContainer extends Component {
 
       // remove classes
       invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
+        this.getBoardCell(x_c, y_c).classList.remove("invalid");
       });
       other_invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
+        this.getBoardCell(x_c, y_c).classList.remove("invalid-other");
       });
 
-      const image = document.createElement("img");
-      if (cur_turn_black) {
-        image.src = "./iconesDara/coin/black_coin.png";
-      } else {
-        image.src = "./iconesDara/coin/white_coin.png";
-      }
-      cell.childNodes[0].appendChild(image);
+      cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
 
       this.callbacks.turn(this.board.getCurrentTurn());
 
@@ -313,10 +314,10 @@ export class BoardContainer extends Component {
 
       // add classes back (this time reversed)
       invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid-other");
+        this.getBoardCell(x_c, y_c).classList.add("invalid-other");
       });
       other_invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
+        this.getBoardCell(x_c, y_c).classList.add("invalid");
       });
     };
   }
