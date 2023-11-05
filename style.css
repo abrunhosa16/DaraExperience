@@ -1,23 +1,21 @@
 body {
   display: block;
   margin: 0;
-  background-color: rgb(193, 223, 233);
-  
+  background-color: #eec3a4;
 
 }
 
-
 #content {
-  background-color: lightblue;
   margin-right: 150px;
   margin-left: 90px;
-  padding: 3% 5% 5% 10%;
+  padding: 1.5% 5% 5% 10%;
 }
 
 .topbar {
-  background-color:  rgb(34, 144, 181);
+  background-color:  #c67439;
   color: white;
 }
+
 .topbar img{
   width: 3.2%;
 }
@@ -52,6 +50,15 @@ body {
   color: red;
 }
 
+.linha {
+  height: 10px;
+  border-bottom: 2px solid black;
+}
+
+.margem {
+  margin: 50px; 
+}
+
 #title {
   text-align: center;
   font-size: 3vw; /* make our h1 tag larger */
@@ -80,10 +87,34 @@ body {
 }
 
 p {
+  text-align: justify;
   font-family: arial;
   font-size: 20px;
 }
 
 .hidden {
   display: none;
+}
+
+.imagem {
+  margin-left: 10px;
+  display: flex;
+  max-width: 50%; /* Limite a largura da imagem a 50% */
+  text-align: center; /* Alinhe a imagem à direita */
+}
+
+.tabuleiro {
+  max-width: 20%; /* Garanta que a imagem não seja maior que a largura da coluna */
+}
+
+.wrapper {
+  display: grid;
+  flex-direction: column;
+
+}
+
+.texto {
+  flex: 1; /* Faça o texto ocupar metade do espaço disponível */
+  max-width: 50%; /* Limite a largura do texto a 50% *//* Adicione algum espaço interno ao texto */
+  box-sizing: border-box; /* Garanta que o espaço interno não afete a largura total */
 }
