@@ -13,12 +13,31 @@ class Board {
     return rows;
   }
 
-  static create(width, height) {
-    return new Board(Board.createBoard(width, height));
+  static getStartingTurn(starting_player) {
+    // returns true if black or false if white
+    switch (starting_player) {
+      case "black":
+        return true;
+      case "white":
+        return false;
+      case "random":
+        return Math.random() > 0.5;
+      default:
+        throw new Error("Starting Player Data is invalid");
+    }
   }
 
-  constructor(board) {
+  constructor(board, black_turn) {
+    console.log("yay", board, black_turn);
     this.board = board;
+    this.black_turn = black_turn;
+  }
+
+  static fromConfig(config) {
+    return [
+      Board.createBoard(config.width, config.height),
+      Board.getStartingTurn(config.starting_player),
+    ];
   }
 
   get(x, y) {
@@ -39,6 +58,27 @@ class Board {
 
   height() {
     return this.board.length;
+  }
+
+  isTurnBlack() {
+    return this.black_turn;
+  }
+
+  isTurnWhite() {
+    return !this.black_turn;
+  }
+
+  getCurrentTurn() {
+    return this.black_turn ? "black" : "white";
+  }
+
+  // returns true if the piece is equal to the current turn
+  ally(x, y) {
+    return this.get(x, y) === this.black_turn;
+  }
+
+  enemy(x, y) {
+    return this.get(x, y) !== this.black_turn;
   }
 }
 
@@ -157,37 +197,31 @@ class Board {
 // }
 
 export class DropBoard extends Board {
-  constructor(configs) {
-    // TODO: use Board.create(width, height) instead
-    super(Board.createBoard(configs.width, configs.height));
+  constructor(config) {
+    super(...Board.fromConfig(config));
 
-    this.black_drop_count = configs.black_count;
-    this.white_drop_count = configs.white_count;
-    this.black_turn = DropBoard.getStartingTurnFromGenData(configs);
+    this.black_drop_count = config.black_count;
+    this.white_drop_count = config.white_count;
   }
 
-  static getStartingTurnFromGenData(gen_data) {
-    // returns true if black or false if white
-    if (gen_data.starting_player === "black") {
-      return true;
+  validPlay(x, y) {
+    // gets somewhat repeated in playDropPhase
+    if (!super.isNull(x, y)) {
+      return false
     }
-    if (gen_data.starting_player === "white") {
-      return false;
+
+    const ver_size =  this.countUp(x, y) + this.countDown(x, y) + 1;
+    const hor_size = this.countLeft(x, y) + this.countRight(x, y) + 1;
+    if (ver_size > 3 || hor_size > 3) {
+      return false
     }
-    if (gen_data.starting_player === "random") {
-      return Math.random() > 0.5;
-    }
-    throw new Error("Starting Player Data is invalid");
+
+    return true;
   }
 
   playDropPhase(x, y) {
-    // Should play as current players's turn and return if the game drop phase has ended
-    // ----------------
-    // Returns [<true if black's turn, false otherwise>, drop_phase_ended]
-    // Throws an error if the operation is invalid (with a message)
-
-    if (this.get(x, y) !== null) {
-      throw new Error("This cell is already occupied");
+    if (!super.isNull(x, y)) {
+      throw new Error("This cell is not empty!");
     }
 
     const up = this.countUp(x, y);
@@ -198,11 +232,11 @@ export class DropBoard extends Board {
     const hor_size = left + right + 1;
 
     if (ver_size > 3 || hor_size > 3) {
-      throw new Error("Not possible more than 3 in line");
+      throw new Error("3 in a line are just not possible");
     }
 
     const cur_black_turn = this.black_turn;
-    this.set(x, y, cur_black_turn);
+    super.set(x, y, cur_black_turn);
     if (cur_black_turn) {
       this.black_drop_count -= 1;
     } else {
@@ -212,7 +246,7 @@ export class DropBoard extends Board {
     let new_invalid = [];
     if (
       y > up && // inside bounds
-      this.isNull(x, y - up - 1) && // it's empty
+      super.isNull(x, y - up - 1) && // it's empty
       (ver_size == 3 || // the size is already 3
         this.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -220,8 +254,8 @@ export class DropBoard extends Board {
     }
 
     if (
-      y + down + 1 < this.height() && // inside bounds
-      this.isNull(x, y + down + 1) && // it's empty
+      y + down + 1 < super.height() && // inside bounds
+      super.isNull(x, y + down + 1) && // it's empty
       (ver_size == 3 || // the size is already 3
         this.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -230,7 +264,7 @@ export class DropBoard extends Board {
 
     if (
       x > left && // inside bounds
-      this.isNull(x - left - 1, y) && // it's empty
+      super.isNull(x - left - 1, y) && // it's empty
       (hor_size == 3 || // the size is already 3
         this.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
@@ -238,15 +272,15 @@ export class DropBoard extends Board {
     }
 
     if (
-      x + right + 1 < this.width() && // inside bounds
-      this.isNull(x + right + 1, y) && // it's empty
+      x + right + 1 < super.width() && // inside bounds
+      super.isNull(x + right + 1, y) && // it's empty
       (hor_size == 3 || // the size is already 3
         this.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x + right + 1, y]);
     }
 
-    this.black_turn = !cur_black_turn;
+    super.black_turn = !cur_black_turn;
 
     return {
       phase_ended: this.black_drop_count + this.white_drop_count === 0,
@@ -257,7 +291,7 @@ export class DropBoard extends Board {
   countUp(x, y) {
     let count = 0;
     for (let y_c = y - 1; y_c >= 0; y_c--) {
-      if (this.get(x, y_c) === this.black_turn) {
+      if (super.ally(x, y_c)) {
         count += 1;
       } else {
         break;
@@ -269,8 +303,8 @@ export class DropBoard extends Board {
 
   countDown(x, y) {
     let count = 0;
-    for (let y_c = y + 1; y_c < this.height(); y_c++) {
-      if (this.get(x, y_c) === this.black_turn) {
+    for (let y_c = y + 1; y_c < super.height(); y_c++) {
+      if (super.ally(x, y_c)) {
         count += 1;
       } else {
         break;
@@ -283,7 +317,7 @@ export class DropBoard extends Board {
   countLeft(x, y) {
     let count = 0;
     for (let x_c = x - 1; x_c >= 0; x_c--) {
-      if (this.get(x_c, y) === this.black_turn) {
+      if (super.ally(x_c, y)) {
         count += 1;
       } else {
         break;
@@ -295,8 +329,8 @@ export class DropBoard extends Board {
 
   countRight(x, y) {
     let count = 0;
-    for (let x_c = x + 1; x_c < this.width(); x_c++) {
-      if (this.get(x_c, y) === this.black_turn) {
+    for (let x_c = x + 1; x_c < super.width(); x_c++) {
+      if (super.ally(x_c, y)) {
         count += 1;
       } else {
         break;

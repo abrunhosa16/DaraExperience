@@ -9,6 +9,7 @@ export default class BoardArea extends ComponentHolder {
     super(
       "gen",
       "phase_announcement",
+      "current_turn",
       "container",
       "error_announcement",
       "reset_button"
@@ -26,6 +27,7 @@ export default class BoardArea extends ComponentHolder {
     );
     super.delete(
       "phase_announcement",
+      "current_turn",
       "container",
       "error_announcement",
       "reset_button"
@@ -39,11 +41,11 @@ export default class BoardArea extends ComponentHolder {
       "phase_announcement",
       new Component(document.createElement("h3"))
     );
+    super.set("current_turn", new Component(document.createElement("p")));
     super.set(
       "container",
-      new BoardContainer(
-        configs,
-        (phase) => {
+      new BoardContainer(configs, {
+        phaseChange: (phase) => {
           const bacon = document.createElement("span");
           bacon.innerHTML = phase;
           bacon.classList.add("red");
@@ -52,7 +54,7 @@ export default class BoardArea extends ComponentHolder {
             .el()
             .replaceChildren("Welcome! Behold the ", bacon, " Phase!");
         },
-        (sauce) => {
+        invalidMessage: (sauce) => {
           if (sauce === null) {
             super.delete("error_announcement");
           } else {
@@ -62,8 +64,17 @@ export default class BoardArea extends ComponentHolder {
             const salted_pasta = new Component(pasta);
             super.set("error_announcement", salted_pasta);
           }
-        }
-      )
+        },
+        turn: (turn) => {
+          const spin = document.createElement("span");
+          spin.innerHTML = turn;
+          spin.classList.add("red");
+          super
+            .get("current_turn")
+            .el()
+            .replaceChildren("Current turn: ", spin);
+        },
+      })
     );
     super.set("reset_button", new ResetButton(() => this.resetUniverse()));
 
