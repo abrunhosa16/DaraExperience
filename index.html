@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="" />
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="tab.css" />
-
+    <link rel="stylesheet" href="button_styles.css" />
   </head>
 
   <body>
@@ -16,66 +15,66 @@
       <div class="titulo">
         <h1 id="title">Dara game night experience</h1>
       </div>
+      <div class="margem linha"></div>
+
+      <h2>About Dara</h2>
+      <div class="parent">
+        <div class="child">
+          "Dara" is an ancient strategy game that originated in West Africa long
+          before the proliferation of modern board games. This game, often
+          referred to as "Dara" or "Draughts," stands as one of the most notable
+          examples of how games can transcend borders and cultures, carrying
+          with them a rich historical heritage and intellectual challenges. The
+          history of "Dara" dates back centuries, and its strategic complexity
+          continues to captivate players of all ages.
+        </div>
+        <img src="tabuleiro.png" class="tabuleiro" />
+      </div>
+      <div class="margem linha"></div>
       <div class="margem"></div>
 
-      <div class="linha"></div>
-          <h2>About Dara</h2>
-              <div class="parent">
-                  <div class="child">"Dara" is an ancient strategy game that originated 
-                    in West Africa long before the proliferation of modern board games.
-                      This game, often referred to as "Dara" or "Draughts," stands as one
-                      of the most notable examples of how games can transcend borders and
-                        cultures, carrying with them a rich historical heritage and intellectual 
-                        challenges. The history of "Dara" dates back centuries, and its 
-                        strategic complexity continues to captivate players of all ages.</div>  
-                  <img src="tabuleiro.png" class="tabuleiro">
-                </div>
-          <div class="margem"></div>
-        <div class="linha"></div>
-        <div class="margem"></div>
-        <button id="openLogin" class="start-button">Start playing</button>
-        <div id="login" class="login">
-            <div class="login-content">
-                <form>
-                    <div class="TitForms">Login</div>
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required>
+      <button id="openLogin" class="start-button">Start playing</button>
+      <div id="login" class="login">
+        <div class="login-content">
+          <form>
+            <div class="TitForms">Login</div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required />
 
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required />
 
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required />
 
-                    <a href="#"> Sign up, if you dont have an account  </a></p>
+            <a href="#"> Sign up, if you dont have an account </a>
 
-                    <button type="submit">Log in</button>
-                </form>
-            </div>
+            <button type="submit">Log in</button>
+          </form>
         </div>
+      </div>
 
-        <button class="dropdown">
-          <span>Classicações</span>
-          <div class="dropdown-content">
-            <table id="classications">
-              <tr>
-                <td>Players</td>
-                <td>Vitórias</td>
-              </tr>
-              <tr>
-                <td>Human</td>
-                <td id="human"><span>0</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Computer</td>
-                <td id="robot">        
-                  <span>0</span>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </button>
+      <button class="dropdown">
+        <span>Classifications</span>
+        <div class="dropdown-content">
+          <table id="classications">
+            <tr>
+              <td>Players</td>
+              <td>Vitórias</td>
+            </tr>
+            <tr>
+              <td>Human</td>
+              <td id="human"><span>0</span></td>
+            </tr>
+            <tr>
+              <td>Computer</td>
+              <td id="robot">
+                <span>0</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </button>
 
       <div>
         <a href="#" class="start-button">Start Playing</a>
@@ -106,23 +105,23 @@
       <div id="debug"></div>
 
       <button id="reset" class="hidden">reset</button>
-  </div>
+    </div>
 
     <footer>
-      <div class="margem"> </div>
-      <div class="linha"></div>
+      <div class="margem linha"></div>
       <h2>About us and the web page</h2>
-      <p>This web page was designed for the practical evaluation of the Web
+      <p>
+        This web page was designed for the practical evaluation of the Web
         Technologies course (CC3008), with the current instructor being José
         Paulo Leal, during the academic year 2023/24.The creators of this page
         are students Beatriz Marques (202109552), Vínicius Abrunhosa
         (202106889), and Zakhar Starinski (202105229), who are enrolled in the
         Mathematics and Computer Science programs at the Faculty of Sciences,
-        University of Porto.</p>
-    </footer> 
+        University of Porto.
+      </p>
+    </footer>
 
     <!-- ISTO TEM QUE FICAR EM ÚLTIMO LUGAR -->
     <script type="module" src="/src/index.js"></script>
-
   </body>
 </html>
