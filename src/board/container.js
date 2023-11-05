@@ -29,6 +29,7 @@ export class BoardContainer extends Component {
     const body = document.createElement("tbody");
     target.appendChild(body);
 
+    let cell_matrix = [];
     const rows = [];
     for (let i = 0; i < configs.height; i++) {
       const row = document.createElement("tr");
@@ -58,13 +59,14 @@ export class BoardContainer extends Component {
         cells.push(cell);
       }
 
+      cell_matrix.push(cells);
       row.replaceChildren(...cells);
       rows.push(row);
     }
 
     body.replaceChildren(...rows);
 
-    return target;
+    return {target: target, cells: cell_matrix};
   }
 
   // callbacks
@@ -72,7 +74,10 @@ export class BoardContainer extends Component {
   // invalidMessage: (message: string) => void;
   // turn: (turn: string) => void;
   constructor(configs, callbacks) {
-    super(BoardContainer.generateBoard(configs));
+    const {target, cells} = BoardContainer.generateBoard(configs);
+    super(target);
+
+    this.cells = cells;
 
     console.log("configs", configs);
 
@@ -86,28 +91,66 @@ export class BoardContainer extends Component {
     this.white_invalid = []; // [(number, number)]
 
     this.board = new DropBoard(configs);
+
+    this.initializeDropPhase(configs);
   }
 
-  start() {
-    this.initializeDropPhase();
+  static isBoardCell(cell) {
+    return cell.id.startsWith(CELL_ID);
   }
 
-  initializeDropPhase() {
+  getBoardCell(x, y) {
+    return this.cells[y][x];
+  }
+
+  static getCoorsFromId(id) {
+    const sliced = id.slice(CELL_ID.length + 1);
+    const sep_i = sliced.indexOf("-");
+    const y = parseInt(sliced.slice(0, sep_i));
+    const x = parseInt(sliced.slice(sep_i + 1));
+    return [x, y];
+  }
+
+  initializeDropPhase(configs) {
     this.callbacks.phaseChange("Drop");
     this.callbacks.turn(this.board.getCurrentTurn());
 
-    this.addEventListener(
-      "drop_phase_on_click",
-      "click",
-      this.getDropPhaseOnClick()
-    );
-    this.addEventListener("on_mouse_over", "mouseover", this.getOnMouseOver());
+    if (configs.skip_drop_phase) {
+      while (true) {
+        const cur_turn_black = this.board.isTurnBlack();
+        const { phase_ended, x, y } = this.board.playRandomly();
+
+        const cell = this.getBoardCell(x, y);
+        const image = document.createElement("img");
+        if (cur_turn_black) {
+          image.src = "./iconesDara/coin/black_coin.png";
+        } else {
+          image.src = "./iconesDara/coin/white_coin.png";
+        }
+        cell.childNodes[0].appendChild(image);
+
+        if (phase_ended) {
+          this.initializeMovePhase();
+          console.log(this.board);
+          return;
+        }
+      }
+    } else {
+      this.addEventListener(
+        "drop_phase_on_click",
+        "click",
+        this.getDropPhaseOnClick()
+      );
+      this.addEventListener(
+        "on_mouse_over",
+        "mouseover",
+        this.getOnMouseOver()
+      );
+    }
   }
 
   initializeMovePhase() {
     this.callbacks.phaseChange("Move");
-
-    this.removeEventListener("drop_phase_on_click");
   }
 
   addEventListener(name, type, func) {
@@ -135,7 +178,7 @@ export class BoardContainer extends Component {
       }
       this._hovered.childNodes[1].innerHTML = "";
       this._hovered.classList.remove("hovered-valid");
-      this._hovered.classList.remove("hovered-invalid")
+      this._hovered.classList.remove("hovered-invalid");
     }
 
     // test if cell is null or cannot be set
@@ -163,22 +206,6 @@ export class BoardContainer extends Component {
 
   get hovered() {
     return this._hovered;
-  }
-
-  static isBoardCell(cell) {
-    return cell.id.startsWith(CELL_ID);
-  }
-
-  static getBoardCell(x, y) {
-    return document.getElementById(`${CELL_ID}-${y}-${x}`);
-  }
-
-  static getCoorsFromId(id) {
-    const sliced = id.slice(CELL_ID.length + 1);
-    const sep_i = sliced.indexOf("-");
-    const y = parseInt(sliced.slice(0, sep_i));
-    const x = parseInt(sliced.slice(sep_i + 1));
-    return [x, y];
   }
 
   set invalid_flash(obj) {
@@ -233,7 +260,7 @@ export class BoardContainer extends Component {
       let results;
       try {
         // returns true if drop phase has finished, false if just succeeded
-        results = this.board.playDropPhase(x, y);
+        results = this.board.play(x, y);
       } catch (err) {
         console.log(err);
         this.invalid_flash = { cell: cell, message: err.message };
@@ -256,19 +283,20 @@ export class BoardContainer extends Component {
         BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
       });
 
+      const image = document.createElement("img");
+      if (cur_turn_black) {
+        image.src = "./iconesDara/coin/black_coin.png";
+      } else {
+        image.src = "./iconesDara/coin/white_coin.png";
+      }
+      cell.childNodes[0].appendChild(image);
+
       this.callbacks.turn(this.board.getCurrentTurn());
 
       if (results.phase_ended) {
+        this.removeEventListener("drop_phase_on_click");
         this.initializeMovePhase();
         return;
-      } else {
-        const image = document.createElement("img");
-        if (cur_turn_black) {
-          image.src = "./iconesDara/coin/black_coin.png";
-        } else {
-          image.src = "./iconesDara/coin/white_coin.png";
-        }
-        cell.childNodes[0].appendChild(image);
       }
 
       // test if the current move was played on other invalid

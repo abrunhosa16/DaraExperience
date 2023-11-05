@@ -1,6 +1,7 @@
 import BoardSizeInput from "./size_input.js";
 import MultiButtonSelection from "./multi_button_selection.js";
 import Component from "../../component.js";
+import BoardToggle from "./toggle.js";
 
 ("use strict");
 
@@ -78,6 +79,8 @@ export default class BoardGen extends Component {
       "random"
     );
 
+    const skip_drop_phase = new BoardToggle("Skip drop phase (places all pieces randomly): ", false);
+
     const submit_button = document.createElement("button");
     submit_button.innerHTML = "I am ready to cause d̷̹͍̼̺͒ ̸̥̫̟̯̈́̂̎̀̌̈́͂͠͝ȉ̵͎̻̹̹̘̱̺̈̊ ̵̜̳͍̀̔̌͑͌̌͆͠s̸̢͇̪͇̼̜͙̳̦͎̓͆̂̈́ ̶̡̻͙̭̻̜̔͂t̴̤̮̩̭͕̞͚̬̺͂͜͜ ̴̢̘͍̮̤̔̆̿̽̆͛̅ù̶̡͕̬̭̞͗̀̅̕ ̸̡̛̛̦͌͛̆͠ͅr̴͇͝ ̷̦͖̩͓̻̳̬̭̣̆͑̈́͗̚b̴̺͘ ̶̤̄̽͗͠͝͠a̷̢͇͚̬̝̋̆̈̈́̒ ̴̡͒̿͗̓̒͆̀̀́͘͠n̷̡̨̛̟̞͔͔͓̮͓̹͆̃͌̂̌̓͘͝͝ ̸̰̟̥̩͈͍͙͓̱̞̬̿c̶͈̎̃̎̇ ̶̗̣͍̖̯́e̸͈̙͎̦̹̎̂͠ ̸̨̞̱̗̀̑̚̚s̵̞̙͋̍͂̿̎";
 
@@ -89,6 +92,7 @@ export default class BoardGen extends Component {
       player1.el(),
       player2.el(),
       starting_player.el(),
+      skip_drop_phase.el(),
       submit_button
     );
 
@@ -98,18 +102,20 @@ export default class BoardGen extends Component {
       player1: player1,
       player2: player2,
       starting_player: starting_player,
+      skip_drop_phase: skip_drop_phase,
       submit: submit_button,
     };
   }
 
   constructor(submit_callback) {
-    const { target, submit, size_input, player1, player2, starting_player } =
+    const { target, submit, size_input, player1, player2, starting_player, skip_drop_phase } =
       BoardGen.createElements();
     super(target);
     this.size_input = size_input;
     this.player1 = player1;
     this.player2 = player2;
     this.starting_player = starting_player;
+    this.skip_drop_phase = skip_drop_phase;
     this.submit = submit;
 
     this.size_input.set_error_update_callback((err_count) => {
@@ -125,6 +131,7 @@ export default class BoardGen extends Component {
         white_player: this.player1.selected,
         black_player: this.player2.selected,
         starting_player: this.starting_player.selected,
+        skip_drop_phase: this.skip_drop_phase.toggled,
         white_count: 12,
         black_count: 12,
       });
