@@ -221,7 +221,6 @@ export class BoardContainer extends Component {
 
   getDropPhaseOnClick() {
     return (e) => {
-      console.log(e);
       const cell = e.target.parentElement;
       if (!BoardContainer.isBoardCell(cell)) {
         return;
