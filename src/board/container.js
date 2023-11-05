@@ -44,6 +44,17 @@ export class BoardContainer extends Component {
           paintBuzz(cell);
         }
 
+        const content = document.createElement("div");
+        content.classList.add("board-content");
+
+        const hoverblock = document.createElement("div");
+        hoverblock.classList.add("board-hoverblock");
+
+        const selectable = document.createElement("div");
+        selectable.classList.add("board-selectable");
+
+        cell.append(content, hoverblock, selectable);
+
         cells.push(cell);
       }
 
@@ -56,13 +67,16 @@ export class BoardContainer extends Component {
     return target;
   }
 
-  constructor(configs, phaseChangeCallback, invalidMessageCallback) {
+  // callbacks
+  // phaseChange: (phase: string) => void;
+  // invalidMessage: (message: string) => void;
+  // turn: (turn: string) => void;
+  constructor(configs, callbacks) {
     super(BoardContainer.generateBoard(configs));
 
     console.log("configs", configs);
 
-    this.phaseChangeCallback = phaseChangeCallback;
-    this.invalidMessageCallback = invalidMessageCallback;
+    this.callbacks = callbacks;
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
@@ -79,7 +93,8 @@ export class BoardContainer extends Component {
   }
 
   initializeDropPhase() {
-    this.phaseChangeCallback("Drop");
+    this.callbacks.phaseChange("Drop");
+    this.callbacks.turn(this.board.getCurrentTurn());
 
     this.addEventListener(
       "drop_phase_on_click",
@@ -90,7 +105,7 @@ export class BoardContainer extends Component {
   }
 
   initializeMovePhase() {
-    this.phaseChangeCallback("Move");
+    this.callbacks.phaseChange("Move");
 
     this.removeEventListener("drop_phase_on_click");
   }
@@ -118,7 +133,9 @@ export class BoardContainer extends Component {
       if (cell !== null && this._hovered.id === cell.id) {
         return;
       }
-      this._hovered.classList.remove("hovered");
+      this._hovered.childNodes[1].innerHTML = "";
+      this._hovered.classList.remove("hovered-valid");
+      this._hovered.classList.remove("hovered-invalid")
     }
 
     // test if cell is null or cannot be set
@@ -127,7 +144,20 @@ export class BoardContainer extends Component {
       return;
     }
 
-    cell.classList.add("hovered");
+    if (this.board.validPlay(...BoardContainer.getCoorsFromId(cell.id))) {
+      cell.classList.add("hovered-valid");
+    } else {
+      cell.classList.add("hovered-invalid");
+    }
+
+    const image = document.createElement("img");
+    if (this.board.isTurnBlack()) {
+      image.src = "./iconesDara/coin/black_coin.png";
+    } else {
+      image.src = "./iconesDara/coin/white_coin.png";
+    }
+    cell.childNodes[1].appendChild(image);
+
     this._hovered = cell;
   }
 
@@ -165,16 +195,11 @@ export class BoardContainer extends Component {
       clearTimeout(this._invalid_flash.timeout_id);
       this._invalid_flash.cell.classList.remove("invalid-flash");
       this._invalid_flash = null;
-      this.invalidMessageCallback(null);
+      this.callbacks.invalidMessage(null);
     }
 
     if (cell === null) {
       return;
-    }
-
-    // remove hovered status
-    if (this.hovered && this.hovered.id === cell.id) {
-      this.hovered = null;
     }
 
     cell.classList.add("invalid-flash");
@@ -187,7 +212,7 @@ export class BoardContainer extends Component {
       cell: cell,
       timeout_id: timeout_id,
     };
-    this.invalidMessageCallback(message);
+    this.callbacks.invalidMessage(message);
   }
 
   get invalid_flash() {
@@ -196,24 +221,28 @@ export class BoardContainer extends Component {
 
   getDropPhaseOnClick() {
     return (e) => {
-      const cell = e.target;
+      const cell = e.target.parentElement;
       if (!BoardContainer.isBoardCell(cell)) {
         return;
       }
       this.invalid_flash = null;
 
-      const [x, y] = BoardContainer.getCoorsFromId(e.target.id);
+      const [x, y] = BoardContainer.getCoorsFromId(cell.id);
 
-      const cur_turn_black = this.board.black_turn;
+      const cur_turn_black = this.board.isTurnBlack();
       let results;
       try {
         // returns true if drop phase has finished, false if just succeeded
         results = this.board.playDropPhase(x, y);
       } catch (err) {
-        this.invalid_flash = {cell: cell, message: err.message};
+        console.log(err);
+        this.invalid_flash = { cell: cell, message: err.message };
         console.log(err.message);
         return;
       }
+
+      this.invalid_flash = null;
+      this.hovered = null;
 
       const [invalid, other_invalid] = cur_turn_black
         ? [this.black_invalid, this.white_invalid]
@@ -227,6 +256,8 @@ export class BoardContainer extends Component {
         BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
       });
 
+      this.callbacks.turn(this.board.getCurrentTurn());
+
       if (results.phase_ended) {
         this.initializeMovePhase();
         return;
@@ -237,16 +268,7 @@ export class BoardContainer extends Component {
         } else {
           image.src = "./iconesDara/coin/white_coin.png";
         }
-        cell.appendChild(image);
-        cell.classList.add("filled");
-      }
-
-      if (results.phase_ended) {
-        this.initializeMovePhase();
-        return;
-      } else {
-        cell.innerHTML = cur_turn_black ? "B" : "W";
-        cell.classList.add("filled");
+        cell.childNodes[0].appendChild(image);
       }
 
       // test if the current move was played on other invalid
@@ -273,7 +295,7 @@ export class BoardContainer extends Component {
 
   getOnMouseOver() {
     return (e) => {
-      const cell = e.target;
+      const cell = e.target.parentElement;
       if (!BoardContainer.isBoardCell(cell)) {
         return;
       }
