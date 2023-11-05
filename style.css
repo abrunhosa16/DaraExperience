@@ -2,40 +2,9 @@ body {
   display: block;
   margin: 0;
   background-color: #eec3a4;
-
-}
-
-#content {
-  margin-right: 150px;
-  margin-left: 90px;
-  padding: 1.5% 5% 5% 10%;
-}
-
-.topbar {
-  background-color:  #c67439;
-  color: white;
-}
-
-.topbar img{
-  width: 3.2%;
-}
-
-.topbar-inner {
-  max-width: 1000px;
-  margin: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: auto;
-}
-
-.login-form {
-  display: flex;
-}
-
-.submit-button {
-  margin-left: 10px;
-  align-self: flex-end;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-right: 50px;
+  margin-left: 50px;
 }
 
 .input-container + .input-container {
@@ -61,7 +30,8 @@ body {
 
 #title {
   text-align: center;
-  font-size: 3vw; /* make our h1 tag larger */
+  font-size: 4vw;
+  font-weight: bold;
   font-family: Arial, Helvetica, sans-serif; /* choosing our font */
   background: linear-gradient(
       to right,
@@ -71,9 +41,9 @@ body {
     ),
     green;
 
-  background-clip: text; /*it defines how far the background should extend within an element, here we set it to text */
-  -webkit-background-clip: text; /*for browsers compatibility */
-  -webkit-text-fill-color: transparent; /* specifies the fill color of text characters. We use transparent to use the background as our text fill  */
+  background-clip: text; 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
   animation: wave 2000ms ease alternate infinite;
   transition: all 0.4s ease;
 }
@@ -174,24 +144,69 @@ p {
 }
 
 .imagem {
-  margin-left: 10px;
+  margin-left: 5px;
   display: flex;
-  max-width: 50%; /* Limite a largura da imagem a 50% */
-  text-align: center; /* Alinhe a imagem à direita */
+  text-align: center; 
 }
 
-.tabuleiro {
-  max-width: 20%; /* Garanta que a imagem não seja maior que a largura da coluna */
+.item1 {
+  flex: 1;
+  max-width: 100%;
+  margin:auto
 }
 
-.wrapper {
-  display: grid;
-  flex-direction: column;
+.imagemtab{
+  display: block;
+  margin-top: -50px;
+  top:50%;
+  margin: auto;
+  width: 7000px;
+  height: 300px
 
 }
+.start-button {
+  font-size: 25px;
+  background-color: #db8b49;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-block; 
+  position: fixed;
+  top: 20px;
+  right: 20px; 
+}
 
-.texto {
-  flex: 1; /* Faça o texto ocupar metade do espaço disponível */
-  max-width: 50%; /* Limite a largura do texto a 50% *//* Adicione algum espaço interno ao texto */
-  box-sizing: border-box; /* Garanta que o espaço interno não afete a largura total */
+.start-button:hover {
+  background-color: #d86d16;
+  font-weight: bold;
+}
+
+footer{
+  margin-top:20px;
+}
+footer p{
+  font-size: small;
+  text-align: center;
+}
+
+.imagemtab{
+  max-width: 45%;
+}
+
+#registration-form{
+  display: none; /* Adicione esta linha para ocultar o formulário inicialmente */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  max-width: 400px;
+  margin: 0 auto;
+  margin-top: 25%;
+}
+
+.container{
+  display: flex;
 }
