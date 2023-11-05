@@ -1,7 +1,7 @@
 body {
   display: block;
   margin: 0;
-  background-color: #eec3a4;
+  background-color: #ce8e60;
 
 }
 
@@ -11,40 +11,111 @@ body {
   padding: 1.5% 5% 5% 10%;
 }
 
-.topbar {
-  background-color:  #c67439;
-  color: white;
+.titulo {
+  margin-top: 50px;
 }
 
-.topbar img{
-  width: 3.2%;
+.start-button {
+  font-size: 25px;
+  background-color: #db8b49;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px; 
+  position: fixed;
+  top: 20px;
+  right: 20px; 
 }
 
-.topbar-inner {
-  max-width: 1000px;
-  margin: auto;
+.container {
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  max-width: 400px; 
+  margin: 0 auto; 
+}
+
+form {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: auto;
 }
 
-.login-form {
-  display: flex;
+label {
+  font-weight: bold;
+  margin-top: 10px;
 }
 
-.submit-button {
-  margin-left: 10px;
-  align-self: flex-end;
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.input-container + .input-container {
-  margin-left: 10px;
+button {
+  background-color: black;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-top: 10px;
 }
 
-.input-container label {
-  display: block;
+button:hover {
+  background-color: #db8b49;
+  font-weight: bold;
 }
+
+.instruction-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  max-width: 600px; 
+  margin: 0 auto; 
+  margin-top: 25px; 
+}
+
+.login {
+  display: none; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); 
+}
+
+.login-content {
+  background-color: #fff;
+  max-width: 400px;
+  margin: 0 auto;
+  margin-top: 20%;
+  padding: 20px;
+  border-radius: 5px;
+  position: relative;
+}
+
+.TitForms{
+  font-size: xx-large;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+a{
+  margin-top: 20px;
+}
+
 
 .red {
   color: red;
@@ -65,11 +136,10 @@ body {
   font-family: Arial, Helvetica, sans-serif; /* choosing our font */
   background: linear-gradient(
       to right,
-      orange,
-      white,
+      rgb(196, 196, 175),
       rgba(255, 255, 255, 0) 61%
     ),
-    green;
+    rgb(1, 104, 1);
 
   background-clip: text; /*it defines how far the background should extend within an element, here we set it to text */
   -webkit-background-clip: text; /*for browsers compatibility */
@@ -180,14 +250,23 @@ p {
   text-align: center; /* Alinhe a imagem à direita */
 }
 
-.tabuleiro {
-  max-width: 20%; /* Garanta que a imagem não seja maior que a largura da coluna */
+.parent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;  
+  justify-content: center;
 }
 
-.wrapper {
-  display: grid;
-  flex-direction: column;
+.child {
+  width: 35%;
+  font-weight: 300;
+  font-size: 19px ;
+  font-family: Arial, Helvetica, sans-serif;
+} 
 
+.tabuleiro {
+  margin-left: 50px;
+  max-width: 25%;
 }
 
 .texto {
