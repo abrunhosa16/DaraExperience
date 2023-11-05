@@ -77,7 +77,5 @@ export default class BoardArea extends ComponentHolder {
       })
     );
     super.set("reset_button", new ResetButton(() => this.resetUniverse()));
-
-    super.get("container").start();
   }
 }

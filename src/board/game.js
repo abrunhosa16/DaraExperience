@@ -201,7 +201,7 @@ export class DropBoard extends Board {
   }
 
   validPlay(x, y) {
-    // gets somewhat repeated in playDropPhase
+    // gets somewhat repeated in play
     if (!super.empty(x, y)) {
       return false;
     }
@@ -215,28 +215,9 @@ export class DropBoard extends Board {
     return true;
   }
 
-  playDropPhase(x, y) {
-    if (!super.empty(x, y)) {
-      throw new Error("This cell is not empty!");
-    }
-
-    const up = this.countUp(x, y);
-    const down = this.countDown(x, y);
-    const left = this.countLeft(x, y);
-    const right = this.countRight(x, y);
+  calculateNewInvalids(x, y, up, down, left, right) {
     const ver_size = up + down + 1;
     const hor_size = left + right + 1;
-
-    if (ver_size > 3 || hor_size > 3) {
-      throw new Error("3 in a line are just not possible");
-    }
-
-    super.recruit(x, y);
-    if (super.isTurnBlack()) {
-      this.black_drop_count -= 1;
-    } else {
-      this.white_drop_count -= 1;
-    }
 
     let new_invalid = [];
     if (
@@ -274,6 +255,51 @@ export class DropBoard extends Board {
     ) {
       new_invalid.push([x + right + 1, y]);
     }
+
+    return new_invalid;
+  }
+
+  playRandomly() {
+    // as crude as you can get
+    let i = 0;
+    while (true) {
+      const x = Math.floor(Math.random() * super.width());
+      const y = Math.floor(Math.random() * super.height());
+      try {
+        const results = this.play(x, y);
+        return {
+          ...results,
+          x: x,
+          y: y,
+        };
+      } catch (err) {}
+    }
+  }
+
+  play(x, y) {
+    if (!super.empty(x, y)) {
+      throw new Error("This cell is not empty!");
+    }
+
+    const up = this.countUp(x, y);
+    const down = this.countDown(x, y);
+    const left = this.countLeft(x, y);
+    const right = this.countRight(x, y);
+    const ver_size = up + down + 1;
+    const hor_size = left + right + 1;
+
+    if (ver_size > 3 || hor_size > 3) {
+      throw new Error("3 in a line are just not possible");
+    }
+
+    super.recruit(x, y);
+    if (super.isTurnBlack()) {
+      this.black_drop_count -= 1;
+    } else {
+      this.white_drop_count -= 1;
+    }
+
+    const new_invalid = this.calculateNewInvalids(x, y, up, down, left, right);
 
     super.switchTurns();
 

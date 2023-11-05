@@ -14,7 +14,7 @@ const paintBuzz = (cell) => {
 };
 
 export class BoardContainer extends Component {
-  static generateBoard(configs) {
+  static generateBoard(config) {
     /* 
     <table class="board unselectable">
       <tbody> 
@@ -29,13 +29,14 @@ export class BoardContainer extends Component {
     const body = document.createElement("tbody");
     target.appendChild(body);
 
+    let cell_matrix = [];
     const rows = [];
-    for (let i = 0; i < configs.height; i++) {
+    for (let i = 0; i < config.height; i++) {
       const row = document.createElement("tr");
       row.id = `${ROW_ID}-${i}`;
       const cells = [];
 
-      for (let j = 0; j < configs.width; j++) {
+      for (let j = 0; j < config.width; j++) {
         const cell = document.createElement("td");
         cell.id = `${CELL_ID}-${i}-${j}`;
         if ((i + j) % 2 === 0) {
@@ -58,23 +59,29 @@ export class BoardContainer extends Component {
         cells.push(cell);
       }
 
+      cell_matrix.push(cells);
       row.replaceChildren(...cells);
       rows.push(row);
     }
 
     body.replaceChildren(...rows);
 
-    return target;
+    return { target: target, cells: cell_matrix };
   }
 
   // callbacks
   // phaseChange: (phase: string) => void;
   // invalidMessage: (message: string) => void;
   // turn: (turn: string) => void;
-  constructor(configs, callbacks) {
-    super(BoardContainer.generateBoard(configs));
+  constructor(config, callbacks) {
+    const { target, cells } = BoardContainer.generateBoard(config);
+    super(target);
 
-    console.log("configs", configs);
+    this.cells = cells;
+
+    console.log("config", config);
+
+    this.config = config;
 
     this.callbacks = callbacks;
 
@@ -85,29 +92,78 @@ export class BoardContainer extends Component {
     this.black_invalid = []; // [(number, number)]
     this.white_invalid = []; // [(number, number)]
 
-    this.board = new DropBoard(configs);
+    this.board = new DropBoard(config);
+
+    const images = this.createImages();
+    this.black_image = images[0];
+    this.white_image = images[1];
+
+    this.initializeDropPhase();
   }
 
-  start() {
-    this.initializeDropPhase();
+  static isBoardCell(cell) {
+    return cell.id.startsWith(CELL_ID);
+  }
+
+  createImages() {
+    const black = document.createElement("img");
+    black.src = `./playable_pieces/${this.config.black_piece_type}/black.png`;
+    const white = document.createElement("img");
+    white.src = `./playable_pieces/${this.config.white_piece_type}/white.png`;
+
+    return [black, white];
+  }
+
+  getImage(black_turn) {
+    return (black_turn ? this.black_image : this.white_image).cloneNode();
+  }
+
+  getBoardCell(x, y) {
+    return this.cells[y][x];
+  }
+
+  static getCoorsFromId(id) {
+    const sliced = id.slice(CELL_ID.length + 1);
+    const sep_i = sliced.indexOf("-");
+    const y = parseInt(sliced.slice(0, sep_i));
+    const x = parseInt(sliced.slice(sep_i + 1));
+    return [x, y];
   }
 
   initializeDropPhase() {
     this.callbacks.phaseChange("Drop");
     this.callbacks.turn(this.board.getCurrentTurn());
 
-    this.addEventListener(
-      "drop_phase_on_click",
-      "click",
-      this.getDropPhaseOnClick()
-    );
-    this.addEventListener("on_mouse_over", "mouseover", this.getOnMouseOver());
+    if (this.config.skip_drop_phase) {
+      while (true) {
+        const cur_turn_black = this.board.isTurnBlack();
+        const { phase_ended, x, y } = this.board.playRandomly();
+
+        const cell = this.getBoardCell(x, y);
+        cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
+
+        if (phase_ended) {
+          this.initializeMovePhase();
+          console.log(this.board);
+          return;
+        }
+      }
+    } else {
+      this.addEventListener(
+        "drop_phase_on_click",
+        "click",
+        this.getDropPhaseOnClick()
+      );
+      this.addEventListener(
+        "on_mouse_over",
+        "mouseover",
+        this.getOnMouseOver()
+      );
+    }
   }
 
   initializeMovePhase() {
     this.callbacks.phaseChange("Move");
-
-    this.removeEventListener("drop_phase_on_click");
   }
 
   addEventListener(name, type, func) {
@@ -135,7 +191,7 @@ export class BoardContainer extends Component {
       }
       this._hovered.childNodes[1].innerHTML = "";
       this._hovered.classList.remove("hovered-valid");
-      this._hovered.classList.remove("hovered-invalid")
+      this._hovered.classList.remove("hovered-invalid");
     }
 
     // test if cell is null or cannot be set
@@ -150,35 +206,13 @@ export class BoardContainer extends Component {
       cell.classList.add("hovered-invalid");
     }
 
-    const image = document.createElement("img");
-    if (this.board.isTurnBlack()) {
-      image.src = "./iconesDara/coin/black_coin.png";
-    } else {
-      image.src = "./iconesDara/coin/white_coin.png";
-    }
-    cell.childNodes[1].appendChild(image);
+    cell.childNodes[1].appendChild(this.getImage(this.board.isTurnBlack()));
 
     this._hovered = cell;
   }
 
   get hovered() {
     return this._hovered;
-  }
-
-  static isBoardCell(cell) {
-    return cell.id.startsWith(CELL_ID);
-  }
-
-  static getBoardCell(x, y) {
-    return document.getElementById(`${CELL_ID}-${y}-${x}`);
-  }
-
-  static getCoorsFromId(id) {
-    const sliced = id.slice(CELL_ID.length + 1);
-    const sep_i = sliced.indexOf("-");
-    const y = parseInt(sliced.slice(0, sep_i));
-    const x = parseInt(sliced.slice(sep_i + 1));
-    return [x, y];
   }
 
   set invalid_flash(obj) {
@@ -233,7 +267,7 @@ export class BoardContainer extends Component {
       let results;
       try {
         // returns true if drop phase has finished, false if just succeeded
-        results = this.board.playDropPhase(x, y);
+        results = this.board.play(x, y);
       } catch (err) {
         console.log(err);
         this.invalid_flash = { cell: cell, message: err.message };
@@ -250,25 +284,20 @@ export class BoardContainer extends Component {
 
       // remove classes
       invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid");
+        this.getBoardCell(x_c, y_c).classList.remove("invalid");
       });
       other_invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.remove("invalid-other");
+        this.getBoardCell(x_c, y_c).classList.remove("invalid-other");
       });
+
+      cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
 
       this.callbacks.turn(this.board.getCurrentTurn());
 
       if (results.phase_ended) {
+        this.removeEventListener("drop_phase_on_click");
         this.initializeMovePhase();
         return;
-      } else {
-        const image = document.createElement("img");
-        if (cur_turn_black) {
-          image.src = "./iconesDara/coin/black_coin.png";
-        } else {
-          image.src = "./iconesDara/coin/white_coin.png";
-        }
-        cell.childNodes[0].appendChild(image);
       }
 
       // test if the current move was played on other invalid
@@ -285,10 +314,10 @@ export class BoardContainer extends Component {
 
       // add classes back (this time reversed)
       invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid-other");
+        this.getBoardCell(x_c, y_c).classList.add("invalid-other");
       });
       other_invalid.forEach(([x_c, y_c]) => {
-        BoardContainer.getBoardCell(x_c, y_c).classList.add("invalid");
+        this.getBoardCell(x_c, y_c).classList.add("invalid");
       });
     };
   }
