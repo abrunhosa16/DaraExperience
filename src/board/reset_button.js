@@ -5,6 +5,7 @@ export default class ResetButton extends Component {
     super(document.createElement("button"))
 
     super.el().innerHTML = "Restart";
+    super.el().classList.add("game-reset-button")
     super.el().addEventListener("click", onClick);
   }
 }

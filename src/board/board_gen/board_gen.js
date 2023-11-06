@@ -40,6 +40,12 @@ import DropChoose from "./drop_choose.js";
 
 export default class BoardGen extends Component {
   static createElements() {
+    const title = document.createElement("h2");
+    title.innerHTML = "Start playing";
+
+    const board_size_title = document.createElement("h3");
+    board_size_title.innerHTML = "Board size";
+
     const size_input = new BoardSizeInput();
 
     const player_assignment_header = document.createElement("h3");
@@ -83,6 +89,9 @@ export default class BoardGen extends Component {
       "random"
     );
 
+    const aesthetics_title = document.createElement("h3");
+    aesthetics_title.innerHTML = "Aesthetics";
+
     const black_piece_type = new DropChoose("Select black piece type:", [
       ["coin", "Coin"],
       ["leaf", "Leaf"],
@@ -98,18 +107,26 @@ export default class BoardGen extends Component {
       "Skip drop phase (places all pieces randomly): ",
       false
     );
+    
+    const other_title = document.createElement("h3");
+    other_title.innerHTML = "Other";
 
     const submit_button = document.createElement("button");
-    submit_button.innerHTML = "I am ready to rock";
+    submit_button.innerHTML = "Start!";
+    submit_button.classList.add("submit-button");
 
     const target = document.createElement("div");
-    target.classList.add("form");
+    target.classList.add("board-config");
     target.append(
+      title,
+      board_size_title,
       size_input.el(),
       player_assignment,
       starting_player.el(),
+      aesthetics_title,
       black_piece_type.el(),
       white_piece_type.el(),
+      other_title,
       skip_drop_phase.el(),
       submit_button
     );

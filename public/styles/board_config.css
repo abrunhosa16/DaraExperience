@@ -1,35 +1,28 @@
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-label {
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-p {
-  font-family: "Open Sans", sans-serif;
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 32px;
-  color: black;
-}
-
-.form {
+.game-area {
   border: 1px solid black;
-  padding: 1.5%;
+  padding: 3%;
   background-color: #cfab8e;
 }
 
-.form button {
-  margin: 0.5%;
-  background-color: #db8b49;
-  font-family: Arial, Helvetica, sans-serif;
+.sel-button {
+  background-color: #bd6d2d;
+  color: black;
+  border-width: 2px;
 }
 
-.sel-button {
-  color: white;
-  border: 1px solid black;
+.board-config p button {
+  margin: 0 5px 0 5px;
+  padding: 3px;
+}
+
+.game-area .board-config .submit-button {
+  font-size: 18px;
+  margin: 10px 0 10px 0;
+  font-weight: bold;
+}
+
+.game-area .game-reset-button {
+  font-size: 18px;
+  margin: 20px 0 10px 0;
+  font-weight: bold;
 }

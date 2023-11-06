@@ -16,6 +16,8 @@ export default class BoardArea extends ComponentHolder {
       "reset_button"
     );
 
+    super.el().classList.add("game-area");
+
     this.resetUniverse();
   }
 
@@ -68,7 +70,6 @@ export default class BoardArea extends ComponentHolder {
           }
         },
         turn: (turn, remove_phase) => {
-          console.log(remove_phase);
           const spin = document.createElement("span");
           spin.innerHTML = remove_phase ? `${turn} (Removing enemy piece...)`: turn;
           spin.classList.add("red");

@@ -1,4 +1,4 @@
-.dropdown {
+/* .dropdown {
   font-size: 25px;
   background-color: #db8b49;
   color: #fff;
@@ -45,11 +45,11 @@ td {
 
 tr:hover {
   background-color: lightblue;
-}
+} */
 
 /* start button canto superior direito */
 
-.start-button {
+/* .start-button {
   font-size: 25px;
   background-color: #db8b49;
   color: #fff;
@@ -124,13 +124,12 @@ tr:hover {
 }
 
 #registration-form {
-  display: none; /* Adicione esta linha para ocultar o formulário inicialmente */
+  display: none;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   text-align: center;
-  font-family: Arial, sans-serif;
   max-width: 400px;
   margin: 0 auto;
   margin-top: 25%;
@@ -175,4 +174,4 @@ tr:hover {
   font-size: 19px;
   line-height: 25px;
   margin: 0 0 14px;
-}
+} */

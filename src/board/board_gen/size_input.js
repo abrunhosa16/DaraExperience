@@ -121,7 +121,7 @@ export default class BoardSizeInput extends Component {
     select.appendChild(custom_option);
 
     const label = document.createElement("label");
-    label.append("Choose the board size:", select);
+    label.append("Board size:", select);
 
     const target = document.createElement("p");
     target.appendChild(label);

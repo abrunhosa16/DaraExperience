@@ -24,7 +24,7 @@ export class BoardContainer extends Component {
     */
 
     const target = document.createElement("table");
-    target.classList.add("board", "unselectable");
+    target.classList.add("game", "unselectable");
 
     const body = document.createElement("tbody");
     target.appendChild(body);
@@ -138,6 +138,8 @@ export class BoardContainer extends Component {
     this.callbacks.phaseChange("Drop");
     this.callbacks.turn(this.board.getCurrentTurn(), false);
 
+    this.addEventListener("on_leave", "mouse_leave", this.getOnMouseLeave());
+
     if (this.config.skip_drop_phase) {
       while (true) {
         const cur_turn_black = this.board.isTurnBlack();
@@ -148,7 +150,6 @@ export class BoardContainer extends Component {
 
         if (phase_ended) {
           this.initializeMovePhase();
-          console.log(this.board);
           return;
         }
       }
@@ -179,7 +180,7 @@ export class BoardContainer extends Component {
     this.addEventListener(
       "mouse_phase_on_mouse_over",
       "mouseover",
-      this.getMovePhaseOnClick()
+      this.getMovePhaseOnMouseOver()
     );
   }
 
@@ -313,7 +314,6 @@ export class BoardContainer extends Component {
       cell.classList.add("selected-playable");
       playable.push(cell);
     }
-    console.log(playable);
 
     this._selected = { cell: cell, playable: playable };
   }
@@ -467,5 +467,11 @@ export class BoardContainer extends Component {
 
   getMovePhaseOnMouseOver() {
     // TODO
+  }
+
+  getOnMouseLeave() {
+    // TODO: not working
+    console.log("leave!");
+    this.hovered = null;
   }
 }

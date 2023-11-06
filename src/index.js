@@ -5,40 +5,40 @@ import BoardArea from "./board/area.js";
 function main() {
   console.log("hello world!");
 
-  const area_target = document.getElementById("board-area");
+  const area_target = document.getElementById("game-gen-area");
 
   const area = new BoardArea();
-  area_target.parentElement.replaceChild(area.el(), area_target);
+  area_target.appendChild(area.el());
 
-  const openInstructionsButton = document.getElementById("openInstructions");
-  const instructionsModal = document.getElementById("instructionsModal");
-  const closeButton = document.querySelector(".close");
+  // const openInstructionsButton = document.getElementById("openInstructions");
+  // const instructionsModal = document.getElementById("instructionsModal");
+  // const closeButton = document.querySelector(".close");
 
-  openInstructionsButton.addEventListener("click", function () {
-    instructionsModal.style.display = "block";
-  });
+  // openInstructionsButton.addEventListener("click", function () {
+  //   instructionsModal.style.display = "block";
+  // });
 
-  closeButton.addEventListener("click", function () {
-    instructionsModal.style.display = "none";
-  });
+  // closeButton.addEventListener("click", function () {
+  //   instructionsModal.style.display = "none";
+  // });
 
-  window.addEventListener("click", function (event) {
-    if (event.target === instructionsModal) {
-      instructionsModal.style.display = "none";
-    }
-  });
+  // window.addEventListener("click", function (event) {
+  //   if (event.target === instructionsModal) {
+  //     instructionsModal.style.display = "none";
+  //   }
+  // });
 
-  const loginButton = document.querySelector(".start-button");
-  const registrationForm = document.getElementById("registration-form");
-  const closeFormButton = document.getElementById("closeFormButton");
+  // const loginButton = document.querySelector(".start-button");
+  // const registrationForm = document.getElementById("registration-form");
+  // const closeFormButton = document.getElementById("closeFormButton");
 
-  loginButton.addEventListener("click", function () {
-    registrationForm.style.display = "block";
-  });
+  // loginButton.addEventListener("click", function () {
+  //   registrationForm.style.display = "block";
+  // });
 
-  closeFormButton.addEventListener("click", function () {
-    registrationForm.style.display = "none";
-  });
+  // closeFormButton.addEventListener("click", function () {
+  //   registrationForm.style.display = "none";
+  // });
 }
 
 main();

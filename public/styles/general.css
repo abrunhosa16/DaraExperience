@@ -1,27 +1,93 @@
+/* Main palette 
+#FDEEDC
+#FFD8A9
+#F1A661
+#E38B29
+*/
+
 body {
   display: block;
-  margin: 0;
-  background-color: #ce8e60;
-  margin-right: 150px;
-  margin-left: 90px;
-  padding: 1.5% 5% 5% 10%;
+  background-color: rgb(194, 134, 91);
+  font-family: sans-serif, Arial;
+  color: black;
+  font-weight: 500;
+  line-height: 32px;
 }
 
+/* Main page content */
+#content {
+  width: 60%;
+  margin: auto;
+  background-color: rgb(206, 142, 96);
+  padding: 10px 5% 0 5%;
+}
+
+@media (max-width: 1250px) {
+  #content {
+    width: 95%;
+    padding: 10px 10px 0 10px;
+  }
+}
 
 h2 {
-  color: black; 
-  font-family: 'Trocchi', serif; 
-  font-size: 40px; 
-  font-weight: 600; 
-  line-height: 48px; 
-  padding-left: 60px;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 48px;
+  text-align: center;
 }
 
-#title {
+p {
+  font-size: 16px;
+}
+
+h3 {
+  font-size: 28px;
+}
+
+h4 {
+  font-size: 20px;
+}
+
+hr {
+  border-bottom: 1px solid black;
+}
+
+input {
+  padding: 10px;
+  margin: 0 5px 0 5px;
+  border: 1px solid black;
+  border-radius: 4px;
+  background-color: #db8b49;
+}
+
+button {
+  background-color: #db8b49;
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #a05e28;
+}
+
+select {
+  margin: 0 10px 0 10px;
+  background-color: #db8b49;
+  border: 1px solid black;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+
+.title {
+  margin: 0;
+  padding: 4vw 0 4vw 0;
   text-align: center;
   font-size: 4vw;
   font-weight: bold;
-  font-family: Arial, Helvetica, sans-serif; /* choosing our font */
   background: linear-gradient(
       to right,
       rgb(196, 196, 175),
@@ -29,9 +95,9 @@ h2 {
     ),
     rgb(1, 104, 1);
 
-  background-clip: text; 
-  -webkit-background-clip: text; 
-  -webkit-text-fill-color: transparent; 
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: wave 2000ms ease alternate infinite;
   transition: all 0.4s ease;
 }
@@ -44,52 +110,61 @@ h2 {
   }
 }
 
-
-.titulo {
-  margin-top: 50px;
-}
-
-/*  separar os topicos*/
-.linha {
-  height: 10px;
-  border-bottom: 2px solid black;
-}
-
-/* substituir brs */
-
-.margem {
-  margin: 50px; 
-}
-
-/* flexbox texto imagem */
-.parent {
+.flex-container {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
 }
 
-.child {
-  width: 40%;
-  font-weight: 300;
-  color: black; 
-  font-family: 'Open Sans', sans-serif; 
-  font-size: 19px; 
-  line-height: 32px; 
-  margin: 0 0 14px;
-} 
+.w60 {
+  width: 60%;
+}
 
-.tabuleiro {
-  margin-left: 50px;
-  max-width: 25%;
+.w70 {
+  width: 70%;
+}
+
+.w40 {
+  width: 40%;
+}
+
+.w30 {
+  width: 30%;
+}
+
+@media (max-width: 800px) {
+  .w30, .w40, .w60, .w70 {
+    width: 100%;
+  }
+
+  .flex-container {
+    flex-wrap: wrap;
+  }
+}
+
+.flex-container div {
+  margin: 20px;
+}
+
+#about h2 {
+  margin-bottom: 0px;
+}
+
+#about div img {
+  width: 100%;
+  margin: 19px 0 19px 0;
+}
+
+#about p {
+  font-size: 18px;
+}
+
+.red {
+  color: red;
 }
 
 /* start button login */
 
-a{
-  margin-top: 20px;
-}
-
-.container {
+/* .container {
   display: none;
   border-radius: 8px;
   background-color: white;
@@ -97,62 +172,35 @@ a{
   padding: 20px;
   text-align: center;
   font-family: Arial, sans-serif;
-  max-width: 400px; 
-  margin: 0 auto; 
+  max-width: 400px;
+  margin: 0 auto;
   position: relative;
-}
+} */
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #eec3a4;
-  font-family: Arial, Helvetica, sans-serif;
-  margin-right: 50px;
-  margin-left: 50px;
-}
-
-button {
-  background-color: black;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-button:hover {
-  background-color: #db8b49;
-  font-weight: bold;
-}
-
-.instruction-container {
+/* .instruction-container {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   text-align: center;
   font-family: Arial, sans-serif;
-  max-width: 600px; 
-  margin: 0 auto; 
-  margin-top: 25px; 
+  max-width: 600px;
+  margin: 0 auto;
+  margin-top: 25px;
+} */
+
+footer {
+  margin-top: 20px;
+  padding: 20px;
 }
 
-footer{
-  margin-top:20px;
+footer p {
+  font-size: 14px;
+  margin: 8px 0 8px 0;
 }
 
-footer p{
-  font-size: smaller;
-  font-family: 'Open Sans', sans-serif; 
-  font-weight: 300; 
-  line-height: 32px; 
-  color: black; 
-  margin: 0 0 14px;
-  padding: 0 30px 0 50px;
+footer h4 {
+  margin: 10px 0 10px 0;
 }
 
 .hidden {

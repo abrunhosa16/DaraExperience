@@ -18,17 +18,12 @@
   </head>
 
   <body>
-    <div id="paginicial">
-      <div class="titulo">
-        <h1 id="title">Dara game night experience</h1>
-      </div>
-      <div class="linha"></div>
-      <button class="start-button">Login</button>
-      <button class="instruction-button" id="openInstructions">
-        Instructions
-      </button>
+    <div id="content">
+      <h1 class="title">Dara game night experience</h1>
 
-      <div class="container" id="registration-form">
+      <hr />
+
+      <!-- <div class="container" id="registration-form">
         <button id="closeFormButton" class="close-button">&times;</button>
         <h2>Sign up</h2>
         <form>
@@ -43,22 +38,31 @@
 
           <button type="submit">Submit</button>
         </form>
-      </div>
+      </div> -->
 
-      <h2>About Dara</h2>
-      <div class="parent">
-        <div class="child">
-          "Dara" is an ancient strategy game that originated in West Africa long
-          before the proliferation of modern board games. This game, often
-          referred to as "Dara" or "Draughts," stands as one of the most notable
-          examples of how games can transcend borders and cultures, carrying
-          with them a rich historical heritage and intellectual challenges. The
-          history of "Dara" dates back centuries, and its strategic complexity
-          continues to captivate players of all ages.
+      <div id="about">
+        <h2>About Dara</h2>
+        <div class="flex-container">
+          <div class="w70">
+            <p>
+              "Dara" is an ancient strategy game that originated in West Africa
+              long before the proliferation of modern board games. This game,
+              often referred to as "Dara" or "Draughts," stands as one of the
+              most notable examples of how games can transcend borders and
+              cultures, carrying with them a rich historical heritage and
+              intellectual challenges. The history of "Dara" dates back
+              centuries, and its strategic complexity continues to captivate
+              players of all ages.
+            </p>
+          </div>
+          <div class="w30">
+            <img src="./public/tabuleiro.png" class="tabuleiro" />
+          </div>
         </div>
-        <img src="./public/tabuleiro.png" class="tabuleiro" />
       </div>
-      <div class="margem linha"></div>
+      <hr />
+
+      <!-- <div class="margem linha"></div>
       <div class="margem"></div>
 
       <button id="openLogin" class="start-button">Start playing</button>
@@ -161,33 +165,31 @@
 
           <button type="submit">Submit</button>
         </form>
-      </div>
+      </div> -->
 
-      <div id="board-gen"></div>
-      <div id="board-area" />
+      <div id="game-gen-area"></div>
 
-      <table id="board" class="board hidden unselectable">
-        <tbody></tbody>
-      </table>
-
-      <div id="debug"></div>
-
-      <button id="reset" class="hidden">reset</button>
+      <hr />
+      <footer>
+        <h4>About</h4>
+        <p>
+          This web page was designed for the practical evaluation of the Web
+          Technologies course (CC3008), with the current instructor being José
+          Paulo Leal, during the academic year 2023/2024.
+        </p>
+        <p>
+          The creators of this page are students Beatriz Marques (202109552),
+          Vínicius Abrunhosa (202106889), and Zakhar Starinski (202105229), who
+          are enrolled in the Mathematics and Computer Science programs at the
+          Faculty of Sciences, University of Porto.
+        </p>
+      </footer>
     </div>
 
-    <footer>
-      <div class="margem linha"></div>
-      <h2>About us and the web page</h2>
-      <p>
-        This web page was designed for the practical evaluation of the Web
-        Technologies course (CC3008), with the current instructor being José
-        Paulo Leal, during the academic year 2023/24.The creators of this page
-        are students Beatriz Marques (202109552), Vínicius Abrunhosa
-        (202106889), and Zakhar Starinski (202105229), who are enrolled in the
-        Mathematics and Computer Science programs at the Faculty of Sciences,
-        University of Porto.
-      </p>
-    </footer>
+    <!-- <button class="start-button">Login</button>
+    <button class="instruction-button" id="openInstructions">
+      Instructions
+    </button> -->
 
     <script type="module" src="/src/index.js"></script>
   </body>
