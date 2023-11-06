@@ -171,13 +171,16 @@ export class BoardContainer extends Component {
 
     this.board = new MoveBoard(this.config, this.board);
 
-    console.log("what");
     this.addEventListener(
       "move_phase_on_click",
       "click",
       this.getMovePhaseOnClick()
     );
-    console.log("yay", this);
+    this.addEventListener(
+      "mouse_phase_on_mouse_over",
+      "mouseover",
+      this.getMovePhaseOnClick()
+    );
   }
 
   addEventListener(name, type, func) {
@@ -460,5 +463,9 @@ export class BoardContainer extends Component {
 
       this.hovered = cell;
     };
+  }
+
+  getMovePhaseOnMouseOver() {
+    // TODO
   }
 }

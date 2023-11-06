@@ -69,6 +69,9 @@ export default class BoardGen extends Component {
       "human"
     );
 
+    const player_assignment = document.createElement("div");
+    player_assignment.append(player_assignment_header, player1.el(), player2.el());
+
     const starting_player = new MultiButtonSelection(
       "starting_player",
       "Starting pieces:",
@@ -103,11 +106,7 @@ export default class BoardGen extends Component {
     target.classList.add("form");
     target.append(
       size_input.el(),
-      player_assignment_header,
-      player1.el(),
-      player2.el(),
-      starting_player.el(),
-      black_piece_type.el(),
+      player_assignment,
       white_piece_type.el(),
       skip_drop_phase.el(),
       submit_button
