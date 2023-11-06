@@ -72,7 +72,8 @@ export class BoardContainer extends Component {
   // callbacks
   // phaseChange: (phase: string) => void;
   // invalidMessage: (message: string) => void;
-  // turn: (turn: string) => void;
+  // turn: (turn: string, remove: bool) => void;
+  // won: (was_black: bool) => void;
   constructor(config, callbacks) {
     const { target, cells } = BoardContainer.generateBoard(config);
     super(target);
@@ -88,6 +89,8 @@ export class BoardContainer extends Component {
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
     this._selected = null; // HTMLElement | null
+    this.remove_phase = null;
+
     this.eventListeners = {};
 
     this.black_invalid = []; // [(number, number)]
@@ -133,7 +136,7 @@ export class BoardContainer extends Component {
 
   initializeDropPhase() {
     this.callbacks.phaseChange("Drop");
-    this.callbacks.turn(this.board.getCurrentTurn());
+    this.callbacks.turn(this.board.getCurrentTurn(), false);
 
     if (this.config.skip_drop_phase) {
       while (true) {
@@ -351,7 +354,7 @@ export class BoardContainer extends Component {
 
       cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
 
-      this.callbacks.turn(this.board.getCurrentTurn());
+      this.callbacks.turn(this.board.getCurrentTurn(), false);
 
       if (results.phase_ended) {
         this.removeEventListener("drop_phase_on_click");
@@ -391,40 +394,58 @@ export class BoardContainer extends Component {
 
       const [x, y] = BoardContainer.getCoorsFromId(cell.id);
 
-      if (this.selected !== null) {
-        const [xi, yi] = BoardContainer.getCoorsFromId(this.selected.id);
-        if (
-          this.board.empty(x, y) &&
-          adjacent(xi, yi, x, y)
-        ) {
-          const cur_turn_black = this.board.isTurnBlack();
+      if (this.remove_phase === null) {
+        if (this.selected !== null) {
+          const [xi, yi] = BoardContainer.getCoorsFromId(this.selected.id);
+          if (this.board.empty(x, y) && adjacent(xi, yi, x, y)) {
+            const cur_turn_black = this.board.isTurnBlack();
 
-          try {
-            // returns true if drop phase has finished, false if just succeeded
-            console.log("playing from", xi, yi, "to", x, y);
-            this.board.play(xi, yi, x, y);
-          } catch (err) {
-            console.log(err);
-            this.invalid_flash = { cell: cell, message: err.message };
-            console.log(err.message);
-            return;
+            let result;
+            try {
+              // returns true if drop phase has finished, false if just succeeded
+              console.log("playing from", xi, yi, "to", x, y);
+              result = this.board.play(xi, yi, x, y);
+            } catch (err) {
+              console.log(err);
+              this.invalid_flash = { cell: cell, message: err.message };
+              console.log(err.message);
+              return;
+            }
+
+            this.invalid_flash = null;
+
+            this.selected.childNodes[0].innerHTML = "";
+            this.selected = null;
+
+            cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
+
+            const { made_3 } = result;
+            if (made_3) {
+              this.remove_phase = cur_turn_black;
+              this.callbacks.turn(this.board.getCurrentTurn(), true);
+            } else {
+              this.callbacks.turn(this.board.getCurrentTurn(), false);
+            }
+          } else {
+            this.selected = null;
           }
-
-          this.invalid_flash = null;
-
-          this.selected.childNodes[0].innerHTML = "";
-          this.selected = null;
-
-          cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
-
-          this.callbacks.turn(this.board.getCurrentTurn());
-
         } else {
-          this.selected = null;
+          if (this.board.ally(x, y)) {
+            this.selected = cell;
+          }
         }
       } else {
-        if (this.board.ally(x, y)) {
-          this.selected = cell;
+        if (this.board.get(x, y) === !this.remove_phase) {
+          const game_ended = this.board.remove(x, y);
+
+          cell.childNodes[0].innerHTML = "";
+
+          this.remove_phase = null;
+          this.callbacks.turn(this.board.getCurrentTurn(), false);
+
+          if (game_ended !== null) {
+            this.callbacks.won(game_ended);
+          }
         }
       }
     };

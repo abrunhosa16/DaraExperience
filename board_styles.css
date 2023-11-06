@@ -111,3 +111,7 @@ td .board-hoverblock img {
 .invalid-flash .board-content {
   background-color: red;
 }
+
+.red {
+  color: red;
+}

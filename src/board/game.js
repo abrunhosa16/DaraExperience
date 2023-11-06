@@ -2,7 +2,7 @@
 
 export const adjacent = (xi, yi, xf, yf) => {
   return Math.abs(xf - xi) + Math.abs(yf - yi) === 1;
-}
+};
 
 class Board {
   static createBoard(width, height) {
@@ -91,7 +91,11 @@ class Board {
   }
 
   getCurrentTurn() {
-    return this.black_turn ? "black" : "white";
+    return this.black_turn ? "Black" : "White";
+  }
+
+  getCurrentTurnUnbiased(black_turn) {
+    return black_turn ? "Black" : "White";
   }
 
   empty(x, y) {
@@ -109,6 +113,74 @@ class Board {
 
   get_board() {
     return this.board;
+  }
+
+  countUpUnbiased(x, y, black_turn) {
+    let count = 0;
+    for (let y_c = y - 1; y_c >= 0; y_c--) {
+      if (this.get(x, y_c) === black_turn) {
+        count += 1;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  countUp(x, y) {
+    return this.countUpUnbiased(x, y, this.isTurnBlack());
+  }
+
+  countDownUnbiased(x, y, black_turn) {
+    let count = 0;
+    for (let y_c = y + 1; y_c < this.height(); y_c++) {
+      if (this.get(x, y_c) === black_turn) {
+        count += 1;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  countDown(x, y) {
+    return this.countDownUnbiased(x, y, this.isTurnBlack());
+  }
+
+  countLeftUnbiased(x, y, black_turn) {
+    let count = 0;
+    for (let x_c = x - 1; x_c >= 0; x_c--) {
+      if (this.get(x_c, y) === black_turn) {
+        count += 1;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  countLeft(x, y) {
+    return this.countLeftUnbiased(x, y, this.isTurnBlack());
+  }
+
+  countRightUnbiased(x, y, black_turn) {
+    let count = 0;
+    for (let x_c = x + 1; x_c < this.width(); x_c++) {
+      if (this.get(x_c, y) === black_turn) {
+        count += 1;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  countRight(x, y) {
+    return this.countRightUnbiased(x, y, this.isTurnBlack());
   }
 }
 
@@ -161,6 +233,37 @@ export class MoveBoard extends Board {
         "Invalid destination: A piece cannot return to the position from where it was played last turn"
       );
     }
+
+    let going_to_make = 0;
+    if (xf > xi) {
+      // right
+      const perpendicular = super.countUp(xf, yf) + super.countDown(xf, yf) + 1;
+      const parallel = super.countRight(xf, yf) + 1;
+      going_to_make = Math.max(perpendicular, parallel);
+    } else if (xf < xi) {
+      // left
+      const perpendicular = super.countUp(xf, yf) + super.countDown(xf, yf) + 1;
+      const parallel = super.countLeft(xf, yf) + 1;
+      going_to_make = Math.max(perpendicular, parallel);
+    } else if (yf > yi) {
+      // down
+      const perpendicular = super.countLeft(xf, yf) + super.countRight(xf, yf) + 1;
+      const parallel = super.countDown(xf, yf) + 1;
+      going_to_make = Math.max(perpendicular, parallel);
+    } else if (yf < yi) {
+      // up
+      const perpendicular = super.countLeft(xf, yf) + super.countRight(xf, yf) + 1;
+      const parallel = super.countUp(xf, yf) + 1;
+      going_to_make = Math.max(perpendicular, parallel);
+    }
+
+    if (going_to_make > 3) {
+      throw Error(
+        "Invalid destination: You cannot form lines of 4 or more"
+      );
+    }
+    const made_3 = going_to_make === 3;
+
     if (super.isTurnBlack()) {
       this.last_black_move = [xi, yi, xf, yf];
     } else {
@@ -169,7 +272,34 @@ export class MoveBoard extends Board {
 
     super.teleport(xi, yi, xf, yf);
 
+    if (!made_3) {
+      super.switchTurns();
+    }
+
+    return {
+      made_3: made_3
+    };
+  }
+
+  remove(x, y) {
+    super.disintegrate(x, y);
+
+    let won = false;
+    if (super.isTurnBlack) {
+      this.black_play_count -= 1;
+      won = this.black_play_count === 2;
+    } else {
+      this.white_play_count -= 1;
+      won = this.white_play_count === 2;
+    }
+    if (won) {
+      return this.isTurnBlack();
+    }
+
+    console.log("switching turns");
     super.switchTurns();
+
+    return null;
   }
 
   // margins are tested here
@@ -178,7 +308,12 @@ export class MoveBoard extends Board {
       return false;
     }
     const yf = y - 1;
-    return super.empty(x, yf) && this.lastMoveTestValid(x, y, x, yf);
+    return (
+      super.empty(x, yf) &&
+      this.lastMoveTestValid(x, y, x, yf) &&
+      super.countLeft(x, yf) + super.countRight(x, yf) < 3 &&
+      super.countUp(x, yf) < 3
+    );
   }
 
   canMoveDown(x, y) {
@@ -186,7 +321,12 @@ export class MoveBoard extends Board {
       return false;
     }
     const yf = y + 1;
-    return super.empty(x, yf) && this.lastMoveTestValid(x, y, x, yf);
+    return (
+      super.empty(x, yf) &&
+      this.lastMoveTestValid(x, y, x, yf) &&
+      super.countLeft(x, yf) + super.countRight(x, yf) < 3 &&
+      super.countUp(x, yf) < 3
+    );
   }
 
   canMoveLeft(x, y) {
@@ -194,7 +334,12 @@ export class MoveBoard extends Board {
       return false;
     }
     const xf = x - 1;
-    return super.empty(xf, y) && this.lastMoveTestValid(x, y, xf, y);
+    return (
+      super.empty(xf, y) &&
+      this.lastMoveTestValid(x, y, xf, y) &&
+      super.countUp(xf, y) + super.countDown(xf, y) < 3 &&
+      super.countLeft(xf, y) < 3
+    );
   }
 
   canMoveRight(x, y) {
@@ -202,7 +347,12 @@ export class MoveBoard extends Board {
       return false;
     }
     const xf = x + 1;
-    return super.empty(xf, y) && this.lastMoveTestValid(x, y, xf, y);
+    return (
+      super.empty(xf, y) &&
+      this.lastMoveTestValid(x, y, xf, y) &&
+      super.countUp(xf, y) + super.countDown(xf, y) < 3 &&
+      super.countRight(xf, y) < 3
+    );
   }
 }
 
@@ -220,8 +370,8 @@ export class DropBoard extends Board {
       return false;
     }
 
-    const ver_size = this.countUp(x, y) + this.countDown(x, y) + 1;
-    const hor_size = this.countLeft(x, y) + this.countRight(x, y) + 1;
+    const ver_size = super.countUp(x, y) + super.countDown(x, y) + 1;
+    const hor_size = super.countLeft(x, y) + super.countRight(x, y) + 1;
     if (ver_size > 3 || hor_size > 3) {
       return false;
     }
@@ -238,7 +388,7 @@ export class DropBoard extends Board {
       y > up && // inside bounds
       super.empty(x, y - up - 1) &&
       (ver_size == 3 || // the size is already 3
-        this.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
+        super.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y - up - 1]);
     }
@@ -247,7 +397,7 @@ export class DropBoard extends Board {
       y + down + 1 < super.height() && // inside bounds
       super.empty(x, y + down + 1) &&
       (ver_size == 3 || // the size is already 3
-        this.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
+        super.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y + down + 1]);
     }
@@ -256,7 +406,7 @@ export class DropBoard extends Board {
       x > left && // inside bounds
       super.empty(x - left - 1, y) &&
       (hor_size == 3 || // the size is already 3
-        this.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
+        super.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x - left - 1, y]);
     }
@@ -265,7 +415,7 @@ export class DropBoard extends Board {
       x + right + 1 < super.width() && // inside bounds
       super.empty(x + right + 1, y) &&
       (hor_size == 3 || // the size is already 3
-        this.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
+        super.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x + right + 1, y]);
     }
@@ -295,10 +445,12 @@ export class DropBoard extends Board {
       throw new Error("This cell is not empty!");
     }
 
-    const up = this.countUp(x, y);
-    const down = this.countDown(x, y);
-    const left = this.countLeft(x, y);
-    const right = this.countRight(x, y);
+    const cur_turn_black = super.isTurnBlack();
+
+    const up = super.countUp(x, y);
+    const down = super.countDown(x, y);
+    const left = super.countLeft(x, y);
+    const right = super.countRight(x, y);
     const ver_size = up + down + 1;
     const hor_size = left + right + 1;
 
@@ -307,13 +459,21 @@ export class DropBoard extends Board {
     }
 
     super.recruit(x, y);
-    if (super.isTurnBlack()) {
+    if (cur_turn_black) {
       this.black_drop_count -= 1;
     } else {
       this.white_drop_count -= 1;
     }
 
-    const new_invalid = this.calculateNewInvalids(x, y, up, down, left, right);
+    const new_invalid = this.calculateNewInvalids(
+      x,
+      y,
+      up,
+      down,
+      left,
+      right,
+      cur_turn_black
+    );
 
     super.switchTurns();
 
@@ -321,57 +481,5 @@ export class DropBoard extends Board {
       phase_ended: this.black_drop_count + this.white_drop_count === 0,
       new_invalid: new_invalid,
     };
-  }
-
-  countUp(x, y) {
-    let count = 0;
-    for (let y_c = y - 1; y_c >= 0; y_c--) {
-      if (super.ally(x, y_c)) {
-        count += 1;
-      } else {
-        break;
-      }
-    }
-
-    return count;
-  }
-
-  countDown(x, y) {
-    let count = 0;
-    for (let y_c = y + 1; y_c < super.height(); y_c++) {
-      if (super.ally(x, y_c)) {
-        count += 1;
-      } else {
-        break;
-      }
-    }
-
-    return count;
-  }
-
-  countLeft(x, y) {
-    let count = 0;
-    for (let x_c = x - 1; x_c >= 0; x_c--) {
-      if (super.ally(x_c, y)) {
-        count += 1;
-      } else {
-        break;
-      }
-    }
-
-    return count;
-  }
-
-  countRight(x, y) {
-    let count = 0;
-    for (let x_c = x + 1; x_c < super.width(); x_c++) {
-      if (super.ally(x_c, y)) {
-        count += 1;
-      } else {
-        break;
-      }
-    }
-
-    return count;
   }
 }
