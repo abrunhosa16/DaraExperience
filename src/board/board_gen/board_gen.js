@@ -182,8 +182,8 @@ export default class BoardGen extends Component {
         black_piece_type: this.black_piece_type.value,
         white_piece_type: this.white_piece_type.value,
         skip_drop_phase: this.skip_drop_phase.toggled,
-        white_count: 4,
-        black_count: 4,
+        white_count: 12,
+        black_count: 12,
       });
     });
   }

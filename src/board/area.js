@@ -85,6 +85,10 @@ export default class BoardArea extends ComponentHolder {
           const angel = document.createElement("p");
           angel.innerHTML = `Congratulations to ${black ? "Black" : "White"}, you won!`;
           super.set("win_announcement", new Component(angel));
+
+          // TODO: last time fix
+          const el = document.getElementById(black ? "black" : "white");
+          el.innerHTML = parseInt(el.innerHTML) + 1;
         }
       })
     );
