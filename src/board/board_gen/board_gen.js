@@ -107,6 +107,8 @@ export default class BoardGen extends Component {
     target.append(
       size_input.el(),
       player_assignment,
+      starting_player.el(),
+      black_piece_type.el(),
       white_piece_type.el(),
       skip_drop_phase.el(),
       submit_button
