@@ -31,6 +31,12 @@
   filter: drop-shadow(0px 0px 3px #000000b2);
 }
 
+.board td.selected img {
+  width: 70%;
+  margin: 15%;
+  filter: drop-shadow(0px 0px 10px #000000);
+}
+
 .fizz {
   background-color: #e28e51;
 }
@@ -45,6 +51,14 @@
 
 .fizz.invalid-other, .buzz.invalid-other {
   background-color: #808d9e;
+}
+
+.fizz.selected, .buzz.selected {
+  background-color: #50c738;
+}
+
+.fizz.selected-playable, .buzz.selected-playable {
+  background-color: #3c4cdf;
 }
 
 .board-content, .board-hoverblock, .board-selectable {
@@ -87,4 +101,8 @@ td .board-hoverblock img {
 
 .invalid-flash .board-content {
   background-color: red;
+}
+
+.red {
+  color: red;
 }

@@ -12,6 +12,7 @@ export default class BoardArea extends ComponentHolder {
       "current_turn",
       "container",
       "error_announcement",
+      "win_announcement",
       "reset_button"
     );
 
@@ -30,6 +31,7 @@ export default class BoardArea extends ComponentHolder {
       "current_turn",
       "container",
       "error_announcement",
+      "win_announcement",
       "reset_button"
     );
   }
@@ -65,15 +67,24 @@ export default class BoardArea extends ComponentHolder {
             super.set("error_announcement", salted_pasta);
           }
         },
-        turn: (turn) => {
+        turn: (turn, remove_phase) => {
+          console.log(remove_phase);
           const spin = document.createElement("span");
-          spin.innerHTML = turn;
+          spin.innerHTML = remove_phase ? `${turn} (Removing enemy piece...)`: turn;
           spin.classList.add("red");
+
           super
             .get("current_turn")
             .el()
             .replaceChildren("Current turn: ", spin);
         },
+        won: (black) => {
+          console.log("won!");
+          super.get("container").removeAllEventListeners();
+          const angel = document.createElement("p");
+          angel.innerHTML = `Congratulation to ${black ? "Black" : "White"}, you won!`;
+          super.set("win_announcement", angel);
+        }
       })
     );
     super.set("reset_button", new ResetButton(() => this.resetUniverse()));
