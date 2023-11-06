@@ -1,5 +1,9 @@
 ("use strict");
 
+export const adjacent = (xi, yi, xf, yf) => {
+  return Math.abs(xf - xi) + Math.abs(yf - yi) === 1;
+}
+
 class Board {
   static createBoard(width, height) {
     const rows = [];
@@ -65,7 +69,7 @@ class Board {
 
   teleport(xi, yi, xf, yf) {
     // qualia transfer was never an option
-    const life_rights = this.get(xi, xf);
+    const life_rights = this.get(xi, yi);
     this.disintegrate(xi, yi);
     this.materialize(xf, yf, life_rights);
   }
@@ -102,21 +106,25 @@ class Board {
   enemy(x, y) {
     return this.get(x, y) !== this.black_turn;
   }
+
+  get_board() {
+    return this.board;
+  }
 }
 
 export class MoveBoard extends Board {
-  constructor(configs, board, black_turn) {
-    super(board, black_turn);
+  constructor(config, drop_board) {
+    super(drop_board.get_board(), drop_board.isTurnBlack());
 
-    this.black_play_count = configs.black_count;
-    this.white_play_count = configs.white_count;
+    this.black_play_count = config.black_count;
+    this.white_play_count = config.white_count;
 
     this.last_black_move = null;
     this.last_white_move = null;
   }
 
   lastMoveTestValid(xi, yi, xf, yf) {
-    const black_turn = super.get(xi, xf);
+    const black_turn = super.get(xi, yi);
 
     if (black_turn === undefined) {
       return undefined;
@@ -135,8 +143,8 @@ export class MoveBoard extends Board {
   }
 
   // all coordinates are expected to be within bounds
-  playMovePhase(xi, yi, xf, yf) {
-    if (!super.ally(xi, xf)) {
+  play(xi, yi, xf, yf) {
+    if (!super.ally(xi, yi)) {
       throw Error("The selected piece is not owned or doesn't exist");
     }
 
@@ -144,8 +152,7 @@ export class MoveBoard extends Board {
       throw Error("Invalid destination: Not empty");
     }
 
-    const adjacent = Math.abs(xf - xi) + Math.abs(yf - yi) === 1;
-    if (!adjacent) {
+    if (!adjacent(xi, yi, xf, yf)) {
       throw Error("Invalid destination: Not adjacent");
     }
 
@@ -154,8 +161,15 @@ export class MoveBoard extends Board {
         "Invalid destination: A piece cannot return to the position from where it was played last turn"
       );
     }
+    if (super.isTurnBlack()) {
+      this.last_black_move = [xi, yi, xf, yf];
+    } else {
+      this.last_white_move = [xi, yi, xf, yf];
+    }
 
     super.teleport(xi, yi, xf, yf);
+
+    super.switchTurns();
   }
 
   // margins are tested here

@@ -1,5 +1,5 @@
 import Component from "../component.js";
-import { DropBoard } from "./game.js";
+import { DropBoard, MoveBoard, adjacent } from "./game.js";
 
 const ROW_ID = "b-row";
 const CELL_ID = "b-cell";
@@ -87,6 +87,7 @@ export class BoardContainer extends Component {
 
     this._hovered = null; // HTMLElement | null
     this._invalid_flash = null; // {cell: HTMLElement, timeout_id: number} | null
+    this._selected = null; // HTMLElement | null
     this.eventListeners = {};
 
     this.black_invalid = []; // [(number, number)]
@@ -155,15 +156,25 @@ export class BoardContainer extends Component {
         this.getDropPhaseOnClick()
       );
       this.addEventListener(
-        "on_mouse_over",
+        "drop_phase_on_mouse_over",
         "mouseover",
-        this.getOnMouseOver()
+        this.getDropPhaseOnMouseOver()
       );
     }
   }
 
   initializeMovePhase() {
     this.callbacks.phaseChange("Move");
+
+    this.board = new MoveBoard(this.config, this.board);
+
+    console.log("what");
+    this.addEventListener(
+      "move_phase_on_click",
+      "click",
+      this.getMovePhaseOnClick()
+    );
+    console.log("yay", this);
   }
 
   addEventListener(name, type, func) {
@@ -253,6 +264,54 @@ export class BoardContainer extends Component {
     return this._invalid_flash ? this._invalid_flash.cell : null;
   }
 
+  get selected() {
+    return this._selected ? this._selected.cell : null;
+  }
+
+  set selected(cell) {
+    // unset previous cell
+    if (this._selected !== null) {
+      const { cell, playable } = this._selected;
+      cell.classList.remove("selected");
+      playable.forEach((el) => {
+        el.classList.remove("selected-playable");
+      });
+    }
+
+    if (cell === null) {
+      this._selected = null;
+      return;
+    }
+
+    const [x, y] = BoardContainer.getCoorsFromId(cell.id);
+    cell.classList.add("selected");
+
+    const playable = [];
+    if (this.board.canMoveUp(x, y)) {
+      const cell = this.getBoardCell(x, y - 1);
+      cell.classList.add("selected-playable");
+      playable.push(cell);
+    }
+    if (this.board.canMoveDown(x, y)) {
+      const cell = this.getBoardCell(x, y + 1);
+      cell.classList.add("selected-playable");
+      playable.push(cell);
+    }
+    if (this.board.canMoveLeft(x, y)) {
+      const cell = this.getBoardCell(x - 1, y);
+      cell.classList.add("selected-playable");
+      playable.push(cell);
+    }
+    if (this.board.canMoveRight(x, y)) {
+      const cell = this.getBoardCell(x + 1, y);
+      cell.classList.add("selected-playable");
+      playable.push(cell);
+    }
+    console.log(playable);
+
+    this._selected = { cell: cell, playable: playable };
+  }
+
   getDropPhaseOnClick() {
     return (e) => {
       const cell = e.target.parentElement;
@@ -296,6 +355,7 @@ export class BoardContainer extends Component {
 
       if (results.phase_ended) {
         this.removeEventListener("drop_phase_on_click");
+        this.removeEventListener("drop_phase_on_mouse_over");
         this.initializeMovePhase();
         return;
       }
@@ -322,7 +382,55 @@ export class BoardContainer extends Component {
     };
   }
 
-  getOnMouseOver() {
+  getMovePhaseOnClick() {
+    return (e) => {
+      const cell = e.target.parentElement;
+      if (!BoardContainer.isBoardCell(cell)) {
+        return;
+      }
+
+      const [x, y] = BoardContainer.getCoorsFromId(cell.id);
+
+      if (this.selected !== null) {
+        const [xi, yi] = BoardContainer.getCoorsFromId(this.selected.id);
+        if (
+          this.board.empty(x, y) &&
+          adjacent(xi, yi, x, y)
+        ) {
+          const cur_turn_black = this.board.isTurnBlack();
+
+          try {
+            // returns true if drop phase has finished, false if just succeeded
+            console.log("playing from", xi, yi, "to", x, y);
+            this.board.play(xi, yi, x, y);
+          } catch (err) {
+            console.log(err);
+            this.invalid_flash = { cell: cell, message: err.message };
+            console.log(err.message);
+            return;
+          }
+
+          this.invalid_flash = null;
+
+          this.selected.childNodes[0].innerHTML = "";
+          this.selected = null;
+
+          cell.childNodes[0].appendChild(this.getImage(cur_turn_black));
+
+          this.callbacks.turn(this.board.getCurrentTurn());
+
+        } else {
+          this.selected = null;
+        }
+      } else {
+        if (this.board.ally(x, y)) {
+          this.selected = cell;
+        }
+      }
+    };
+  }
+
+  getDropPhaseOnMouseOver() {
     return (e) => {
       const cell = e.target.parentElement;
       if (!BoardContainer.isBoardCell(cell)) {
@@ -332,6 +440,4 @@ export class BoardContainer extends Component {
       this.hovered = cell;
     };
   }
-
-  getMovePhaseOnClick() {}
 }
