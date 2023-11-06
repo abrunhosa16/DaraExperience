@@ -111,9 +111,9 @@ export class BoardContainer extends Component {
 
   createImages() {
     const black = document.createElement("img");
-    black.src = `./playable_pieces/${this.config.black_piece_type}/black.png`;
+    black.src = `./public/playable_pieces/${this.config.black_piece_type}/black.png`;
     const white = document.createElement("img");
-    white.src = `./playable_pieces/${this.config.white_piece_type}/white.png`;
+    white.src = `./public/playable_pieces/${this.config.white_piece_type}/white.png`;
 
     return [black, white];
   }

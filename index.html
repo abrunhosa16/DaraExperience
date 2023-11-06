@@ -5,13 +5,16 @@
     <meta charset="utf-8" />
     <title>The incredible Dara game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="author" content="" />
-    <link rel="stylesheet" href="style.css" />  
-    <link rel="stylesheet" href="button_styles.css" />
-    <link rel="stylesheet" href="board_config.css" /> 
-    <link rel="stylesheet" href="board_styles.css" /> 
+    <meta
+      name="author"
+      content="Beatriz Marques (202109552), Vínicius Abrunhosa
+    (202106889), Zakhar Starinski (202105229)"
+    />
 
-
+    <link rel="stylesheet" href="./public/styles/board_config.css" />
+    <link rel="stylesheet" href="./public/styles/board_game.css" />
+    <link rel="stylesheet" href="./public/styles/button.css" />
+    <link rel="stylesheet" href="./public/styles/general.css" />
   </head>
 
   <body>
@@ -19,28 +22,28 @@
       <div class="titulo">
         <h1 id="title">Dara game night experience</h1>
       </div>
-      <div class=" linha"></div>
+      <div class="linha"></div>
       <button class="start-button">Login</button>
-    <button class="instruction-button" id="openInstructions">
-      Instructions
-    </button>
+      <button class="instruction-button" id="openInstructions">
+        Instructions
+      </button>
 
-    <div class="container" id="registration-form">
-      <button id="closeFormButton" class="close-button">&times;</button>
-      <h2>Registro de Conta</h2>
-      <form>
-        <label for="username">Nome de Usuário:</label>
-        <input type="text" id="username" name="username" required />
+      <div class="container" id="registration-form">
+        <button id="closeFormButton" class="close-button">&times;</button>
+        <h2>Sign up</h2>
+        <form>
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
 
-        <label for="password">Senha:</label>
-        <input type="password" id="password" name="password" required />
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
 
-        <button type="submit">Registrar</button>
-      </form>
-    </div>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
 
       <h2>About Dara</h2>
       <div class="parent">
@@ -53,7 +56,7 @@
           history of "Dara" dates back centuries, and its strategic complexity
           continues to captivate players of all ages.
         </div>
-        <img src="tabuleiro.png" class="tabuleiro" />
+        <img src="./public/tabuleiro.png" class="tabuleiro" />
       </div>
       <div class="margem linha"></div>
       <div class="margem"></div>
@@ -72,7 +75,7 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
 
-            <a href="#"> Sign up, if you dont have an account </a>
+            <a href="#"> Sign up, if you don't have an account </a>
 
             <button type="submit">Log in</button>
           </form>
@@ -80,12 +83,12 @@
       </div>
 
       <button class="dropdown">
-        <span>Classifications</span>
+        <span>Scores</span>
         <div class="dropdown-content">
           <table id="classications">
             <tr>
               <td>Players</td>
-              <td>Vitórias</td>
+              <td>Wins</td>
             </tr>
             <tr>
               <td>Human</td>
@@ -107,8 +110,8 @@
           <h2>Instructions</h2>
           <ul class="instruçoes-texto">
             <li>
-              <strong>Dara is a two-player strategy game</strong> played on a 6x5
-              board.
+              <strong>Dara is a two-player strategy game</strong> played on a
+              6x5 board.
             </li>
             <li>
               Each player chooses a type of piece (coin, stone, or leaf) and
@@ -117,9 +120,10 @@
             <li>The game consists of two phases:</li>
             <ul>
               <li>
-                <strong>Placement Phase:</strong> Players take turns placing their
-                pieces, one at a time, in empty spaces on the board. It is not
-                allowed to place more than three pieces of the same type in a row.
+                <strong>Placement Phase:</strong> Players take turns placing
+                their pieces, one at a time, in empty spaces on the board. It is
+                not allowed to place more than three pieces of the same type in
+                a row.
               </li>
               <li>
                 <strong>Movement Phase:</strong> Players take turns moving their
@@ -144,18 +148,18 @@
         <a href="#" class="start-button">Start Playing</a>
       </div>
       <div class="container" id="registration-form">
-        <h2>Registro de Conta</h2>
+        <h2>Sign up</h2>
         <form>
-          <label for="username">Nome de Usuário:</label>
+          <label for="username">Username:</label>
           <input type="text" id="username" name="username" required />
 
           <label for="email">Email:</label>
           <input type="email" id="email" name="email" required />
 
-          <label for="password">Senha:</label>
+          <label for="password">Password:</label>
           <input type="password" id="password" name="password" required />
 
-          <button type="submit">Registrar</button>
+          <button type="submit">Submit</button>
         </form>
       </div>
 
@@ -185,7 +189,6 @@
       </p>
     </footer>
 
-    <!-- ISTO TEM QUE FICAR EM ÚLTIMO LUGAR -->
     <script type="module" src="/src/index.js"></script>
   </body>
 </html>

@@ -1,4 +1,3 @@
-
 .dropdown {
   font-size: 25px;
   background-color: #db8b49;
@@ -10,43 +9,45 @@
   position: fixed;
   font-family: Arial, Helvetica, sans-serif;
   top: 80px;
-  right: 20px; 
-  }
-  
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    font-family: Arial, sans-serif;
-    padding: 12px 16px;
-    z-index: 1;
-    right: 20px;
-    top:40px; 
-    color: black;
-  
-  }
-  
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #5a2828;
-  }
-  
-  tr:hover {background-color: lightblue;}
+  right: 20px;
+}
 
-  /* start button canto superior direito */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  padding: 12px 16px;
+  z-index: 1;
+  right: 20px;
+  top: 40px;
+  color: black;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #5a2828;
+}
+
+tr:hover {
+  background-color: lightblue;
+}
+
+/* start button canto superior direito */
 
 .start-button {
   font-size: 25px;
@@ -56,10 +57,10 @@
   border-radius: 50px;
   text-decoration: none;
   display: inline-block;
-  margin-top: 10px; 
+  margin-top: 10px;
   position: fixed;
   top: 20px;
-  right: 20px; 
+  right: 20px;
 }
 
 .instruction-button {
@@ -94,7 +95,7 @@
 
 .modal-content {
   background-color: #fff;
-  width: 30% ;
+  width: 30%;
   padding: 1%;
   border-radius: 5px;
   position: relative;
@@ -113,7 +114,7 @@
 .close-button {
   position: absolute;
   top: 10px;
-  right: 10px; 
+  right: 10px;
   font-size: 20px;
   cursor: pointer;
   background: none;
@@ -122,7 +123,7 @@
   padding: 0;
 }
 
-#registration-form{
+#registration-form {
   display: none; /* Adicione esta linha para ocultar o formulário inicialmente */
   background-color: #fff;
   border-radius: 8px;
@@ -135,20 +136,19 @@
   margin-top: 25%;
 }
 
-
 .start-button:hover {
   background-color: #d86d16;
   font-weight: bold;
 }
 
 .login {
-  display: none; 
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); 
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .login-content {
@@ -161,18 +161,18 @@
   position: relative;
 }
 
-.TitForms{
+.TitForms {
   font-size: xx-large;
   margin-bottom: 15px;
   font-weight: bold;
 }
 
-.instruçoes-texto{
+.instruçoes-texto {
   text-align: justify;
   font-weight: 300;
-  color: black; 
-  font-family: arial, 'Open Sans', sans-serif; 
-  font-size: 19px; 
-  line-height: 25px; 
+  color: black;
+  font-family: arial, "Open Sans", sans-serif;
+  font-size: 19px;
+  line-height: 25px;
   margin: 0 0 14px;
 }
