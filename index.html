@@ -13,32 +13,77 @@
 
     <link rel="stylesheet" href="./public/styles/board_config.css" />
     <link rel="stylesheet" href="./public/styles/board_game.css" />
-    <link rel="stylesheet" href="./public/styles/button.css" />
     <link rel="stylesheet" href="./public/styles/general.css" />
   </head>
 
   <body>
+    <div class="topbar flex-container">
+      <button id="instructions-modal-open">Instructions</button>
+      <button id="login-modal-open">Login</button>
+    </div>
+
+    <div id="instructions-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Instructions</h2>
+        <ul>
+          <li>
+            <strong>Dara is a two-player strategy game</strong> played on a 6x5
+            board.
+          </li>
+          <li>
+            Each player chooses a type of piece (coin, stone, or leaf) and
+            receives 12 pieces to place on the board.
+          </li>
+          <li>The game consists of two phases:</li>
+          <ul>
+            <li>
+              <strong>Placement Phase:</strong> Players take turns placing their
+              pieces, one at a time, in empty spaces on the board. It is not
+              allowed to place more than three pieces of the same type in a row.
+            </li>
+            <li>
+              <strong>Movement Phase:</strong> Players take turns moving their
+              pieces, one at a time. Pieces can be moved to adjacent spaces,
+              horizontally or vertically, but not diagonally.
+            </li>
+          </ul>
+          <li>
+            The objective of the game is to form lines of three or more pieces
+            of the same type. When this happens, the player can capture an
+            opponent's piece.
+          </li>
+          <li>
+            The game ends when a player can no longer make a valid move. The
+            player who can no longer play loses the game.
+          </li>
+        </ul>
+        <button id="instructions-modal-close">Close</button>
+      </div>
+    </div>
+
+    <div id="login-modal" class="modal hidden">
+      <div class="modal-content">
+        <form>
+          <h2>Login</h2>
+          <p>
+            <label>Email: <input type="text" name="email" required /></label>
+          </p>
+          <p>
+            <label
+              >Password: <input type="password" name="password" required
+            /></label>
+          </p>
+
+          <button type="submit">Log in</button>
+        </form>
+        <button id="login-modal-close">Cancel</button>
+      </div>
+    </div>
+
     <div id="content">
       <h1 class="title">Dara game night experience</h1>
 
       <hr />
-
-      <!-- <div class="container" id="registration-form">
-        <button id="closeFormButton" class="close-button">&times;</button>
-        <h2>Sign up</h2>
-        <form>
-          <label for="username">Username:</label>
-          <input type="text" id="username" name="username" required />
-
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required />
-
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" required />
-
-          <button type="submit">Submit</button>
-        </form>
-      </div> -->
 
       <div id="about">
         <h2>About Dara</h2>
@@ -62,113 +107,24 @@
       </div>
       <hr />
 
-      <!-- <div class="margem linha"></div>
-      <div class="margem"></div>
-
-      <button id="openLogin" class="start-button">Start playing</button>
-      <div id="login" class="login">
-        <div class="login-content">
-          <form>
-            <div class="TitForms">Login</div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required />
-
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required />
-
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required />
-
-            <a href="#"> Sign up, if you don't have an account </a>
-
-            <button type="submit">Log in</button>
-          </form>
-        </div>
-      </div>
-
-      <button class="dropdown">
-        <span>Scores</span>
-        <div class="dropdown-content">
-          <table id="classications">
-            <tr>
-              <td>Players</td>
-              <td>Wins</td>
-            </tr>
-            <tr>
-              <td>Human</td>
-              <td id="human"><span>0</span></td>
-            </tr>
-            <tr>
-              <td>Computer</td>
-              <td id="robot">
-                <span>0</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </button>
-
-      <div id="instructionsModal" class="modal">
-        <div class="modal-content">
-          <span class="close">&times;</span>
-          <h2>Instructions</h2>
-          <ul class="instruçoes-texto">
-            <li>
-              <strong>Dara is a two-player strategy game</strong> played on a
-              6x5 board.
-            </li>
-            <li>
-              Each player chooses a type of piece (coin, stone, or leaf) and
-              receives 12 pieces to place on the board.
-            </li>
-            <li>The game consists of two phases:</li>
-            <ul>
-              <li>
-                <strong>Placement Phase:</strong> Players take turns placing
-                their pieces, one at a time, in empty spaces on the board. It is
-                not allowed to place more than three pieces of the same type in
-                a row.
-              </li>
-              <li>
-                <strong>Movement Phase:</strong> Players take turns moving their
-                pieces, one at a time. Pieces can be moved to adjacent spaces,
-                horizontally or vertically, but not diagonally.
-              </li>
-            </ul>
-            <li>
-              The objective of the game is to form lines of three or more pieces
-              of the same type. When this happens, the player can capture an
-              opponent's piece.
-            </li>
-            <li>
-              The game ends when a player can no longer make a valid move. The
-              player who can no longer play loses the game.
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div>
-        <a href="#" class="start-button">Start Playing</a>
-      </div>
-      <div class="container" id="registration-form">
-        <h2>Sign up</h2>
-        <form>
-          <label for="username">Username:</label>
-          <input type="text" id="username" name="username" required />
-
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required />
-
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" required />
-
-          <button type="submit">Submit</button>
-        </form>
-      </div> -->
-
       <div id="game-gen-area"></div>
 
+      <table id="scores">
+        <tr>
+          <td>Players</td>
+          <td>Wins</td>
+        </tr>
+        <tr>
+          <td>Human</td>
+          <td id="human"><span>0</span></td>
+        </tr>
+        <tr>
+          <td>Computer</td>
+          <td id="robot">
+            <span>0</span>
+          </td>
+        </tr>
+      </table>
       <hr />
       <footer>
         <h4>About</h4>
@@ -185,11 +141,6 @@
         </p>
       </footer>
     </div>
-
-    <!-- <button class="start-button">Login</button>
-    <button class="instruction-button" id="openInstructions">
-      Instructions
-    </button> -->
 
     <script type="module" src="/src/index.js"></script>
   </body>

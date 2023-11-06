@@ -58,8 +58,8 @@ export default class BoardGen extends Component {
       "White pieces:",
       {
         human: "Human",
-        random: "Play Randomly",
-        ai: "AI (Minimax)",
+        random: "Play Randomly (not implemented)",
+        ai: "AI (Minimax) (not implemented)",
       },
       "human"
     );
@@ -69,8 +69,8 @@ export default class BoardGen extends Component {
       "Black pieces:",
       {
         human: "Human",
-        random: "Play Randomly",
-        ai: "AI (Minimax)",
+        random: "Play Randomly (not implemented)",
+        ai: "AI (Minimax) (not implemented)",
       },
       "human"
     );
@@ -182,8 +182,8 @@ export default class BoardGen extends Component {
         black_piece_type: this.black_piece_type.value,
         white_piece_type: this.white_piece_type.value,
         skip_drop_phase: this.skip_drop_phase.toggled,
-        white_count: 12,
-        black_count: 12,
+        white_count: 4,
+        black_count: 4,
       });
     });
   }

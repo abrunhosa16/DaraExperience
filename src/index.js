@@ -1,4 +1,5 @@
 import BoardArea from "./board/area.js";
+import { hideElement, showElement } from "./css_h.js";
 
 ("use strict");
 
@@ -10,35 +11,29 @@ function main() {
   const area = new BoardArea();
   area_target.appendChild(area.el());
 
-  // const openInstructionsButton = document.getElementById("openInstructions");
-  // const instructionsModal = document.getElementById("instructionsModal");
-  // const closeButton = document.querySelector(".close");
+  const instructions_button_open = document.getElementById("instructions-modal-open");
+  instructions_button_open.addEventListener("click", () => {
+    const modal = document.getElementById("instructions-modal");
+    showElement(modal);
+  });
 
-  // openInstructionsButton.addEventListener("click", function () {
-  //   instructionsModal.style.display = "block";
-  // });
+  const instructions_button_close = document.getElementById("instructions-modal-close");
+  instructions_button_close.addEventListener("click", () => {
+    const modal = document.getElementById("instructions-modal");
+    hideElement(modal);
+  });
 
-  // closeButton.addEventListener("click", function () {
-  //   instructionsModal.style.display = "none";
-  // });
+  const login_button_open = document.getElementById("login-modal-open");
+  login_button_open.addEventListener("click", () => {
+    const modal = document.getElementById("login-modal");
+    showElement(modal);
+  });
 
-  // window.addEventListener("click", function (event) {
-  //   if (event.target === instructionsModal) {
-  //     instructionsModal.style.display = "none";
-  //   }
-  // });
-
-  // const loginButton = document.querySelector(".start-button");
-  // const registrationForm = document.getElementById("registration-form");
-  // const closeFormButton = document.getElementById("closeFormButton");
-
-  // loginButton.addEventListener("click", function () {
-  //   registrationForm.style.display = "block";
-  // });
-
-  // closeFormButton.addEventListener("click", function () {
-  //   registrationForm.style.display = "none";
-  // });
+  const login_button_close = document.getElementById("login-modal-close");
+  login_button_close.addEventListener("click", () => {
+    const modal = document.getElementById("login-modal");
+    hideElement(modal);
+  })
 }
 
 main();

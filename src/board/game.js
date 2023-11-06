@@ -285,21 +285,47 @@ export class MoveBoard extends Board {
     super.disintegrate(x, y);
 
     let won = false;
-    if (super.isTurnBlack) {
-      this.black_play_count -= 1;
-      won = this.black_play_count === 2;
-    } else {
+    if (super.isTurnBlack()) {
       this.white_play_count -= 1;
       won = this.white_play_count === 2;
+    } else {
+      this.black_play_count -= 1;
+      won = this.black_play_count === 2;
     }
     if (won) {
       return this.isTurnBlack();
     }
 
-    console.log("switching turns");
     super.switchTurns();
 
     return null;
+  }
+
+  playRandomly() {
+    // TODO
+    let i = 0;
+    while (true) {
+      const xi = Math.floor(Math.random() * super.width());
+      const yi = Math.floor(Math.random() * super.height());
+      let xf = xi;
+      let yf = yi;
+      if (Math.random() > 0.5) {
+        xf += Math.random() > 0.5 ? 1 : -1;
+      } else {
+        yf += Math.random() > 0.5 ? 1 : -1;
+      }
+
+      try {
+        const results = this.play(xf, yf, xf, yf);
+        return {
+          ...results,
+          xi: xi,
+          yi: yi,
+          xf: xf,
+          yf: yf
+        };
+      } catch (err) {}
+    }
   }
 
   // margins are tested here
