@@ -6,8 +6,12 @@
     <title>The incredible Dara game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css" />  
     <link rel="stylesheet" href="button_styles.css" />
+    <link rel="stylesheet" href="board_config.css" /> 
+    <link rel="stylesheet" href="board_styles.css" /> 
+
+
   </head>
 
   <body>
@@ -15,7 +19,28 @@
       <div class="titulo">
         <h1 id="title">Dara game night experience</h1>
       </div>
-      <div class="margem linha"></div>
+      <div class=" linha"></div>
+      <button class="start-button">Login</button>
+    <button class="instruction-button" id="openInstructions">
+      Instructions
+    </button>
+
+    <div class="container" id="registration-form">
+      <button id="closeFormButton" class="close-button">&times;</button>
+      <h2>Registro de Conta</h2>
+      <form>
+        <label for="username">Nome de Usuário:</label>
+        <input type="text" id="username" name="username" required />
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">Registrar</button>
+      </form>
+    </div>
 
       <h2>About Dara</h2>
       <div class="parent">
@@ -75,6 +100,45 @@
           </table>
         </div>
       </button>
+
+      <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Instructions</h2>
+          <ul class="instruçoes-texto">
+            <li>
+              <strong>Dara is a two-player strategy game</strong> played on a 6x5
+              board.
+            </li>
+            <li>
+              Each player chooses a type of piece (coin, stone, or leaf) and
+              receives 12 pieces to place on the board.
+            </li>
+            <li>The game consists of two phases:</li>
+            <ul>
+              <li>
+                <strong>Placement Phase:</strong> Players take turns placing their
+                pieces, one at a time, in empty spaces on the board. It is not
+                allowed to place more than three pieces of the same type in a row.
+              </li>
+              <li>
+                <strong>Movement Phase:</strong> Players take turns moving their
+                pieces, one at a time. Pieces can be moved to adjacent spaces,
+                horizontally or vertically, but not diagonally.
+              </li>
+            </ul>
+            <li>
+              The objective of the game is to form lines of three or more pieces
+              of the same type. When this happens, the player can capture an
+              opponent's piece.
+            </li>
+            <li>
+              The game ends when a player can no longer make a valid move. The
+              player who can no longer play loses the game.
+            </li>
+          </ul>
+        </div>
+      </div>
 
       <div>
         <a href="#" class="start-button">Start Playing</a>

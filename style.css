@@ -7,10 +7,14 @@ body {
   padding: 1.5% 5% 5% 10%;
 }
 
-p {
-  text-align: justify;
-  font-family: arial;
-  font-size: 20px;
+
+h2 {
+  color: black; 
+  font-family: 'Trocchi', serif; 
+  font-size: 40px; 
+  font-weight: 600; 
+  line-height: 48px; 
+  padding-left: 60px;
 }
 
 #title {
@@ -61,15 +65,17 @@ p {
 .parent {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;  
   justify-content: center;
 }
 
 .child {
-  width: 35%;
+  width: 40%;
   font-weight: 300;
-  font-size: 19px ;
-  font-family: Arial, Helvetica, sans-serif;
+  color: black; 
+  font-family: 'Open Sans', sans-serif; 
+  font-size: 19px; 
+  line-height: 32px; 
+  margin: 0 0 14px;
 } 
 
 .tabuleiro {
@@ -84,6 +90,7 @@ a{
 }
 
 .container {
+  display: none;
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -92,17 +99,7 @@ a{
   font-family: Arial, sans-serif;
   max-width: 400px; 
   margin: 0 auto; 
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-label {
-  font-weight: bold;
-  margin-top: 10px;
+  position: relative;
 }
 
 input {
@@ -149,6 +146,15 @@ footer{
 }
 
 footer p{
-  font-size: small;
-  text-align: center;
+  font-size: smaller;
+  font-family: 'Open Sans', sans-serif; 
+  font-weight: 300; 
+  line-height: 32px; 
+  color: black; 
+  margin: 0 0 14px;
+  padding: 0 30px 0 50px;
+}
+
+.hidden {
+  display: none;
 }
