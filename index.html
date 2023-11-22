@@ -11,7 +11,7 @@
     (202106889), Zakhar Starinski (202105229)"
     />
 
-    <link rel="icon" href="./public/favicon.ico" type="image/png">
+    <link rel="icon" href="./public/favicon.ico" type="image/png" />
 
     <link rel="stylesheet" href="./public/styles/board_config.css" />
     <link rel="stylesheet" href="./public/styles/board_game.css" />
@@ -19,9 +19,11 @@
   </head>
 
   <body>
-    <div class="topbar flex-container">
-      <button id="instructions-modal-open">Instructions</button>
-      <button id="sign-up-modal-open">Sign up</button>
+    <div id="topbar" class="topbar flex-container">
+      <div>
+        <button id="instructions-modal-open">Instructions</button>
+      </div>
+      <div id="sign-button"></div>
     </div>
 
     <div id="instructions-modal" class="modal hidden">

@@ -1,6 +1,6 @@
 import BoardArea from "./board/area.js";
+import CredentialsManager from "./credentials_manager.js";
 import { hideElement, showElement } from "./css_h.js";
-import SignUpModal from "./modals/sign_up_modal.js";
 
 ("use strict");
 
@@ -28,14 +28,8 @@ function main() {
     hideElement(modal);
   });
 
-  const sign_up_modal = new SignUpModal("sign-up-modal-open");
-  document.body.appendChild(sign_up_modal.el());
-  // Open sign up modal when clicking on the taskbar button
-  document
-    .getElementById("sign-up-modal-open")
-    .addEventListener("click", () => {
-      sign_up_modal.open();
-    });
+  const credentials_manager = new CredentialsManager();
+  credentials_manager.trySignUp();
 }
 
 main();

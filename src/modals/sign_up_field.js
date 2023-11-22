@@ -97,6 +97,10 @@ export default class SignUpField extends Component {
   attemptSignUp() {
     this.submit_button.disabled = true;
 
+    // force to copy strings
+    const username_copy = (' ' + this.username).slice(1);
+    const password_copy = (' ' + this.password).slice(1);
+
     const url = SERVER_URL + "/register";
     fetch(url, {
       method: "POST",
@@ -111,7 +115,8 @@ export default class SignUpField extends Component {
       }),
     }).then((response) => {
       if (response.ok) {
-        this.onSignUpCallback();
+        // use values before fetch started (or else they could have changed)
+        this.onSignUpCallback(username_copy, password_copy);
       } else {
         console.log("Error login", response);
 
