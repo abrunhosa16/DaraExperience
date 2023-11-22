@@ -29,7 +29,8 @@ export default class Modal extends Component {
     );
     super(base);
 
-    this.document_close_fn = this.getDocumentCloseModalEvent(open_button_id);
+    this.clickCloseModal = this.getClickCloseModalEvent(open_button_id);
+    this.keyboardCloseModal = this.getKeyboardCloseModalEvent();
 
     // close modal on button click
     close_button.addEventListener("click", () => {
@@ -40,27 +41,36 @@ export default class Modal extends Component {
   open() {
     showElement(super.el());
 
-    // Add event to document to close modal on click
-    window.addEventListener("click", this.document_close_fn);
+    // Add event to document to close modal on click or Esc keyboard press
+    window.addEventListener("click", this.clickCloseModal);
+    window.addEventListener("keydown", this.keyboardCloseModal);
   }
 
   close() {
     hideElement(super.el());
 
-    // Remove event to close modal on click (it's not needed anymore)
-    window.removeEventListener("click", this.document_close_fn);
+    // Remove event to close modal (it's not needed anymore)
+    window.removeEventListener("click", this.clickCloseModal);
+    window.removeEventListener("keydown", this.keyboardCloseModal);
   }
 
-  getDocumentCloseModalEvent(open_button_id) {
-    const fnc = (e) => {
+  getClickCloseModalEvent(open_button_id) {
+    return (e) => {
       // test if outside modal content and not clicking on opening button (or else it closes instantly)
       if (
         e.target.id != open_button_id &&
         !e.target.closest(".modal-content")
       ) {
-        this.close(fnc);
+        this.close();
       }
     };
-    return fnc;
+  }
+
+  getKeyboardCloseModalEvent() {
+    return (e) => {
+      if (e.key === "Escape") {
+        this.close();
+      }
+    };
   }
 }

@@ -7,7 +7,7 @@ import { SERVER_URL } from "../index.js";
 export default class SignUpField extends Component {
   static createElements() {
     const header = document.createElement("h2");
-    header.innerHTML = "Create an account or sign in";
+    header.innerHTML = "Register or sign in";
 
     const username_input = document.createElement("input");
     username_input.type = "text";
@@ -77,14 +77,14 @@ export default class SignUpField extends Component {
 
     // Focus password field when pressing enter
     username_input.addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
+      if (e.key === "Enter") {
         password_input.focus();
       }
     });
 
     // submit when pressing enter
     password_input.addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
+      if (e.key === "Enter") {
         this.attemptSignUp();
       }
     });

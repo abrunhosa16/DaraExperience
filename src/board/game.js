@@ -413,7 +413,7 @@ export class DropBoard extends Board {
     if (
       y > up && // inside bounds
       super.empty(x, y - up - 1) &&
-      (ver_size == 3 || // the size is already 3
+      (ver_size === 3 || // the size is already 3
         super.countUp(x, y - up - 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y - up - 1]);
@@ -422,7 +422,7 @@ export class DropBoard extends Board {
     if (
       y + down + 1 < super.height() && // inside bounds
       super.empty(x, y + down + 1) &&
-      (ver_size == 3 || // the size is already 3
+      (ver_size === 3 || // the size is already 3
         super.countDown(x, y + down + 1) + ver_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x, y + down + 1]);
@@ -431,7 +431,7 @@ export class DropBoard extends Board {
     if (
       x > left && // inside bounds
       super.empty(x - left - 1, y) &&
-      (hor_size == 3 || // the size is already 3
+      (hor_size === 3 || // the size is already 3
         super.countLeft(x - left - 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x - left - 1, y]);
@@ -440,7 +440,7 @@ export class DropBoard extends Board {
     if (
       x + right + 1 < super.width() && // inside bounds
       super.empty(x + right + 1, y) &&
-      (hor_size == 3 || // the size is already 3
+      (hor_size === 3 || // the size is already 3
         super.countRight(x + right + 1, y) + hor_size >= 3) // the size counting with adjacent is 3 or bigger
     ) {
       new_invalid.push([x + right + 1, y]);
