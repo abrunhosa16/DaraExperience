@@ -220,6 +220,10 @@ footer h4 {
   background-color: #f9f9f9;
 }
 
+.modal-content .error {
+  color: red;
+}
+
 #login-modal-close {
   margin-top: 30px;
 }
