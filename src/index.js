@@ -5,11 +5,6 @@ import LoginModal from "./login.js";
 ("use strict");
 
 export const SERVER_URL = "http://twserver.alunos.dcc.fc.up.pt:8008";
-function hideLoginModal(off_login) {
-  const modal = document.getElementById("login-modal");
-  hideElement(modal);
-  document.removeEventListener("click", off_login);
-}
 
 function main() {
 
@@ -33,6 +28,8 @@ function main() {
     const modal = document.getElementById("instructions-modal");
     hideElement(modal);
   });
+
+  // todo: implement modals for login and instructions
 
   const off_login = (e)=> {
     console.log(e);
