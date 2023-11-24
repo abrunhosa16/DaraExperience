@@ -9,7 +9,10 @@ export const SERVER_URL = "http://twserver.alunos.dcc.fc.up.pt:8008";
 function main() {
   const area_target = document.getElementById("game-gen-area");
 
-  const area = new BoardArea();
+  const credentials_manager = new CredentialsManager();
+  credentials_manager.trySignUp();
+
+  const area = new BoardArea(credentials_manager);
   area_target.appendChild(area.el());
 
   const instructions_button_open = document.getElementById(
@@ -27,9 +30,6 @@ function main() {
     const modal = document.getElementById("instructions-modal");
     hideElement(modal);
   });
-
-  const credentials_manager = new CredentialsManager();
-  credentials_manager.trySignUp();
 }
 
 main();

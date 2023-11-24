@@ -31,6 +31,25 @@ export default class CredentialsManager {
     this.signed_in = false;
     this.username = null;
     this.password = null;
+
+    this.sign_up_callbacks = new Set();
+    this.sign_out_callbacks = new Set();
+  }
+
+  addSignUpCallback(callback) {
+    this.sign_up_callbacks.add(callback);
+  }
+
+  removeSignUpCallback(callback) {
+    this.sign_up_callbacks.delete(callback);
+  }
+
+  addSignOutCallback(callback) {
+    this.sign_out_callbacks.add(callback);
+  }
+
+  removeSignOutCallback(callback) {
+    this.sign_out_callbacks.delete(callback);
   }
 
   trySignUp() {
@@ -52,6 +71,10 @@ export default class CredentialsManager {
 
     localStorage.setItem("username", username);
     localStorage.setItem("password", password);
+
+    this.sign_up_callbacks.forEach(callback => {
+      callback(username, password);
+    });
   }
 
   signOut() {
@@ -65,6 +88,10 @@ export default class CredentialsManager {
 
     localStorage.removeItem("username");
     localStorage.removeItem("password");
+
+    this.sign_out_callbacks.forEach(callback => {
+      callback();
+    });
   }
 
   getUsername() {
@@ -73,5 +100,9 @@ export default class CredentialsManager {
 
   getPassword() {
     return this.password;
+  }
+
+  signedIn() {
+    return this.signed_in;
   }
 }
