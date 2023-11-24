@@ -1,5 +1,5 @@
-import Component from "../component.js";
-import { hideElement, showElement } from "../css_h.js";
+import Component from "./component.js";
+import { hideElement, showElement } from "./css_h.js";
 
 ("use strict");
 
@@ -39,7 +39,9 @@ export default class Modal extends Component {
   }
 
   open() {
+    console.log(super.el());
     showElement(super.el());
+    console.log(super.el());
 
     // Add event to document to close modal on click or Esc keyboard press
     window.addEventListener("click", this.clickCloseModal);
@@ -55,6 +57,7 @@ export default class Modal extends Component {
   }
 
   getClickCloseModalEvent(open_button_ids) {
+    console.log(open_button_ids);
     return (e) => {
       // test if outside modal content and not clicking on opening button (or else it closes instantly)
       if (

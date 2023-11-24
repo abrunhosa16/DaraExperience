@@ -1,11 +1,10 @@
-import SignUpModal from "./modals/sign_up_modal.js";
+import { SERVER_URL } from "./index.js";
 
 ("use strict");
 
+// Makes register / login operations and stores user credentials
 export default class CredentialsManager {
   constructor() {
-    
-
     this.signed_in = false;
     this.username = null;
     this.password = null;
@@ -73,9 +72,6 @@ export default class CredentialsManager {
     this.username = username;
     this.password = password;
 
-    this.block.removeChild(this.block.firstChild);
-    this.block.appendChild(this.sign_out_button);
-
     localStorage.setItem("username", username);
     localStorage.setItem("password", password);
 
@@ -89,9 +85,6 @@ export default class CredentialsManager {
     this.signed_in = false;
     this.username = null;
     this.password = null;
-
-    this.block.removeChild(this.block.firstChild);
-    this.block.appendChild(this.sign_up_button);
 
     localStorage.removeItem("username");
     localStorage.removeItem("password");

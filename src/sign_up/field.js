@@ -1,9 +1,10 @@
 import Component from "../component.js";
 import { showElement } from "../css_h.js";
-import { SERVER_URL } from "../index.js";
 
 ("use strict");
 
+
+// sign up form
 export default class SignUpField extends Component {
   static createElements() {
     const header = document.createElement("h2");
@@ -53,12 +54,10 @@ export default class SignUpField extends Component {
     };
   }
 
-  constructor(crd_mgr, onSignUpCallback) {
+  constructor(crd_mgr) {
     const { submit_button, base, username_input, password_input, error_field } =
-    SignUpField.createElements();
+      SignUpField.createElements();
     super(base);
-
-    this.onSignUpCallback = onSignUpCallback;
 
     this.username_input = username_input;
     this.password_input = password_input;
@@ -72,6 +71,7 @@ export default class SignUpField extends Component {
       this.username = e.target.value;
     });
     password_input.addEventListener("change", (e) => {
+      // see press enter event
       this.password = e.target.value;
     });
 
@@ -85,7 +85,11 @@ export default class SignUpField extends Component {
     // submit when pressing enter
     password_input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        this.attemptSignUp();
+        // sync value
+        if (this.password !== password_input.value) {
+          this.password = password_input.value;
+        }
+        this.attemptSignUp(crd_mgr);
       }
     });
 
@@ -97,36 +101,18 @@ export default class SignUpField extends Component {
   attemptSignUp(crd_mgr) {
     this.submit_button.disabled = true;
 
-    crd_mgr.signUp(this.username, this.password).then(({success, error_msg}) {
-      // todo
-    })
-
-    const url = SERVER_URL + "/register";
-    fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        nick: this.username,
-        password: this.password,
-      }),
-    }).then((response) => {
-      if (response.ok) {
-        // use values before fetch started (or else they could have changed)
-        this.onSignUpCallback(username_copy, password_copy);
-      } else {
-        console.log("Error login", response);
-
-        response.json().then((data) => {
-          this.error_field.innerHTML = data.error;
+    crd_mgr
+      .signUp(this.username, this.password)
+      .then(({ success, error_msg }) => {
+        if (success) {
+          // success
+        } else {
+          console.log("Error login", error_msg);
+          this.error_field.innerHTML = error_msg;
           showElement(this.error_field);
-          this.submit_button.disabled = false;
-        });
-      }
-    });
+        }
+        this.submit_button.disabled = false;
+      });
   }
 
   focusUsername() {
