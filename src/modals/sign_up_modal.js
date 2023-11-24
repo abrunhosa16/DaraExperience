@@ -5,22 +5,15 @@ import SignUpField from "./sign_up_field.js";
 ("use strict");
 
 export default class SignUpModal extends Component {
-  constructor(open_button_id, onSignUpCallback) {
-    const field = new SignUpField((username, password) => {
-      this.onSignUp(username, password);
+  constructor(open_button_ids) {
+    const field = new SignUpField(() => {
+      this.base.close();
     });
-    const modal = new Modal(open_button_id, "Cancel", field);
+    const modal = new Modal(open_button_ids, "Cancel", field);
     super(modal.el());
 
     this.base = modal;
     this.field = field;
-
-    this.onSignUpCallback = onSignUpCallback;
-  }
-
-  onSignUp(username, password) {
-    this.base.close();
-    this.onSignUpCallback(username, password);
   }
 
   open() {

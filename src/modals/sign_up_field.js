@@ -53,7 +53,7 @@ export default class SignUpField extends Component {
     };
   }
 
-  constructor(onSignUpCallback) {
+  constructor(crd_mgr, onSignUpCallback) {
     const { submit_button, base, username_input, password_input, error_field } =
     SignUpField.createElements();
     super(base);
@@ -90,16 +90,16 @@ export default class SignUpField extends Component {
     });
 
     submit_button.addEventListener("click", (e) => {
-      this.attemptSignUp();
+      this.attemptSignUp(crd_mgr);
     });
   }
 
-  attemptSignUp() {
+  attemptSignUp(crd_mgr) {
     this.submit_button.disabled = true;
 
-    // force to copy strings
-    const username_copy = (' ' + this.username).slice(1);
-    const password_copy = (' ' + this.password).slice(1);
+    crd_mgr.signUp(this.username, this.password).then(({success, error_msg}) {
+      // todo
+    })
 
     const url = SERVER_URL + "/register";
     fetch(url, {

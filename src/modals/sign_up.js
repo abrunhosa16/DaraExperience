@@ -1,10 +1,32 @@
-import SignUpModal from "./modals/sign_up_modal.js";
+import SignUpModal from "./sign_up_modal.js";
 
 ("use strict");
 
-export default class CredentialsManager {
+export default class SignUp {
   constructor() {
-    
+    this.sign_up_button = document.createElement("button");
+    this.sign_up_button.innerHTML = "Sign up";
+    this.sign_up_button.id = "sign-up-modal-open";
+
+    this.sign_up_modal = new SignUpModal(
+      this.sign_up_button.id,
+      (username, password) => {
+        this.signUp(username, password);
+      }
+    );
+    document.body.appendChild(this.sign_up_modal.el());
+    this.sign_up_button.addEventListener("click", () => {
+      this.sign_up_modal.open();
+    });
+
+    this.sign_out_button = document.createElement("button");
+    this.sign_out_button.innerHTML = "Sign out";
+    this.sign_out_button.addEventListener("click", () => {
+      this.signOut();
+    });
+
+    this.block = document.getElementById("sign-button");
+    this.block.appendChild(this.sign_up_button);
 
     this.signed_in = false;
     this.username = null;
@@ -39,8 +61,8 @@ export default class CredentialsManager {
   }
 
   async signUp(username, password) {
-    const username_copy = (" " + username).slice(1);
-    const password_copy = (" " + password).slice(1);
+    const username_copy = (" " + this.username).slice(1);
+    const password_copy = (" " + this.password).slice(1);
 
     const url = SERVER_URL + "/register";
     const response = await fetch(url, {
@@ -51,19 +73,19 @@ export default class CredentialsManager {
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
-        nick: username_copy,
-        password: password_copy,
+        nick: this.username,
+        password: this.password,
       }),
     });
 
     if (response.ok) {
       // use values before fetch started (or else they could have changed)
       this.completeSignIn(username_copy, password_copy);
-      return { success: true, error_msg: null };
+      return { success: true, error: null };
     } else {
       const error_data = await response.json();
 
-      return { success: true, error_msg: error_data.error_field };
+      return { success: true, error: error_data.error_field };
     }
   }
 

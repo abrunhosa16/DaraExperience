@@ -10,7 +10,7 @@ function main() {
   const area_target = document.getElementById("game-gen-area");
 
   const credentials_manager = new CredentialsManager();
-  credentials_manager.trySignUp();
+  credentials_manager.trySignUpFromLocalStorage();
 
   const area = new BoardArea(credentials_manager);
   area_target.appendChild(area.el());
