@@ -4,19 +4,20 @@ import BoardGen from "./board_gen/board_gen2.js";
 import { BoardContainer } from "./container.js";
 import ResetButton from "./reset_button.js";
 
-export default class BoardArea extends Component {
-  constructor(cred_mgr) {
-    const board_gen = new BoardGen(cred_mgr, (configs) => {
-      // this.initializeContainer(configs);
-    });
-
-    const base = document.createElement("div");
-    base.classList.add("game-area");
-    base.append(board_gen.el());
-
+export default class BoardArea extends ComponentHolder {
+  constructor() {
     super(
-      base
+      "phase_announcement",
+      "current_turn",
+      "container",
+      "error_announcement",
+      "win_announcement",
+      "reset_button"
     );
+
+    super.el().classList.add("game-area");
+
+    this.resetUniverse();
   }
 
   resetUniverse() {

@@ -1,5 +1,5 @@
-import Component from "../component.js";
-import { hideElement, showElement } from "../css_h.js";
+import Component from "./component.js";
+import { hideElement, showElement } from "./css_h.js";
 
 ("use strict");
 
@@ -22,14 +22,14 @@ export default class Modal extends Component {
     return { base: base, close_button: close_button };
   }
 
-  constructor(open_button_id, close_button_text, content) {
+  constructor(open_button_ids, close_button_text, content) {
     const { base, close_button } = Modal.createElements(
       close_button_text,
       content
     );
     super(base);
 
-    this.clickCloseModal = this.getClickCloseModalEvent(open_button_id);
+    this.clickCloseModal = this.getClickCloseModalEvent(open_button_ids);
     this.keyboardCloseModal = this.getKeyboardCloseModalEvent();
 
     // close modal on button click
@@ -39,7 +39,9 @@ export default class Modal extends Component {
   }
 
   open() {
+    console.log(super.el());
     showElement(super.el());
+    console.log(super.el());
 
     // Add event to document to close modal on click or Esc keyboard press
     window.addEventListener("click", this.clickCloseModal);
@@ -54,12 +56,13 @@ export default class Modal extends Component {
     window.removeEventListener("keydown", this.keyboardCloseModal);
   }
 
-  getClickCloseModalEvent(open_button_id) {
+  getClickCloseModalEvent(open_button_ids) {
+    console.log(open_button_ids);
     return (e) => {
       // test if outside modal content and not clicking on opening button (or else it closes instantly)
       if (
-        e.target.id != open_button_id &&
-        !e.target.closest(".modal-content")
+        !e.target.closest(".modal-content") &&
+        !open_button_ids.includes(e.target.id)
       ) {
         this.close();
       }

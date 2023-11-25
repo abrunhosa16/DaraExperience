@@ -145,7 +145,7 @@ select {
   }
 }
 
-.flex-container div {
+.flex-container > div {
   margin: 20px;
 }
 
