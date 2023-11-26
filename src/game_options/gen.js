@@ -1,11 +1,11 @@
-import MultiButtonSelection from "../../misc_components/multi_button_selection.js";
-import Component from "../../component.js";
-import OfflineBoardGen from "./offline_gen.js";
-import OnlineBoardGen from "./online_gen.js";
+import MultiButtonSelection from "../misc_components/multi_button_selection.js";
+import Component from "../component.js";
+import OfflineGameGen from "./offline.js";
+import OnlineGameGen from "./online.js";
 
 ("use strict");
 
-export default class BoardGen extends Component {
+export default class GameGen extends Component {
   static createElements(cred_mgr) {
     console.log(cred_mgr);
     const title = document.createElement("h2");
@@ -39,19 +39,19 @@ export default class BoardGen extends Component {
 
   setOnline(sign_up_modal) {
     this.online_offline_gen.innerHTML = "";
-    const online = new OnlineBoardGen(this.cred_mgr, this.submit_callback, sign_up_modal);
+    const online = new OnlineGameGen(this.cred_mgr, this.submit_callback, sign_up_modal);
     this.online_offline_gen.append(online.el());
   }
 
   setOffline() {
     this.online_offline_gen.innerHTML = "";
-    const offline = new OfflineBoardGen(this.submit_callback);
+    const offline = new OfflineGameGen(this.submit_callback);
     this.online_offline_gen.append(offline.el());
   }
 
   constructor(cred_mgr, submit_callback, sign_up_modal) {
     const { base, online_sel, online_offline_gen } =
-      BoardGen.createElements(cred_mgr);
+      GameGen.createElements(cred_mgr);
     super(base);
 
     this.online_offline_gen = online_offline_gen;

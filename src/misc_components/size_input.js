@@ -1,7 +1,7 @@
 ("use strict");
 
-import Component from "../../component.js";
-import { showElement, hideElement } from "../../css_h.js";
+import Component from "../component.js";
+import { showElement, hideElement } from "../css_h.js";
 
 export default class BoardSizeInput extends Component {
   static MIN_HEIGHT = 3;

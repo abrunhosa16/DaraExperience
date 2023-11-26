@@ -1,44 +1,12 @@
-import BoardSizeInput from "./size_input.js";
-import MultiButtonSelection from "../../misc_components/multi_button_selection.js";
-import Component from "../../component.js";
-import Toggle from "../../misc_components/toggle.js";
-import DropChoose from "../../misc_components/drop_choose.js";
+import BoardSizeInput from "../misc_components/size_input.js";
+import MultiButtonSelection from "../misc_components/multi_button_selection.js";
+import Component from "../component.js";
+import Toggle from "../misc_components/toggle.js";
+import DropChoose from "../misc_components/drop_choose.js";
 
 ("use strict");
 
-/* 
-<div class="form">
-  <BoardSizeInput />
-
-  <div>
-    <p>White starting piece count (todo): <input type="text" id="gen-count-white"/></p>
-    <p>Black starting piece count (todo): <input type="text" id="gen-count-black"/></p>
-  </div>
-
-  <h3>Player assignment</h3>
-  <MultiButtonSelection id="player1" label="White pieces:">
-    ("human", "Human")
-    ("random", "Play randomly")
-    ("ai", "AI (Minimax)")
-  </MultiButtonSelection>
-
-  <MultiButtonSelection id="player2" label="Black pieces:">
-    ("human", "Human")
-    ("random", "Play randomly")
-    ("ai", "AI (Minimax)")
-  </MultiButtonSelection>
-
-  <MultiButtonSelection id="starting_player" label="Starting pieces:">
-    ("white", "White")
-    ("black", "Black")
-    ("random", "Random")
-  </MultiButtonSelection>
-
-  <button>Let's do this</button>
-</div>
-*/
-
-export default class OfflineBoardGen extends Component {
+export default class OfflineGameGen extends Component {
   static createElements() {
     const title = document.createElement("h3");
     title.innerHTML = "Offline game configuration";
@@ -153,7 +121,7 @@ export default class OfflineBoardGen extends Component {
       skip_drop_phase,
       black_piece_type,
       white_piece_type,
-    } = OfflineBoardGen.createElements();
+    } = OfflineGameGen.createElements();
     super(base);
     this.size_input = size_input;
     this.player1 = player1;
@@ -172,6 +140,7 @@ export default class OfflineBoardGen extends Component {
       const [width, height] = this.size_input.getParsedSize();
 
       submit_callback({
+        mode: "offline",
         width: width,
         height: height,
         white_player: this.player1.selected,
@@ -180,8 +149,6 @@ export default class OfflineBoardGen extends Component {
         black_piece_type: this.black_piece_type.value,
         white_piece_type: this.white_piece_type.value,
         skip_drop_phase: this.skip_drop_phase.toggled,
-        white_count: 12,
-        black_count: 12,
       });
     });
   }

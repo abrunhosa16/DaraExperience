@@ -1,12 +1,12 @@
-import Component from "../../component.js";
-import DropChoose from "../../misc_components/drop_choose.js";
-import BoardSizeInput from "./size_input.js";
+import Component from "../component.js";
+import DropChoose from "../misc_components/drop_choose.js";
+import BoardSizeInput from "../misc_components/size_input.js";
 
 ("use strict");
 
 export const BOARD_GEN_SIGN_BUTTON_ID = "board-gen-sign-up-button";
 
-export default class OnlineBoardGen extends Component {
+export default class OnlineGameGen extends Component {
   static signUpButton(sign_up_modal) {
     const sign_up_button = document.createElement("button");
     sign_up_button.innerHTML = "Sign up";
@@ -75,7 +75,7 @@ export default class OnlineBoardGen extends Component {
   signedIn(username) {
     super.el().innerHTML = "";
     const { base, size_input, player1_piece_type, player2_piece_type, submit } =
-      OnlineBoardGen.createElements(username);
+      OnlineGameGen.createElements(username);
     super.el().appendChild(base);
   }
 
@@ -85,7 +85,7 @@ export default class OnlineBoardGen extends Component {
 
     super.el().innerHTML = "";
     super.el().appendChild(sign_up_text);
-    super.el().appendChild(OnlineBoardGen.signUpButton(sign_up_modal));
+    super.el().appendChild(OnlineGameGen.signUpButton(sign_up_modal));
   }
 
   constructor(cred_mgr, submit_callback, sign_up_modal) {
