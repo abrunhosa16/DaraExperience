@@ -38,6 +38,7 @@ export default class CredentialsManager {
   }
 
   async signUp(username, password) {
+    console.log(username, password)
     const username_copy = (" " + username).slice(1);
     const password_copy = (" " + password).slice(1);
 

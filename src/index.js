@@ -1,16 +1,22 @@
 import BoardArea from "./board/area.js";
 import CredentialsManager from "./credentials_manager.js";
 import { hideElement, showElement } from "./css_h.js";
+import { createRanking } from "./ranking.js";
 import SignUpModal from "./sign_up/modal.js";
 import TaskbarSignupButton from "./sign_up/taskbar_button.js";
+import { getRanking } from "./request_ranking.js";
+import rankingArea from "./ranking_area.js";
 
 ("use strict");
 
 export const SERVER_URL = "http://twserver.alunos.dcc.fc.up.pt:8008";
+export const GROUP = 12;
 
 function main() {
   const crd_mgr = new CredentialsManager();
+  console.log(23232)
   crd_mgr.trySignUpFromLocalStorage();
+  console.log(12312)
 
   const taskbar_signup_target = document.getElementById("sign-button");
   const signup_modal = new SignUpModal(crd_mgr, [TaskbarSignupButton.SIGN_UP_BUTTON_ID]);
@@ -38,6 +44,15 @@ function main() {
     const modal = document.getElementById("instructions-modal");
     hideElement(modal);
   });
+
+  getRanking(5, 6).then((data) => {
+  createRanking(data);
+  });
+
+  const div_ranking = new rankingArea();
+  const el_rank = document.getElementById("ranking_area");
+  el_rank.appendChild(div_ranking.el());
+  
 }
 
 main();
