@@ -233,15 +233,16 @@ footer h4 {
   margin-top: 30px;
 }
 
-table#scores {
+table#rank {
   border-collapse: collapse;
   width: 100%;
   max-width: 400px;
 }
 
-#scores td {
+#rank td {
   padding: 8px;
   text-align: left;
   border-bottom: 1px solid #5a2828;
   border-top: 1px solid #5a2828;
 }
+
