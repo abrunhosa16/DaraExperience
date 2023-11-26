@@ -1,4 +1,5 @@
 import BoardArea from "./board/area.js";
+import { BOARD_GEN_SIGN_BUTTON_ID } from "./board/board_gen/online_gen.js";
 import CredentialsManager from "./credentials_manager.js";
 import { hideElement, showElement } from "./css_h.js";
 import SignUpModal from "./sign_up/modal.js";
@@ -13,14 +14,14 @@ function main() {
   crd_mgr.trySignUpFromLocalStorage();
 
   const taskbar_signup_target = document.getElementById("sign-button");
-  const signup_modal = new SignUpModal(crd_mgr, [TaskbarSignupButton.SIGN_UP_BUTTON_ID]);
+  const signup_modal = new SignUpModal(crd_mgr, [TaskbarSignupButton.SIGN_UP_BUTTON_ID, BOARD_GEN_SIGN_BUTTON_ID]);
   document.body.appendChild(signup_modal.el());
 
   const taskbar_signup = new TaskbarSignupButton(crd_mgr, signup_modal);
   taskbar_signup_target.appendChild(taskbar_signup.el());
 
   const area_target = document.getElementById("game-gen-area");
-  const area = new BoardArea(crd_mgr);
+  const area = new BoardArea(crd_mgr, signup_modal);
   area_target.appendChild(area.el());
 
   const instructions_button_open = document.getElementById(

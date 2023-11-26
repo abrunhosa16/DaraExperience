@@ -1,14 +1,11 @@
 import Component from "../component.js";
-import ComponentHolder from "../component_holder.js";
-import BoardGen from "./board_gen/board_gen2.js";
-import { BoardContainer } from "./container.js";
-import ResetButton from "./reset_button.js";
+import BoardGen from "./board_gen/board_gen.js";
 
 export default class BoardArea extends Component {
-  constructor(cred_mgr) {
+  constructor(cred_mgr, sign_up_modal) {
     const board_gen = new BoardGen(cred_mgr, (configs) => {
       // this.initializeContainer(configs);
-    });
+    }, sign_up_modal);
 
     const base = document.createElement("div");
     base.classList.add("game-area");
@@ -17,79 +14,5 @@ export default class BoardArea extends Component {
     super(
       base
     );
-  }
-
-  resetUniverse() {
-    super.set(
-      "gen",
-      new BoardGen((configs) => {
-        this.initializeContainer(configs);
-      })
-    );
-    super.delete(
-      "phase_announcement",
-      "current_turn",
-      "container",
-      "error_announcement",
-      "win_announcement",
-      "reset_button"
-    );
-  }
-
-  initializeContainer(configs) {
-    super.delete("gen");
-
-    super.set(
-      "phase_announcement",
-      new Component(document.createElement("h3"))
-    );
-    super.set("current_turn", new Component(document.createElement("p")));
-    super.set(
-      "container",
-      new BoardContainer(configs, {
-        phaseChange: (phase) => {
-          const bacon = document.createElement("span");
-          bacon.innerHTML = phase;
-          bacon.classList.add("red");
-          super
-            .get("phase_announcement")
-            .el()
-            .replaceChildren("Welcome! Behold the ", bacon, " Phase!");
-        },
-        invalidMessage: (sauce) => {
-          if (sauce === null) {
-            super.delete("error_announcement");
-          } else {
-            const pasta = document.createElement("p");
-            pasta.innerHTML = `ERROR: ${sauce}`;
-            pasta.classList.add("red");
-            const salted_pasta = new Component(pasta);
-            super.set("error_announcement", salted_pasta);
-          }
-        },
-        turn: (turn, remove_phase) => {
-          const spin = document.createElement("span");
-          spin.innerHTML = remove_phase ? `${turn} (Removing enemy piece...)`: turn;
-          spin.classList.add("red");
-
-          super
-            .get("current_turn")
-            .el()
-            .replaceChildren("Current turn: ", spin);
-        },
-        won: (black) => {
-          console.log("won!");
-          super.get("container").removeAllEventListeners();
-          const angel = document.createElement("p");
-          angel.innerHTML = `Congratulations to ${black ? "Black" : "White"}, you won!`;
-          super.set("win_announcement", new Component(angel));
-
-          // TODO: last time fix
-          const el = document.getElementById(black ? "black" : "white");
-          el.innerHTML = parseInt(el.innerHTML) + 1;
-        }
-      })
-    );
-    super.set("reset_button", new ResetButton(() => this.resetUniverse()));
   }
 }

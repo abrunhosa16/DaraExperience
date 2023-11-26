@@ -1,6 +1,6 @@
-import Component from "../../component.js";
+import Component from "../component.js";
 
-export default class BoardToggle extends Component {
+export default class Toggle extends Component {
   static createElements(message) {
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -18,7 +18,7 @@ export default class BoardToggle extends Component {
   }
 
   constructor(message, initially_toggled) {
-    const { target, input } = BoardToggle.createElements(message);
+    const { target, input } = Toggle.createElements(message);
     super(target);
 
     this.input = input;
