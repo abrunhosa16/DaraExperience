@@ -1,4 +1,4 @@
-import Component from "../../component.js";
+import Component from "../component.js";
 
 ("use strict");
 
@@ -14,13 +14,6 @@ const markAsUnselected = (element) => {
 
 export default class MultiButtonSelection extends Component {
   static createElements(id, label_text, button_id_texts) {
-    /* 
-    <p>
-        White pieces:
-        [<SelectionButton />]
-    </p>
-    */
-
     const target = document.createElement("p");
     target.id = id;
     target.append(label_text);
@@ -70,5 +63,13 @@ export default class MultiButtonSelection extends Component {
 
   get selected() {
     return this._selected;
+  }
+
+  addOnChange(func) {
+    Object.entries(this.buttons).forEach(([id, el]) => {
+      el.addEventListener("click", (e) => {
+        func(id);
+      });
+    });
   }
 }
