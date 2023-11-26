@@ -1,4 +1,4 @@
-import BoardSizeInput from "../misc_components/size_input.js";
+import SizeInput from "../misc_components/size_input.js";
 import MultiButtonSelection from "../misc_components/multi_button_selection.js";
 import Component from "../component.js";
 import Toggle from "../misc_components/toggle.js";
@@ -14,7 +14,7 @@ export default class OfflineGameGen extends Component {
     const board_size_title = document.createElement("h4");
     board_size_title.innerHTML = "Board size";
 
-    const size_input = new BoardSizeInput();
+    const size_input = new SizeInput();
 
     const player_assignment_header = document.createElement("h4");
     player_assignment_header.innerHTML = "Player assignment";
@@ -82,7 +82,7 @@ export default class OfflineGameGen extends Component {
     submit_button.classList.add("submit-button");
 
     const base = document.createElement("div");
-    base.classList.add("board-config");
+    base.classList.add("game-gen");
     base.append(
       title,
       board_size_title,

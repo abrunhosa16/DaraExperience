@@ -1,0 +1,17 @@
+
+.stage {
+  border: 2px solid black;
+}
+
+.stage canvas {
+  position: absolute;
+}
+.stage .pieces {
+  z-index: 3;
+}
+.stage .selections {
+  z-index: 2;
+}
+.stage .background {
+  z-index: 1;
+}

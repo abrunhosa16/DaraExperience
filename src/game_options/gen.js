@@ -27,7 +27,7 @@ export default class GameGen extends Component {
     const online_offline_gen = document.createElement("div");
     
     const base = document.createElement("div");
-    base.classList.add("board-config");
+    base.classList.add("game-gen");
     base.append(title, online_title, online_sel.el(), online_offline_gen);
 
     return {

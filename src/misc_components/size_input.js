@@ -3,7 +3,7 @@
 import Component from "../component.js";
 import { showElement, hideElement } from "../css_h.js";
 
-export default class BoardSizeInput extends Component {
+export default class SizeInput extends Component {
   static MIN_HEIGHT = 3;
   static MIN_WIDTH = 3;
 
@@ -17,11 +17,11 @@ export default class BoardSizeInput extends Component {
   static CUSTOM_OPTION_TEXT = "Custom";
 
   static INVALID_WIDTH_ERROR_MESSAGES = {
-    too_small: `Please input a width of at least ${BoardSizeInput.MIN_HEIGHT}`,
+    too_small: `Please input a width of at least ${SizeInput.MIN_HEIGHT}`,
     required: "This field is required",
   };
   static INVALID_HEIGHT_ERROR_MESSAGES = {
-    too_small: `Please input a height of at least ${BoardSizeInput.MIN_WIDTH}`,
+    too_small: `Please input a height of at least ${SizeInput.MIN_WIDTH}`,
     required: "This field is required",
   };
 
@@ -39,16 +39,16 @@ export default class BoardSizeInput extends Component {
   };
 
   static customWidthInvalid = (val) =>
-    BoardSizeInput.customSizeInvalid(
+    SizeInput.customSizeInvalid(
       val,
-      BoardSizeInput.MIN_WIDTH,
-      BoardSizeInput.INVALID_WIDTH_ERROR_MESSAGES
+      SizeInput.MIN_WIDTH,
+      SizeInput.INVALID_WIDTH_ERROR_MESSAGES
     );
   static customHeightInvalid = (val) =>
-    BoardSizeInput.customSizeInvalid(
+    SizeInput.customSizeInvalid(
       val,
-      BoardSizeInput.MIN_HEIGHT,
-      BoardSizeInput.INVALID_HEIGHT_ERROR_MESSAGES
+      SizeInput.MIN_HEIGHT,
+      SizeInput.INVALID_HEIGHT_ERROR_MESSAGES
     );
 
   static createElements() {
@@ -63,18 +63,18 @@ export default class BoardSizeInput extends Component {
     */
 
     // main select
-    const { select, all: all_select } = BoardSizeInput.createMainSelect();
+    const { select, all: all_select } = SizeInput.createMainSelect();
 
     const {
       all: all_width,
       input: width_input,
       err: width_err,
-    } = BoardSizeInput.createCustomInput("Custom width:");
+    } = SizeInput.createCustomInput("Custom width:");
     const {
       all: all_height,
       input: height_input,
       err: height_err,
-    } = BoardSizeInput.createCustomInput("Custom width:");
+    } = SizeInput.createCustomInput("Custom width:");
 
     const custom_field = document.createElement("div");
     custom_field.classList.add("hidden");
@@ -107,7 +107,7 @@ export default class BoardSizeInput extends Component {
     const select = document.createElement("select");
 
     // default options
-    BoardSizeInput.OPTIONS.forEach(([width, height], i) => {
+    SizeInput.OPTIONS.forEach(([width, height], i) => {
       const opt = document.createElement("option");
       opt.value = i.toString();
       opt.innerHTML = `${width}x${height}`;
@@ -116,8 +116,8 @@ export default class BoardSizeInput extends Component {
 
     // custom option
     const custom_option = document.createElement("option");
-    custom_option.value = BoardSizeInput.CUSTOM_OPTION_VALUE;
-    custom_option.innerHTML = BoardSizeInput.CUSTOM_OPTION_TEXT;
+    custom_option.value = SizeInput.CUSTOM_OPTION_VALUE;
+    custom_option.innerHTML = SizeInput.CUSTOM_OPTION_TEXT;
     select.appendChild(custom_option);
 
     const label = document.createElement("label");
@@ -160,7 +160,7 @@ export default class BoardSizeInput extends Component {
   }
 
   constructor() {
-    const {target, ...els} = BoardSizeInput.createElements();
+    const {target, ...els} = SizeInput.createElements();
     super(target);
 
     this.err_update_callback = null;
@@ -190,7 +190,7 @@ export default class BoardSizeInput extends Component {
     if (i === -1) {
       return undefined;
     }
-    return BoardSizeInput.OPTIONS[i];
+    return SizeInput.OPTIONS[i];
   }
 
   get option_i() {
@@ -202,7 +202,7 @@ export default class BoardSizeInput extends Component {
     // option will be equivalent to the option index
     const prev = this._option_i;
     this._option_i =
-      i_s === BoardSizeInput.CUSTOM_OPTION_VALUE ? -1 : parseInt(i_s);
+      i_s === SizeInput.CUSTOM_OPTION_VALUE ? -1 : parseInt(i_s);
 
     if (prev === -1 && this._option_i !== -1) {
       // was custom before, now it's normal
@@ -212,7 +212,7 @@ export default class BoardSizeInput extends Component {
       this.error_count = 0;
     } else if (prev !== -1 && this._option_i === -1) {
       // was normal before, now it's custom
-      const val = BoardSizeInput.val(prev);
+      const val = SizeInput.val(prev);
       this.custom_size = [val[0].toString(), val[1].toString()];
       showElement(this.els.custom_field);
     }
@@ -224,7 +224,7 @@ export default class BoardSizeInput extends Component {
     }
 
     // custom size will be valid if there are no errors
-    const val = BoardSizeInput.val(this.option_i);
+    const val = SizeInput.val(this.option_i);
     return val
       ? val
       : [parseInt(this.custom_size[0]), parseInt(this.custom_size[1])];
@@ -259,9 +259,9 @@ export default class BoardSizeInput extends Component {
 
       const old_invalid =
         old_width !== null
-          ? BoardSizeInput.customWidthInvalid(old_width) !== null
+          ? SizeInput.customWidthInvalid(old_width) !== null
           : false;
-      const new_invalid_message = BoardSizeInput.customWidthInvalid(new_width);
+      const new_invalid_message = SizeInput.customWidthInvalid(new_width);
       const new_invalid = new_invalid_message !== null;
 
       if (new_invalid) {
@@ -287,10 +287,10 @@ export default class BoardSizeInput extends Component {
 
       const old_invalid =
         old_height !== null
-          ? BoardSizeInput.customHeightInvalid(old_height) !== null
+          ? SizeInput.customHeightInvalid(old_height) !== null
           : false;
       const new_invalid_message =
-        BoardSizeInput.customHeightInvalid(new_height);
+        SizeInput.customHeightInvalid(new_height);
       const new_invalid = new_invalid_message !== null;
 
       if (new_invalid) {

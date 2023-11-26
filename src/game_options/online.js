@@ -1,6 +1,6 @@
 import Component from "../component.js";
 import DropChoose from "../misc_components/drop_choose.js";
-import BoardSizeInput from "../misc_components/size_input.js";
+import SizeInput from "../misc_components/size_input.js";
 
 ("use strict");
 
@@ -30,7 +30,7 @@ export default class OnlineGameGen extends Component {
     const board_size_title = document.createElement("h4");
     board_size_title.innerHTML = "Board size";
 
-    const size_input = new BoardSizeInput();
+    const size_input = new SizeInput();
 
     const aesthetics_title = document.createElement("h4");
     aesthetics_title.innerHTML = "Local aesthetics";
@@ -51,7 +51,7 @@ export default class OnlineGameGen extends Component {
     submit_button.classList.add("submit-button");
 
     const base = document.createElement("div");
-    base.classList.add("board-config");
+    base.classList.add("game-gen");
     base.append(
       sign_up_text,
       title,

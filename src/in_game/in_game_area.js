@@ -1,5 +1,6 @@
 
 import Component from "../component.js";
+import gameStage from "./stage.js";
 
 export default class InGameArea extends Component {
   constructor(options) {
@@ -11,14 +12,8 @@ export default class InGameArea extends Component {
     title.innerHTML = "Hello I am the game";
     base.appendChild(title);
 
-    const game = document.createElement("canvas");
-    game.width = 400;
-    game.height = 400;
-
-    const ctx = game.getContext("2d");
-    ctx.fillRect(25, 25, 100, 100);
-
-    base.appendChild(game);
+    const stage = new gameStage(options);
+    base.appendChild(stage.el());
 
     super(base);
   }
