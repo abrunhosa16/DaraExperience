@@ -15,9 +15,7 @@ export const GROUP = 12;
 
 function main() {
   const crd_mgr = new CredentialsManager();
-  console.log(23232)
   crd_mgr.trySignUpFromLocalStorage();
-  console.log(12312)
 
   const taskbar_signup_target = document.getElementById("sign-button");
   const signup_modal = new SignUpModal(crd_mgr, [TaskbarSignupButton.SIGN_UP_BUTTON_ID, BOARD_GEN_SIGN_BUTTON_ID]);

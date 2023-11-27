@@ -1,6 +1,6 @@
-import Board, { PIECE } from "./board";
+import Board, { PIECE } from "./board.js";
 
-export default class PlacePhaseGame {
+export default class DropPhaseGame {
   constructor(width, height, starting_turn) {
     this.board = new Board(width, height);
     this.turn = starting_turn === "black" ? PIECE.BLACK : PIECE.WHITE;
@@ -16,8 +16,17 @@ export default class PlacePhaseGame {
     const ver_size = up + down + 1;
     const hor_size = left + right + 1;
 
-    const invalid =
-      this.turn === PIECE.BLACK ? this.black_invalid : this.white_invalid;
+    const [invalid, other] =
+      this.turn === PIECE.BLACK ? [this.black_invalid, this.white_invalid] : [this.white_invalid, this.black_invalid];
+
+    // remove other invalid if the new piece is being placed there
+    const other_i = other.findIndex(
+      ([x_c, y_c]) => x === x_c && y === y_c
+    );
+    if (other_i !== -1) {
+      // if so remove
+      other.splice(other_i, 1);
+    }
 
     if (
       y > up && // inside bounds
@@ -58,9 +67,9 @@ export default class PlacePhaseGame {
 
   play_unchecked_and_not_update_invalid(x, y) {
     // just set state and not update anything else
-    this.board.set(x, y, turn);
+    this.board.set(x, y, this.turn);
     this.drop_count -= 1;
-    this.turn = turn === PIECE.BLACK ? PIECE.WHITE : PIECE.BLACK;
+    this.turn = this.turn === PIECE.BLACK ? PIECE.WHITE : PIECE.BLACK;
 
     return this.drop_count === 0;
   }
@@ -112,5 +121,31 @@ export default class PlacePhaseGame {
     this.update_invalid(x, y, up, down, left, right);
 
     return this.play_unchecked_and_not_update_invalid(x, y);
+  }
+
+  validPlay(x, y) {
+    if (!this.board.empty(x, y)) {
+      return false;
+    }
+
+    const ver_size = this.board.countUp(x, y, this.turn) + this.board.countDown(x, y, this.turn) + 1;
+    const hor_size = this.board.countLeft(x, y, this.turn) + this.board.countRight(x, y, this.turn) + 1;
+    if (ver_size > 3 || hor_size > 3) {
+      return false;
+    }
+
+    return true;
+  }
+
+  getMoveList() {
+    const moves = [];
+    for (let y = 0; y < this.board.height(); y += 1) {
+      for (let x = 0; x < this.board.width(); x += 1) {
+        if (this.validPlay(x, y)) {
+          moves.push([x, y]);
+        }
+      }
+    }
+    return moves;
   }
 }

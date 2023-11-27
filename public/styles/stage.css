@@ -9,7 +9,7 @@
 .stage .pieces {
   z-index: 3;
 }
-.stage .selections {
+.stage .invalid {
   z-index: 2;
 }
 .stage .background {

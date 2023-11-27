@@ -1,4 +1,5 @@
 import Component from "../component.js";
+import { PIECE } from "./board.js";
 
 // target width in pixels
 const WIDTH = 400;
@@ -17,6 +18,11 @@ const loadImage = (src) => {
   });
 };
 
+const relativeCoors = (e) => {
+  const rect = e.target.getBoundingClientRect();
+  return [e.clientX - Math.floor(rect.left), e.clientY - Math.floor(rect.top)];
+};
+
 export default class gameStage extends Component {
   static emptyCanvas(class_, width, height) {
     const canvas = document.createElement("canvas");
@@ -26,7 +32,7 @@ export default class gameStage extends Component {
     return canvas;
   }
 
-  constructor(options) {
+  constructor(options, onClick) {
     console.log(options);
 
     const cell_size = Math.floor((WIDTH + BORDER) / options.width);
@@ -34,14 +40,14 @@ export default class gameStage extends Component {
     const height = cell_size * options.height - BORDER;
 
     const background = gameStage.emptyCanvas("background", width, height);
-    const selections = gameStage.emptyCanvas("selections", width, height);
+    const invalid = gameStage.emptyCanvas("invalid", width, height);
     const pieces = gameStage.emptyCanvas("pieces", width, height);
 
     const base = document.createElement("div");
     base.classList.add("stage");
     base.style.width = `${width}px`;
     base.style.height = `${height}px`;
-    base.append(background, selections, pieces);
+    base.append(background, invalid, pieces);
 
     super(base);
 
@@ -53,7 +59,7 @@ export default class gameStage extends Component {
     this.height = height;
 
     this.background = background;
-    this.selections = selections;
+    this.invalid = invalid;
     this.pieces = pieces;
 
     this.black = undefined;
@@ -61,20 +67,39 @@ export default class gameStage extends Component {
     this.piece_size = Math.floor(cell_size * PIECE_SIZE);
     this.piece_margin = Math.floor(cell_size * ((1 - PIECE_SIZE) / 2));
 
-    this.load(options.black_piece_type, options.white_piece_type).then(() => {
-      console.log(this.white);
-      console.log(this.black);
-      this.drawPieces([
-        [0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 2, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-      ]);
+    this.hovered_cell = null;
+    base.addEventListener("mousemove", (e) => {
+      const [x, y] = relativeCoors(e);
+      this.hovered_cell = this.coorsFromPosition(x, y);
     });
 
     this.redrawBackground();
+  }
+
+  coorsFromPosition(x_offset, y_offset) {
+    const x = Math.floor(x_offset / this.cell_size);
+    const y = Math.floor(y_offset / this.cell_size);
+
+    // test if coors are on some border
+    if (
+      x_offset % this.cell_size >= this.cell_size - BORDER ||
+      y_offset % this.cell_size >= this.cell_size - BORDER
+    ) {
+      return null;
+    }
+    return [x, y];
+  }
+
+  addOnClick(func) {
+    const with_context = (e) => {
+      func(this.hovered_cell);
+    };
+    super.el().addEventListener("click", with_context);
+    return with_context;
+  }
+
+  removeOnClick(ctx_func) {
+    super.el().removeEventListener("click", ctx_func);
   }
 
   async load(black_piece, white_piece) {
@@ -122,6 +147,28 @@ export default class gameStage extends Component {
     }
   }
 
+  drawBlack(x, y) {
+    const ctx = this.pieces.getContext("2d");
+    ctx.drawImage(
+      this.black,
+      this.piece_margin + x * this.cell_size,
+      this.piece_margin + y * this.cell_size,
+      this.piece_size,
+      this.piece_size
+    );
+  }
+
+  drawWhite(x, y) {
+    const ctx = this.pieces.getContext("2d");
+    ctx.drawImage(
+      this.white,
+      this.piece_margin + x * this.cell_size,
+      this.piece_margin + y * this.cell_size,
+      this.piece_size,
+      this.piece_size
+    );
+  }
+
   drawPieces(board) {
     const ctx = this.pieces.getContext("2d");
     ctx.clearRect(0, 0, this.width, this.height);
@@ -132,8 +179,8 @@ export default class gameStage extends Component {
       x_offset = this.piece_margin;
       for (let x = 0; x < this.x_count; x += 1) {
         const piece = board[y][x];
-        if (piece > 0) {
-          const img = piece === 1 ? this.black : this.white;
+        if (piece != PIECE.NOTHING) {
+          const img = piece === PIECE.BLACK ? this.black : this.white;
           ctx.drawImage(
             img,
             x_offset,

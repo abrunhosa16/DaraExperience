@@ -7,7 +7,6 @@ import OnlineGameGen from "./online.js";
 
 export default class GameGen extends Component {
   static createElements(cred_mgr) {
-    console.log(cred_mgr);
     const title = document.createElement("h2");
     title.innerHTML = "Start playing";
 
