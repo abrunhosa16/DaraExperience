@@ -1,9 +1,11 @@
-
 export const PIECE = {
   NOTHING: 0,
   BLACK: 1,
-  WHITE: 2
-}
+  WHITE: 2,
+};
+
+// maximum number of pieces that can be in a line
+const MAX_LINE_COUNT = 3;
 
 export default class Board {
   static createBoard(width, height) {
@@ -116,5 +118,62 @@ export default class Board {
     }
 
     return count;
+  }
+
+  // test if piece can move in a direction and not make more than MAX_LINE_COUNT
+  canMoveUp(x, y) {
+    if (y === 0) {
+      return false;
+    }
+    const yf = y - 1;
+    const piece = this.get(x, y);
+    return (
+      this.empty(x, yf) &&
+      this.countLeft(x, yf, piece) + this.countRight(x, yf, piece) <
+        MAX_LINE_COUNT &&
+      this.countUp(x, yf, piece) < MAX_LINE_COUNT
+    );
+  }
+
+  canMoveDown(x, y) {
+    if (y + 1 === this.height()) {
+      return false;
+    }
+    const yf = y + 1;
+    const piece = this.get(x, y);
+    return (
+      this.empty(x, yf) &&
+      this.countLeft(x, yf, piece) + super.countRight(x, yf, piece) <
+        MAX_LINE_COUNT &&
+      this.countUp(x, yf, piece) < MAX_LINE_COUNT
+    );
+  }
+
+  canMoveLeft(x, y) {
+    if (x === 0) {
+      return false;
+    }
+    const xf = x - 1;
+    const piece = this.get(x, y);
+    return (
+      this.empty(xf, y) &&
+      this.countUp(xf, y, piece) + this.countDown(xf, y, piece) <
+        MAX_LINE_COUNT &&
+      super.countLeft(xf, y, piece) < MAX_LINE_COUNT
+    );
+  }
+
+  canMoveRight(x, y) {
+    if (x + 1 === this.width()) {
+      return false;
+    }
+    const xf = x + 1;
+    const piece = this.get(x, y);
+    return (
+      this.empty(xf, y) &&
+      this.countUp(xf, y, piece) + this.countDown(xf, y, piece) <
+        MAX_LINE_COUNT &&
+      this.countRight(xf, y, piece) < MAX_LINE_COUNT
+    );
   }
 }

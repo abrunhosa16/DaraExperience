@@ -32,14 +32,12 @@ export default class gameStage extends Component {
     return canvas;
   }
 
-  constructor(options, onClick) {
-    console.log(options);
-
+  constructor(x_count, y_count) {
     // cell size with the border
-    const cell_size = Math.floor((WIDTH + BORDER) / options.width);
+    const cell_size = Math.floor((WIDTH + BORDER) / x_count);
     // total width and height of the board (with internal borders);
-    const width = cell_size * options.width - BORDER;
-    const height = cell_size * options.height - BORDER;
+    const width = cell_size * x_count - BORDER;
+    const height = cell_size * y_count - BORDER;
 
     // contains just the game background
     // remains static trough the game
@@ -59,8 +57,8 @@ export default class gameStage extends Component {
 
     super(base);
 
-    this.x_count = options.width;
-    this.y_count = options.height;
+    this.x_count = x_count;
+    this.y_count = y_count;
 
     this.cell_size = cell_size;
     this.width = width;
@@ -290,22 +288,12 @@ export default class gameStage extends Component {
     const ctx = this.hovered.getContext("2d");
     ctx.fillStyle = "#000000bb";
     const cropped = this.cell_size - BORDER;
-    ctx.fillRect(
-      x * this.cell_size,
-      y * this.cell_size,
-      cropped,
-      cropped
-    );
+    ctx.fillRect(x * this.cell_size, y * this.cell_size, cropped, cropped);
   }
 
   eraseCellHover(x, y) {
     const ctx = this.hovered.getContext("2d");
     const cropped = this.cell_size - BORDER;
-    ctx.clearRect(
-      x * this.cell_size,
-      y * this.cell_size,
-      cropped,
-      cropped
-    );
+    ctx.clearRect(x * this.cell_size, y * this.cell_size, cropped, cropped);
   }
 }

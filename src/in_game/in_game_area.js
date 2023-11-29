@@ -3,14 +3,26 @@ import { PIECE } from "./board.js";
 import DropPhaseGame from "./drop_phase_game.js";
 import gameStage from "./stage.js";
 
-const GAME_MODE = {
+export const GAME_MODE = {
   MANUAL: 0,
   RANDOM: 1,
   MINIMAX: 2,
   ONLINE: 3,
 };
 
+export const PLAYER_COLOR = {
+  RANDOM: 0,
+  BLACK: 1,
+  WHITE: 2
+}
+
 export default class InGameArea extends Component {
+  // options:
+  //    width: width of the board in cells
+  //    height: height of the board in cells
+  //    player1_mode: player 1 GAME_MODE
+  //    player2_mode: player 2 GAME_MODE
+  //    player1_color: PLAYER_COLOR (payer2_color is inferred)
   constructor(options) {
     console.log(options);
 
@@ -20,7 +32,7 @@ export default class InGameArea extends Component {
     title.innerHTML = "Hello I am the game";
     base.appendChild(title);
 
-    const stage = new gameStage(options);
+    const stage = new gameStage(options.width, options.height);
     base.appendChild(stage.el());
 
     super(base);
