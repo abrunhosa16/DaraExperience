@@ -31,11 +31,17 @@ export default class InGameArea extends Component {
     this.black_mode = GAME_MODE.MANUAL;
     this.white_mode = GAME_MODE.RANDOM;
 
+    // stores the function that highlights a cell if its hovered and
+    // it is a valid play
+    this.valid_cell_hover = null;
+    this._hovered = null;
+
     this.stage.load("coin", "coin").then(() => {
       this.start();
     });
   }
 
+  // wait for a click in the stage
   async stageClick() {
     return new Promise((resolve, reject) => {
       const ctx = this.stage.addOnClick((res) => {
@@ -47,6 +53,42 @@ export default class InGameArea extends Component {
     });
   }
 
+  get hovered() {
+    return this._hovered;
+  }
+
+  set hovered(val) {
+    if (this.hovered !== null) {
+      this.stage.eraseCellHover(...this.hovered);
+    }
+    this._hovered = val;
+    if (val !== null) {
+      this.stage.drawCellHover(...val);
+    }
+  }
+
+  addCellHover() {
+    this.valid_cell_hover = (cell) => {
+      console.log(cell);
+      if (cell !== null) {
+        const [x, y] = cell;
+        if (this.game.validPlay(x, y)) {
+          this.hovered = cell;
+        } else {
+          this.hovered = null;
+        }
+      }
+    }
+    this.stage.addHoveredCellOnchange(this.valid_cell_hover);
+  }
+
+  removeCellHover() {
+    if (this.valid_cell_hover !== null) {
+      this.hovered = null;
+      this.stage.removeHoveredCellOnchange(this.valid_cell_hover);
+    }
+  }
+
   async start() {
     while (true) {
       const turn = this.game.turn;
@@ -56,7 +98,16 @@ export default class InGameArea extends Component {
       let phase_ended;
       switch (mode) {
         case GAME_MODE.MANUAL:
+          this.stage.clearHighlighted();
+          const current_invalid = this.game.getCurrentInvalid();
+          const other_invalid = this.game.getOtherInvalid();
+          console.log(current_invalid, other_invalid);
+          this.stage.highlight(current_invalid, "#aa0000");
+          this.stage.highlight(other_invalid, "#0000aa");
+
+          this.addCellHover();
           [x, y] = await this.stageClick();
+          this.removeCellHover();
 
           try {
             phase_ended = this.game.play(x, y);
@@ -78,9 +129,9 @@ export default class InGameArea extends Component {
       }
 
       if (turn === PIECE.BLACK) {
-        this.stage.drawBlack(x, y);
+        this.stage.drawBlackPiece(x, y);
       } else {
-        this.stage.drawWhite(x, y);
+        this.stage.drawWhitePiece(x, y);
       }
 
       if (phase_ended) {

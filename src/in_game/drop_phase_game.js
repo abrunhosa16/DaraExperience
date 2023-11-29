@@ -8,10 +8,22 @@ export default class DropPhaseGame {
     this.drop_count = 24; // 12 * 2
 
     // contains a list of explicitly invalid positions
+    // (that are in empty cells)
     this.white_invalid = [];
     this.black_invalid = [];
   }
 
+  // get invalid positions for the current turn
+  getCurrentInvalid() {
+    return this.turn === PIECE.BLACK ? this.black_invalid : this.white_invalid;
+  }
+
+  // get invalid positions for the other turn
+  getOtherInvalid() {
+    return this.turn === PIECE.BLACK ? this.white_invalid : this.black_invalid;
+  }
+
+  // update invalid positions for the current turn (see implementations below)
   update_invalid(x, y, up, down, left, right) {
     const ver_size = up + down + 1;
     const hor_size = left + right + 1;
@@ -65,6 +77,7 @@ export default class DropPhaseGame {
     }
   }
 
+  // forcefully place the piece in the position and don't update any invalid positions
   play_unchecked_and_not_update_invalid(x, y) {
     // just set state and not update anything else
     this.board.set(x, y, this.turn);

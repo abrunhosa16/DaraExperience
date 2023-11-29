@@ -35,19 +35,27 @@ export default class gameStage extends Component {
   constructor(options, onClick) {
     console.log(options);
 
+    // cell size with the border
     const cell_size = Math.floor((WIDTH + BORDER) / options.width);
+    // total width and height of the board (with internal borders);
     const width = cell_size * options.width - BORDER;
     const height = cell_size * options.height - BORDER;
 
+    // contains just the game background
+    // remains static trough the game
     const background = gameStage.emptyCanvas("background", width, height);
-    const invalid = gameStage.emptyCanvas("invalid", width, height);
+    // contains highlighted valid and invalid positions
+    const highlighted = gameStage.emptyCanvas("highlighted", width, height);
+    // contains current game pieces
     const pieces = gameStage.emptyCanvas("pieces", width, height);
+    // its drawn over to show hovered or invalid cells
+    const hovered = gameStage.emptyCanvas("hovered", width, height);
 
     const base = document.createElement("div");
     base.classList.add("stage");
     base.style.width = `${width}px`;
     base.style.height = `${height}px`;
-    base.append(background, invalid, pieces);
+    base.append(background, highlighted, pieces, hovered);
 
     super(base);
 
@@ -59,23 +67,57 @@ export default class gameStage extends Component {
     this.height = height;
 
     this.background = background;
-    this.invalid = invalid;
+    this.highlighted = highlighted;
     this.pieces = pieces;
+    this.hovered = hovered;
 
+    // black and white will contain images when they load
     this.black = undefined;
     this.white = undefined;
     this.piece_size = Math.floor(cell_size * PIECE_SIZE);
     this.piece_margin = Math.floor(cell_size * ((1 - PIECE_SIZE) / 2));
 
+    // this.hovered_cell is just a internal variable representing the cell
+    // on which the mouse is over
     this.hovered_cell = null;
+    this.hovered_cell_onchange_callbacks = new Set();
     base.addEventListener("mousemove", (e) => {
       const [x, y] = relativeCoors(e);
-      this.hovered_cell = this.coorsFromPosition(x, y);
+      const n = this.coorsFromPosition(x, y);
+
+      const l_null = this.hovered_cell === null;
+      const n_null = n === null;
+      // if at least one of them is not null
+      if (!l_null || !n_null) {
+        // if one of them is null or they are not equal
+        if (
+          l_null ||
+          n_null ||
+          this.hovered_cell[0] !== n[0] ||
+          this.hovered_cell[1] !== n[1]
+        ) {
+          this.hovered_cell = n;
+          this.hovered_cell_onchange_callbacks.forEach((func) => {
+            func(n);
+          });
+        }
+      }
     });
 
     this.redrawBackground();
   }
 
+  // adds a function thats going to be called when the cell under the mouse changes
+  addHoveredCellOnchange(callback) {
+    this.hovered_cell_onchange_callbacks.add(callback);
+  }
+
+  removeHoveredCellOnchange(callback) {
+    this.hovered_cell_onchange_callbacks.delete(callback);
+  }
+
+  // gets coordinates from some relative position on the board.
+  // can return null if the position is on a internal border
   coorsFromPosition(x_offset, y_offset) {
     const x = Math.floor(x_offset / this.cell_size);
     const y = Math.floor(y_offset / this.cell_size);
@@ -90,6 +132,7 @@ export default class gameStage extends Component {
     return [x, y];
   }
 
+  // adds a function that runs if some cell is clicked
   addOnClick(func) {
     const with_context = (e) => {
       func(this.hovered_cell);
@@ -98,10 +141,12 @@ export default class gameStage extends Component {
     return with_context;
   }
 
+  // removes the function that was returned above
   removeOnClick(ctx_func) {
     super.el().removeEventListener("click", ctx_func);
   }
 
+  // loads the specific images for the black and white pieces
   async load(black_piece, white_piece) {
     // black and white started loading in parallel
     const black = loadImage(
@@ -115,6 +160,7 @@ export default class gameStage extends Component {
     this.white = await white;
   }
 
+  // draws the background with all the internal borders
   redrawBackground() {
     const ctx = this.background.getContext("2d");
     ctx.fillRect(0, 0, this.width, this.height);
@@ -147,7 +193,8 @@ export default class gameStage extends Component {
     }
   }
 
-  drawBlack(x, y) {
+  // draws a black piece
+  drawBlackPiece(x, y) {
     const ctx = this.pieces.getContext("2d");
     ctx.drawImage(
       this.black,
@@ -158,7 +205,8 @@ export default class gameStage extends Component {
     );
   }
 
-  drawWhite(x, y) {
+  // draws a white piece
+  drawWhitePiece(x, y) {
     const ctx = this.pieces.getContext("2d");
     ctx.drawImage(
       this.white,
@@ -167,6 +215,32 @@ export default class gameStage extends Component {
       this.piece_size,
       this.piece_size
     );
+  }
+
+  // erases a piece
+  erasePiece(x, y) {
+    const ctx = this.pieces.getContext("2d");
+    ctx.clearRect(
+      x * this.cell_size,
+      y * this.cell_size,
+      this.cell_size,
+      this.cell_size
+    );
+  }
+
+  // set current coordinates to the specific piece
+  setPiece(x, y, piece) {
+    this.erasePiece(x, y);
+    switch (piece) {
+      case PIECE.BLACK:
+        this.drawBlackPiece(x, y);
+        break;
+      case PIECE.WHITE:
+        this.drawWhitePiece(x, y);
+        break;
+      default:
+        throw new Error("Invalid piece type when drawing");
+    }
   }
 
   drawPieces(board) {
@@ -193,5 +267,45 @@ export default class gameStage extends Component {
       }
       y_offset += this.cell_size;
     }
+  }
+
+  // highlight the given positions with the given color
+  // (draws over other highlighted positions)
+  highlight(positions, color) {
+    const ctx = this.highlighted.getContext("2d");
+    ctx.fillStyle = color;
+
+    positions.forEach(([x, y]) => {
+      const cropped = this.cell_size - BORDER;
+      ctx.fillRect(x * this.cell_size, y * this.cell_size, cropped, cropped);
+    });
+  }
+
+  clearHighlighted() {
+    const ctx = this.highlighted.getContext("2d");
+    ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  drawCellHover(x, y) {
+    const ctx = this.hovered.getContext("2d");
+    ctx.fillStyle = "#000000bb";
+    const cropped = this.cell_size - BORDER;
+    ctx.fillRect(
+      x * this.cell_size,
+      y * this.cell_size,
+      cropped,
+      cropped
+    );
+  }
+
+  eraseCellHover(x, y) {
+    const ctx = this.hovered.getContext("2d");
+    const cropped = this.cell_size - BORDER;
+    ctx.clearRect(
+      x * this.cell_size,
+      y * this.cell_size,
+      cropped,
+      cropped
+    );
   }
 }
