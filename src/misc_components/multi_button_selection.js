@@ -19,7 +19,7 @@ export default class MultiButtonSelection extends Component {
     target.append(label_text);
 
     const buttons = {};
-    Object.entries(button_id_texts).forEach(([b_id, txt]) => {
+    button_id_texts.forEach(([b_id, txt]) => {
       const b = document.createElement("button");
       b.id = `${id}-${b_id}`;
       b.innerHTML = txt;
@@ -30,7 +30,7 @@ export default class MultiButtonSelection extends Component {
     return { target: target, buttons: buttons };
   }
 
-  // button_id_texts: { [id]: text }
+  // button_id_texts: [(id, text)]
   constructor(id, label, button_id_texts, initial_button_id) {
     const { target, buttons } = MultiButtonSelection.createElements(
       id,
@@ -39,6 +39,8 @@ export default class MultiButtonSelection extends Component {
     );
     super(target)
     this.buttons = buttons;
+    this._selected = null;
+
     this.selected = initial_button_id;
 
     Object.entries(this.buttons).forEach(([id, el]) => {
@@ -54,7 +56,7 @@ export default class MultiButtonSelection extends Component {
         `Trying to select an unknown value "${val}" in MultiButtonSelection`
       );
     }
-    if (this._selected) {
+    if (this._selected !== null) {
       markAsUnselected(this.buttons[this._selected]);
     }
     markAsSelected(this.buttons[val]);

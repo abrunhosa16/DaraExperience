@@ -3,6 +3,7 @@ import MultiButtonSelection from "../misc_components/multi_button_selection.js";
 import Component from "../component.js";
 import Toggle from "../misc_components/toggle.js";
 import DropChoose from "../misc_components/drop_choose.js";
+import { COLOR, GAME_MODE, PIECE_TYPE } from "../in_game/in_game_area.js";
 
 ("use strict");
 
@@ -16,66 +17,89 @@ export default class OfflineGameGen extends Component {
 
     const size_input = new SizeInput();
 
-    const player_assignment_header = document.createElement("h4");
-    player_assignment_header.innerHTML = "Player assignment";
+    const mode_assignment_header = document.createElement("h4");
+    mode_assignment_header.innerHTML = "Game mode";
 
-    const player1 = new MultiButtonSelection(
-      "player1",
-      "White pieces:",
-      {
-        human: "Human",
-        random: "Play Randomly (not implemented)",
-        ai: "AI (Minimax) (not implemented)",
-      },
-      "human"
+    const white_mode = new MultiButtonSelection(
+      "white_mode",
+      "Player 1 (white):",
+      [
+        [GAME_MODE.MANUAL, "Human"],
+        [GAME_MODE.RANDOM, "Play Randomly"],
+        [GAME_MODE.MINIMAX, "AI (Minimax) (not implemented)"],
+      ],
+      GAME_MODE.MANUAL
     );
 
-    const player2 = new MultiButtonSelection(
-      "player2",
-      "Black pieces:",
-      {
-        human: "Human",
-        random: "Play Randomly (not implemented)",
-        ai: "AI (Minimax) (not implemented)",
-      },
-      "human"
+    const black_mode = new MultiButtonSelection(
+      "black_mode",
+      "Player 2 (black):",
+      [
+        [GAME_MODE.MANUAL, "Human"],
+        [GAME_MODE.RANDOM, "Play Randomly"],
+        [GAME_MODE.MINIMAX, "AI (Minimax) (not implemented)"],
+      ],
+      GAME_MODE.RANDOM
     );
 
-    const player_assignment = document.createElement("div");
-    player_assignment.append(player_assignment_header, player1.el(), player2.el());
+    const starting_color = new MultiButtonSelection(
+      "starting_color",
+      "Starting player:",
+      [
+        [COLOR.WHITE, "Player 1 (white)"],
+        [COLOR.BLACK, "Player 2 (black)"],
+        [COLOR.RANDOM, "Random"],
+      ],
+      COLOR.RANDOM
+    );
 
-    const starting_player = new MultiButtonSelection(
-      "starting_player",
-      "Starting pieces:",
-      {
-        white: "White",
-        black: "Black",
-        random: "Random",
-      },
-      "random"
+    const mode_assignment = document.createElement("div");
+    mode_assignment.append(
+      mode_assignment_header,
+      white_mode.el(),
+      black_mode.el(),
+      starting_color.el()
     );
 
     const aesthetics_title = document.createElement("h4");
     aesthetics_title.innerHTML = "Aesthetics";
 
-    const black_piece_type = new DropChoose("Select black piece type:", [
-      ["coin", "Coin"],
-      ["leaf", "Leaf"],
-      ["rock", "Rock"],
-    ]);
-    const white_piece_type = new DropChoose("Select white piece type:", [
-      ["coin", "Coin"],
-      ["leaf", "Leaf"],
-      ["rock", "Rock"],
-    ]);
+    const white_piece_type = new DropChoose(
+      "Player 2 (black) piece type:",
+      [
+        [PIECE_TYPE.COIN, "Coin"],
+        [PIECE_TYPE.LEAF, "Leaf"],
+        [PIECE_TYPE.ROCK, "Rock"],
+      ],
+      0
+    );
+    const black_piece_type = new DropChoose(
+      "Player 1 (white) piece type:",
+      [
+        [PIECE_TYPE.COIN, "Coin"],
+        [PIECE_TYPE.LEAF, "Leaf"],
+        [PIECE_TYPE.ROCK, "Rock"],
+      ],
+      1
+    );
+
+    const aesthetics = document.createElement("div");
+    aesthetics.append(
+      aesthetics_title,
+      white_piece_type.el(),
+      black_piece_type.el()
+    );
+
+    const other_title = document.createElement("h3");
+    other_title.innerHTML = "Other";
 
     const skip_drop_phase = new Toggle(
       "Skip drop phase (places all pieces randomly): ",
       false
     );
-    
-    const other_title = document.createElement("h3");
-    other_title.innerHTML = "Other";
+
+    const other = document.createElement("div");
+    other.append(other_title, skip_drop_phase.el());
 
     const submit_button = document.createElement("button");
     submit_button.innerHTML = "Start!";
@@ -87,25 +111,21 @@ export default class OfflineGameGen extends Component {
       title,
       board_size_title,
       size_input.el(),
-      player_assignment,
-      starting_player.el(),
-      aesthetics_title,
-      black_piece_type.el(),
-      white_piece_type.el(),
-      other_title,
-      skip_drop_phase.el(),
+      mode_assignment,
+      aesthetics,
+      other,
       submit_button
     );
 
     return {
-      base: base,
-      size_input: size_input,
-      player1: player1,
-      player2: player2,
-      starting_player: starting_player,
-      black_piece_type: black_piece_type,
-      white_piece_type: white_piece_type,
-      skip_drop_phase: skip_drop_phase,
+      base,
+      size_input,
+      white_mode,
+      black_mode,
+      starting_color,
+      black_piece_type,
+      white_piece_type,
+      skip_drop_phase,
       submit: submit_button,
     };
   }
@@ -113,20 +133,20 @@ export default class OfflineGameGen extends Component {
   constructor(submit_callback) {
     const {
       base,
-      submit,
       size_input,
-      player1,
-      player2,
-      starting_player,
-      skip_drop_phase,
+      white_mode,
+      black_mode,
+      starting_color,
       black_piece_type,
       white_piece_type,
+      skip_drop_phase,
+      submit,
     } = OfflineGameGen.createElements();
     super(base);
     this.size_input = size_input;
-    this.player1 = player1;
-    this.player2 = player2;
-    this.starting_player = starting_player;
+    this.white_mode = white_mode;
+    this.black_mode = black_mode;
+    this.starting_color = starting_color;
     this.black_piece_type = black_piece_type;
     this.white_piece_type = white_piece_type;
     this.skip_drop_phase = skip_drop_phase;
@@ -139,15 +159,27 @@ export default class OfflineGameGen extends Component {
     submit.addEventListener("click", (e) => {
       const [width, height] = this.size_input.getParsedSize();
 
+      // options:
+      //    width: width of the board in cells
+      //    height: height of the board in cells
+      //    black_mode: black player GAME_MODE
+      //    white_mode: white player GAME_MODE
+      //    black_piece_type: PIECE_TYPE
+      //    white_piece_type: PIECE_TYPE
+      //  If playing offline:
+      //    starting_color: COLOR
+      //    skip_drop_phase: bool (places pieces in drop phase randomly)
+
       submit_callback({
         mode: "offline",
         width: width,
         height: height,
-        white_player: this.player1.selected,
-        black_player: this.player2.selected,
-        starting_player: this.starting_player.selected,
+        black_mode: this.black_mode.selected,
+        white_mode: this.white_mode.selected,
         black_piece_type: this.black_piece_type.value,
         white_piece_type: this.white_piece_type.value,
+
+        starting_color: this.starting_color.selected,
         skip_drop_phase: this.skip_drop_phase.toggled,
       });
     });

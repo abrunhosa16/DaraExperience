@@ -35,16 +35,23 @@ export default class OnlineGameGen extends Component {
     const aesthetics_title = document.createElement("h4");
     aesthetics_title.innerHTML = "Local aesthetics";
 
-    const player1_piece_type = new DropChoose("Your piece type:", [
-      ["coin", "Coin"],
-      ["leaf", "Leaf"],
-      ["rock", "Rock"],
+    const black_piece_type = new DropChoose("Your piece type:", [
+      [PIECE_TYPE.COIN, "Coin"],
+      [PIECE_TYPE.LEAF, "Leaf"],
+      [PIECE_TYPE.ROCK, "Rock"],
     ]);
-    const player2_piece_type = new DropChoose("Enemy piece type:", [
-      ["coin", "Coin"],
-      ["leaf", "Leaf"],
-      ["rock", "Rock"],
+    const white_piece_type = new DropChoose("Opponent piece type:", [
+      [PIECE_TYPE.COIN, "Coin"],
+      [PIECE_TYPE.LEAF, "Leaf"],
+      [PIECE_TYPE.ROCK, "Rock"],
     ]);
+
+    const aesthetics = document.createElement("div");
+    aesthetics.append(
+      aesthetics_title,
+      black_piece_type.el(),
+      white_piece_type.el()
+    );
 
     const submit_button = document.createElement("button");
     submit_button.innerHTML = "Search for a match";
@@ -57,24 +64,22 @@ export default class OnlineGameGen extends Component {
       title,
       board_size_title,
       size_input.el(),
-      aesthetics_title,
-      player1_piece_type.el(),
-      player2_piece_type.el(),
+      aesthetics,
       submit_button
     );
 
     return {
-      base: base,
-      size_input: size_input,
-      player1_piece_type: player1_piece_type,
-      player2_piece_type: player2_piece_type,
+      base,
+      size_input,
+      black_piece_type,
+      white_piece_type,
       submit: submit_button,
     };
   }
 
   signedIn(username) {
     super.el().innerHTML = "";
-    const { base, size_input, player1_piece_type, player2_piece_type, submit } =
+    const { base } =
       OnlineGameGen.createElements(username);
     super.el().appendChild(base);
   }

@@ -2,7 +2,7 @@ import Component from "../component.js";
 import { PIECE } from "./board.js";
 
 // target width in pixels
-const WIDTH = 400;
+const WIDTH = 500;
 // border in pixels BETWEEN cells
 const BORDER = 1;
 

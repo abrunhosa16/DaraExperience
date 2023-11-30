@@ -16,15 +16,15 @@ export default class GameGen extends Component {
     const online_sel = new MultiButtonSelection(
       "online",
       "",
-      {
-        online: "Play against another player online",
-        offline: "Play locally or against an AI",
-      },
-      "online"
+      [
+        ["online", "Play against another player online"],
+        ["offline", "Play locally or against an AI"],
+      ],
+      "offline"
     );
 
     const online_offline_gen = document.createElement("div");
-    
+
     const base = document.createElement("div");
     base.classList.add("game-gen");
     base.append(title, online_title, online_sel.el(), online_offline_gen);
@@ -38,7 +38,11 @@ export default class GameGen extends Component {
 
   setOnline(sign_up_modal) {
     this.online_offline_gen.innerHTML = "";
-    const online = new OnlineGameGen(this.cred_mgr, this.submit_callback, sign_up_modal);
+    const online = new OnlineGameGen(
+      this.cred_mgr,
+      this.submit_callback,
+      sign_up_modal
+    );
     this.online_offline_gen.append(online.el());
   }
 
@@ -70,6 +74,6 @@ export default class GameGen extends Component {
       } else {
         this.setOffline();
       }
-    })
+    });
   }
 }

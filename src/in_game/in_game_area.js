@@ -4,25 +4,36 @@ import DropPhaseGame from "./drop_phase_game.js";
 import gameStage from "./stage.js";
 
 export const GAME_MODE = {
-  MANUAL: 0,
-  RANDOM: 1,
-  MINIMAX: 2,
-  ONLINE: 3,
+  MANUAL: "manual",
+  RANDOM: "random",
+  MINIMAX: "minimax",
+  ONLINE: "online",
 };
 
-export const PLAYER_COLOR = {
-  RANDOM: 0,
-  BLACK: 1,
-  WHITE: 2
-}
+export const COLOR = {
+  BLACK: "black",
+  WHITE: "white",
+  RANDOM: "random",
+};
+
+export const PIECE_TYPE = {
+  COIN: "coin",
+  LEAF: "leaf",
+  ROCK: "rock",
+};
 
 export default class InGameArea extends Component {
   // options:
   //    width: width of the board in cells
   //    height: height of the board in cells
-  //    player1_mode: player 1 GAME_MODE
-  //    player2_mode: player 2 GAME_MODE
-  //    player1_color: PLAYER_COLOR (payer2_color is inferred)
+  //    black_mode: black player GAME_MODE
+  //    white_mode: white player GAME_MODE
+  //    black_piece_type: PIECE_TYPE
+  //    white_piece_type: PIECE_TYPE
+  //  If playing offline:
+  //    starting_color: COLOR
+  //    skip_drop_phase: bool (places pieces in drop phase randomly)
+
   constructor(options) {
     console.log(options);
 
@@ -37,20 +48,31 @@ export default class InGameArea extends Component {
 
     super(base);
 
-    this.stage = stage;
-    this.game = new DropPhaseGame(options.width, options.height, PIECE.BLACK);
+    let starting_turn;
+    if (options.starting_color === COLOR.RANDOM) {
+      starting_turn = Math.random() < 0.5 ? PIECE.BLACK : PIECE.WHITE;
+    } else {
+      starting_turn =
+        options.starting_color === COLOR.BLACK ? PIECE.BLACK : PIECE.WHITE;
+    }
 
-    this.black_mode = GAME_MODE.MANUAL;
-    this.white_mode = GAME_MODE.RANDOM;
+    this.black_mode = options.black_mode;
+    this.white_mode = options.white_mode;
+    this.skip_drop_phase = options.skip_drop_phase;
+
+    this.stage = stage;
+    this.game = new DropPhaseGame(options.width, options.height, starting_turn);
 
     // stores the function that highlights a cell if its hovered and
     // it is a valid play
     this.valid_cell_hover = null;
     this._hovered = null;
 
-    this.stage.load("coin", "coin").then(() => {
-      this.start();
-    });
+    this.stage
+      .load(options.black_piece_type, options.white_piece_type)
+      .then(() => {
+        this.start();
+      });
   }
 
   // wait for a click in the stage
@@ -90,7 +112,7 @@ export default class InGameArea extends Component {
           this.hovered = null;
         }
       }
-    }
+    };
     this.stage.addHoveredCellOnchange(this.valid_cell_hover);
   }
 
@@ -104,16 +126,19 @@ export default class InGameArea extends Component {
   async start() {
     while (true) {
       const turn = this.game.turn;
-      const mode = turn === PIECE.BLACK ? this.black_mode : this.white_mode;
+      const cur_mode = this.skip_drop_phase
+        ? GAME_MODE.RANDOM
+        : turn === PIECE.BLACK
+        ? this.black_mode
+        : this.white_mode;
 
       let x, y;
       let phase_ended;
-      switch (mode) {
+      switch (cur_mode) {
         case GAME_MODE.MANUAL:
           this.stage.clearHighlighted();
           const current_invalid = this.game.getCurrentInvalid();
           const other_invalid = this.game.getOtherInvalid();
-          console.log(current_invalid, other_invalid);
           this.stage.highlight(current_invalid, "#aa0000");
           this.stage.highlight(other_invalid, "#0000aa");
 
@@ -128,6 +153,7 @@ export default class InGameArea extends Component {
             continue;
           }
           break;
+
         case GAME_MODE.RANDOM:
           const move_list = this.game.getMoveList();
           const i = Math.floor(Math.random() * move_list.length);
