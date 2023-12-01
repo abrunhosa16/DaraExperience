@@ -1,16 +1,33 @@
-import Board, { MAX_LINE_COUNT, PIECE } from "./board.js";
-import PossibleMoveMoves, { DIRECTION, getDirection } from "./possible_move_moves.js";
+import Board, { MAX_LINE_COUNT, PIECE } from "../board.js";
 
 const adjacent = (xi, yi, xf, yf) => {
   return Math.abs(xf - xi) + Math.abs(yf - yi) === 1;
 };
 
+const DIRECTION = {
+  UP: 0,
+  DOWN: 1,
+  LEFT: 2,
+  RIGHT: 3,
+};
+
+const getDirection = (xi, yi, xf, yf) => {
+  if (yf < yi) {
+    return DIRECTION.UP;
+  } else if (yf > yi) {
+    return DIRECTION.DOWN;
+  } else if (xf < xi) {
+    return DIRECTION.LEFT;
+  } else if (xf > xi) {
+    return DIRECTION.RIGHT;
+  }
+};
+
+
 export default class MovePhaseGame {
   constructor(drop_phase_game) {
     this.board = drop_phase_game.board;
     this.turn = drop_phase_game.turn;
-
-    this.moves = new PossibleMoveMoves(this.board);
 
     this.black_last_move = null;
     this.white_last_move = null;
@@ -56,8 +73,22 @@ export default class MovePhaseGame {
       );
     }
 
-    const direction = getDirection(xi, yi, xf, yf);
-    if (!this.moves.canMoveInDirection(xi, yi, direction)) {
+    let make = null;
+    switch (getDirection(xi, yi, xf, yf)) {
+      case DIRECTION.UP:
+        make = this.board.canMoveUp(xi, yi);
+        break;
+      case DIRECTION.DOWN:
+        make = this.board.canMoveDown(xi, yi);
+        break;
+      case DIRECTION.LEFT:
+        make = this.board.canMoveLeft(xi, yi);
+        break;
+      case DIRECTION.RIGHT:
+        make = this.board.canMoveRight(xi, yi);
+        break;
+    }
+    if (make === null) {
       throw Error(
         `Invalid destination: A piece in that direction would make a line that is more than ${MAX_LINE_COUNT}`
       );
@@ -65,40 +96,8 @@ export default class MovePhaseGame {
 
     this.board.move(xi, yi, xf, yf);
 
-    switch (direction) {
-      case DIRECTION.UP:
-        this.moves.updateUp(xf, yf);
-        break;
-      case DIRECTION.DOWN:
-        return this.canMoveDown(x, y);
-      case DIRECTION.LEFT:
-        return this.canMoveLeft(x, y);
-      case DIRECTION.RIGHT:
-        return this.canMoveRight(x, y);
-    }
+    console.log(make);
 
-    if (xf > xi) {
-      // right
-      const perpendicular = super.countUp(xf, yf) + super.countDown(xf, yf) + 1;
-      const parallel = super.countRight(xf, yf) + 1;
-      going_to_make = Math.max(perpendicular, parallel);
-    } else if (xf < xi) {
-      // left
-      const perpendicular = super.countUp(xf, yf) + super.countDown(xf, yf) + 1;
-      const parallel = super.countLeft(xf, yf) + 1;
-      going_to_make = Math.max(perpendicular, parallel);
-    } else if (yf > yi) {
-      // down
-      const perpendicular =
-        super.countLeft(xf, yf) + super.countRight(xf, yf) + 1;
-      const parallel = super.countDown(xf, yf) + 1;
-      going_to_make = Math.max(perpendicular, parallel);
-    } else if (yf < yi) {
-      // up
-      const perpendicular =
-        super.countLeft(xf, yf) + super.countRight(xf, yf) + 1;
-      const parallel = super.countUp(xf, yf) + 1;
-      going_to_make = Math.max(perpendicular, parallel);
-    }
+    this.turn = this.turn === PIECE.BLACK ? PIECE.WHITE : PIECE.BLACK;
   }
 }

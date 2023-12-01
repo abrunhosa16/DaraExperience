@@ -19,24 +19,6 @@ const calculatePossibleMoves = (board) => {
   return rows;
 };
 
-export const DIRECTION = {
-  UP: 0,
-  DOWN: 1,
-  LEFT: 2,
-  RIGHT: 3,
-};
-
-export const getDirection = (xi, yi, xf, yf) => {
-  if (yf < yi) {
-    return DIRECTION.UP;
-  } else if (yf > yi) {
-    return DIRECTION.DOWN;
-  } else if (xf < xi) {
-    return DIRECTION.LEFT;
-  } else if (xf > xi) {
-    return DIRECTION.RIGHT;
-  }
-};
 
 export default class PossibleMoveMoves {
   constructor(board) {
