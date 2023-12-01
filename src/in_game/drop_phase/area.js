@@ -29,6 +29,8 @@ export default class DropPhaseArea extends Component {
 
     // current hovered cell coors
     this.hovered = null;
+    // paint hovered cell with a different shade if its a valid play
+    this.test_for_validity = false;
   }
 
   // wait for a click in the stage
@@ -44,13 +46,17 @@ export default class DropPhaseArea extends Component {
   }
 
   // paints a cell to be hovered
-  set_hovered(coors) {
+  set_hovered(val) {
     if (this.hovered !== null) {
       this.stage.eraseCellHover(...this.hovered);
     }
-    this.hovered = coors;
-    if (coors !== null) {
-      this.stage.drawCellHover(...coors);
+
+    if (val === null) {
+      this.hovered = null;
+    } else {
+      const { x, y, color } = val;
+      this.hovered = [x, y];
+      this.stage.drawCellHover(x, y, color);
     }
   }
 
@@ -58,20 +64,28 @@ export default class DropPhaseArea extends Component {
   // returns a function that removes the event when called
   addCellHover() {
     const callback = (cell) => {
-      if (cell !== null) {
+      if (cell === null) {
+        this.set_hovered(null);
+      } else {
         const [x, y] = cell;
-        if (this.game.validPlay(x, y)) {
-          this.set_hovered(cell);
+        if (this.test_for_validity && this.game.validPlay(x, y)) {
+          this.set_hovered({ x: x, y: y, color: "#000000bb" });
         } else {
-          this.set_hovered(null);
+          this.set_hovered({ x: x, y: y, color: "#00000017" });
         }
       }
     };
+    callback(this.stage.getHoveredCell());
     this.stage.addHoveredCellOnchange(callback);
 
-    return () => {
-      this.set_hovered(null);
-      this.stage.removeHoveredCellOnchange(callback);
+    return {
+      remove: () => {
+        this.set_hovered(null);
+        this.stage.removeHoveredCellOnchange(callback);
+      },
+      redraw: () => {
+        callback(this.stage.getHoveredCell());
+      },
     };
   }
 
@@ -115,6 +129,7 @@ export default class DropPhaseArea extends Component {
       }
     }
 
+    const hover = this.addCellHover();
     while (true) {
       const turn = this.game.turn;
       const cur_mode = turn === PIECE.BLACK ? this.black_mode : this.white_mode;
@@ -125,9 +140,11 @@ export default class DropPhaseArea extends Component {
         case GAME_MODE.MANUAL:
           this.paintInvalid();
 
-          const remove_hover = this.addCellHover();
+          this.test_for_validity = true;
+          hover.redraw();
           [x, y] = await this.validPlayStageClick();
-          remove_hover();
+          this.test_for_validity = false;
+          hover.redraw();
 
           try {
             phase_ended = this.game.play(x, y);
@@ -163,7 +180,9 @@ export default class DropPhaseArea extends Component {
       }
     }
 
+    hover.remove();
     this.stage.clearHighlighted();
+
     return this.game;
   }
 }
