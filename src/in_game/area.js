@@ -1,6 +1,7 @@
 import Component from "../component.js";
 import { PIECE } from "./board.js";
 import DropPhaseArea from "./drop_phase/area.js";
+import MovePhaseArea from "./move_phase/area.js";
 import gameStage from "./stage.js";
 
 export const GAME_MODE = {
@@ -55,15 +56,29 @@ export default class InGameArea extends Component {
       skip_drop_phase: options.skip_drop_phase,
     });
 
-    super(drop_area.el());
+    const base = document.createElement("div");
+    base.appendChild(drop_area.el());
+
+    super(base);
 
     stage
       .load(options.black_piece_type, options.white_piece_type)
       .then(() => {
         return drop_area.start();
       })
-      .then(() => {
+      .then((drop_game) => {
         console.log("move phase");
+        const move_area = new MovePhaseArea(
+          stage,
+          drop_game,
+          options.black_mode,
+          options.white_mode
+        );
+        base.firstChild.replaceWith(move_area.el());
+        return move_area.start();
+      })
+      .then(() => {
+        console.log("end");
       });
   }
 }

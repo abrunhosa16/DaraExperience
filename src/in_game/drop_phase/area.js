@@ -102,9 +102,15 @@ export default class DropPhaseArea extends Component {
   async start() {
     if (this.skip_drop_phase) {
       while (true) {
-        const phase_ended = this.game.playRandomMove();
+        const turn = this.game.turn;
+        const { phase_ended, move } = this.game.playRandomMove();
+        if (turn === PIECE.BLACK) {
+          this.stage.drawBlackPiece(...move);
+        } else {
+          this.stage.drawWhitePiece(...move);
+        }
         if (phase_ended) {
-          return;
+          return this.game;
         }
       }
     }
@@ -158,6 +164,6 @@ export default class DropPhaseArea extends Component {
     }
 
     this.stage.clearHighlighted();
-    return;
+    return this.game;
   }
 }
