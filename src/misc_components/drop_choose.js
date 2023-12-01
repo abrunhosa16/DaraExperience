@@ -19,20 +19,23 @@ export default class DropChoose extends Component {
 
     return {
       target: target,
-      select: select
-    }
+      select: select,
+    };
   }
 
-  constructor(label_text, options) {
-    const {target, select} = DropChoose.createElements(label_text, options);
+  constructor(label_text, options, default_index) {
+    const { target, select } = DropChoose.createElements(
+      label_text,
+      options
+    );
     super(target);
     this.select = select;
 
-    this.value = options[0][0];
+    this.value = default_index ? options[default_index][0] : options[0][0];
 
     select.addEventListener("change", (e) => {
       this.value = e.target.value;
-    })
+    });
   }
 
   get value() {

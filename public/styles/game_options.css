@@ -10,12 +10,12 @@
   border-width: 2px;
 }
 
-.board-config p button {
+.game-gen p button {
   margin: 0 5px 0 5px;
   padding: 3px;
 }
 
-.game-area .board-config .submit-button {
+.game-area .game-gen .submit-button {
   font-size: 18px;
   margin: 10px 0 10px 0;
   font-weight: bold;
