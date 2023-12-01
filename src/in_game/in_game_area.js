@@ -1,6 +1,7 @@
 import Component from "../component.js";
 import { PIECE } from "./board.js";
 import DropPhaseGame from "./drop_phase_game.js";
+import MovePhaseGame from "./move_phase_game.js";
 import gameStage from "./stage.js";
 
 export const GAME_MODE = {
@@ -103,7 +104,6 @@ export default class InGameArea extends Component {
 
   addCellHover() {
     this.valid_cell_hover = (cell) => {
-      console.log(cell);
       if (cell !== null) {
         const [x, y] = cell;
         if (this.game.validPlay(x, y)) {
@@ -139,8 +139,8 @@ export default class InGameArea extends Component {
           this.stage.clearHighlighted();
           const current_invalid = this.game.getCurrentInvalid();
           const other_invalid = this.game.getOtherInvalid();
-          this.stage.highlight(current_invalid, "#aa0000");
           this.stage.highlight(other_invalid, "#0000aa");
+          this.stage.highlight(current_invalid, "#aa0000");
 
           this.addCellHover();
           [x, y] = await this.stageClick();
@@ -176,5 +176,8 @@ export default class InGameArea extends Component {
         break;
       }
     }
+
+    this.stage.clearHighlighted();
+    this.game = new MovePhaseGame(this.game);
   }
 }
