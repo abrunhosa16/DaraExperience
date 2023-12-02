@@ -170,8 +170,10 @@ export default class DropPhaseArea extends Component {
       }
 
       if (turn === PIECE.BLACK) {
+        console.log("placed black", x, y);
         this.stage.drawBlackPiece(x, y);
       } else {
+        console.log("placed white", x, y);
         this.stage.drawWhitePiece(x, y);
       }
 

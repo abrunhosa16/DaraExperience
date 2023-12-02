@@ -265,4 +265,16 @@ export default class Board {
     const m = Math.max(perpendicular, parallel);
     return m > MAX_LINE_COUNT ? null : m;
   }
+
+  getPositions(piece) {
+    const positions = [];
+    for (let y = 0; y < this.height(); y += 1) {
+      for (let x = 0; x < this.width(); x += 1) {
+        if (this.get(x, y) === piece) {
+          positions.push([x, y]);
+        }
+      }
+    }
+    return positions;
+  }
 }
