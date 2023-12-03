@@ -2,7 +2,7 @@ import Component from "../component.js";
 import { PIECE } from "./board.js";
 
 // target width in pixels
-const WIDTH = 500;
+const WIDTH = 400;
 // border in pixels BETWEEN cells
 const BORDER = 1;
 
@@ -114,9 +114,17 @@ export default class gameStage extends Component {
     this.hovered_cell_onchange_callbacks.delete(callback);
   }
 
+  getHoveredCell() {
+    return this.hovered_cell;
+  }
+
   // gets coordinates from some relative position on the board.
   // can return null if the position is on a internal border
   coorsFromPosition(x_offset, y_offset) {
+    if (x_offset > this.width || y_offset > this.height) {
+      return null;
+    }
+
     const x = Math.floor(x_offset / this.cell_size);
     const y = Math.floor(y_offset / this.cell_size);
 
@@ -284,9 +292,9 @@ export default class gameStage extends Component {
     ctx.clearRect(0, 0, this.width, this.height);
   }
 
-  drawCellHover(x, y) {
+  drawCellHover(x, y, color) {
     const ctx = this.hovered.getContext("2d");
-    ctx.fillStyle = "#000000bb";
+    ctx.fillStyle = color;
     const cropped = this.cell_size - BORDER;
     ctx.fillRect(x * this.cell_size, y * this.cell_size, cropped, cropped);
   }

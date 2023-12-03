@@ -3,7 +3,7 @@ import MultiButtonSelection from "../misc_components/multi_button_selection.js";
 import Component from "../component.js";
 import Toggle from "../misc_components/toggle.js";
 import DropChoose from "../misc_components/drop_choose.js";
-import { COLOR, GAME_MODE, PIECE_TYPE } from "../in_game/in_game_area.js";
+import { COLOR, GAME_MODE, PIECE_TYPE } from "../in_game/area.js";
 
 ("use strict");
 

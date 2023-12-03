@@ -1,4 +1,4 @@
-import Board, { MAX_LINE_COUNT, PIECE } from "./board.js";
+import Board, { MAX_LINE_COUNT, PIECE } from "../board.js";
 
 export default class DropPhaseGame {
   constructor(width, height, starting_turn) {
@@ -29,8 +29,6 @@ export default class DropPhaseGame {
       piece === PIECE.BLACK
         ? [this.black_invalid, this.white_invalid]
         : [this.white_invalid, this.black_invalid];
-    console.log("invalid", invalid);
-    console.log("other", other);
 
     // remove other invalid if the new piece is being placed there
     const other_i = other.findIndex(([x_c, y_c]) => x === x_c && y === y_c);
@@ -40,14 +38,6 @@ export default class DropPhaseGame {
     }
 
     const { up, down, left, right } = this.board.data(x, y);
-    // console.log([this.black_invalid, this.white_invalid], {
-    //   up: up,
-    //   down: down,
-    //   left: left,
-    //   right: right,
-    // });
-    // console.log(this.board.d);
-    console.log(piece === PIECE.BLACK ? "black" : "white", x, y);
     const y_up = y - up - 1;
     if (
       y_up >= 0 &&
@@ -84,8 +74,6 @@ export default class DropPhaseGame {
     ) {
       invalid.push([x_right, y]);
     }
-    console.log("invalid", invalid);
-    console.log("other", other);
   }
 
   // returns true if phase ended
@@ -145,5 +133,15 @@ export default class DropPhaseGame {
       }
     }
     return moves;
+  }
+
+  playRandomMove() {
+    const move_list = this.getMoveList();
+    const i = Math.floor(Math.random() * move_list.length);
+    const move = move_list[i];
+    return {
+      phase_ended: this.play(...move),
+      move: move,
+    };
   }
 }

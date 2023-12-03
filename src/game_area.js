@@ -1,6 +1,6 @@
 import Component from "./component.js";
 import GameGen from "./game_options/gen.js";
-import InGameArea from "./in_game/in_game_area.js";
+import InGameArea from "./in_game/area.js";
 
 export default class GameArea extends Component {
   constructor(cred_mgr, sign_up_modal) {
