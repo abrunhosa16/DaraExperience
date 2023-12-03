@@ -156,10 +156,10 @@ export default class gameStage extends Component {
   async load(black_piece, white_piece) {
     // black and white started loading in parallel
     const black = loadImage(
-      `./public/playable_pieces/${black_piece}/black.png`
+      `./images/playable_pieces/${black_piece}/black.png`
     );
     const white = loadImage(
-      `./public/playable_pieces/${white_piece}/white.png`
+      `./images/playable_pieces/${white_piece}/white.png`
     );
 
     this.black = await black;
