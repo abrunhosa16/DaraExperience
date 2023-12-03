@@ -2,11 +2,10 @@ import GameArea from "./game_area.js";
 import { BOARD_GEN_SIGN_BUTTON_ID } from "./game_options/online.js";
 import CredentialsManager from "./credentials_manager.js";
 import { hideElement, showElement } from "./css_h.js";
-import { createRanking } from "./ranking.js";
 import SignUpModal from "./sign_up/modal.js";
 import TaskbarSignupButton from "./sign_up/taskbar_button.js";
-import { getRanking } from "./request_ranking.js";
 import rankingArea from "./ranking_area.js";
+import { API } from "./api.js";
 
 ("use strict");
 
@@ -14,11 +13,16 @@ export const SERVER_URL = "http://twserver.alunos.dcc.fc.up.pt:8008";
 export const GROUP = 12;
 
 function main() {
-  const crd_mgr = new CredentialsManager();
+  const api = new API(SERVER_URL, GROUP);
+
+  const crd_mgr = new CredentialsManager(api);
   crd_mgr.trySignUpFromLocalStorage();
 
   const taskbar_signup_target = document.getElementById("sign-button");
-  const signup_modal = new SignUpModal(crd_mgr, [TaskbarSignupButton.SIGN_UP_BUTTON_ID, BOARD_GEN_SIGN_BUTTON_ID]);
+  const signup_modal = new SignUpModal(crd_mgr, [
+    TaskbarSignupButton.SIGN_UP_BUTTON_ID,
+    BOARD_GEN_SIGN_BUTTON_ID,
+  ]);
   document.body.appendChild(signup_modal.el());
 
   const taskbar_signup = new TaskbarSignupButton(crd_mgr, signup_modal);
@@ -44,14 +48,9 @@ function main() {
     hideElement(modal);
   });
 
-  getRanking(5, 6).then((data) => {
-  createRanking(data);
-  });
-
-  const div_ranking = new rankingArea();
+  const div_ranking = new rankingArea(api);
   const el_rank = document.getElementById("ranking_area");
   el_rank.appendChild(div_ranking.el());
-  
 }
 
 main();

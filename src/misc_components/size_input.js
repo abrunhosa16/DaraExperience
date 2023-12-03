@@ -160,10 +160,11 @@ export default class SizeInput extends Component {
   }
 
   constructor() {
-    const {target, ...els} = SizeInput.createElements();
+    const { target, ...els } = SizeInput.createElements();
     super(target);
 
     this.err_update_callback = null;
+    this.on_change_callback = null;
     this.els = els;
 
     this.error_count = 0;
@@ -185,6 +186,10 @@ export default class SizeInput extends Component {
     this.err_update_callback = func;
   }
 
+  set_on_change_callback(func) {
+    this.on_change_callback = func;
+  }
+
   static val(i) {
     // value is invalid if set to custom
     if (i === -1) {
@@ -201,8 +206,7 @@ export default class SizeInput extends Component {
   set option_i(i_s) {
     // option will be equivalent to the option index
     const prev = this._option_i;
-    this._option_i =
-      i_s === SizeInput.CUSTOM_OPTION_VALUE ? -1 : parseInt(i_s);
+    this._option_i = i_s === SizeInput.CUSTOM_OPTION_VALUE ? -1 : parseInt(i_s);
 
     if (prev === -1 && this._option_i !== -1) {
       // was custom before, now it's normal
@@ -216,11 +220,15 @@ export default class SizeInput extends Component {
       this.custom_size = [val[0].toString(), val[1].toString()];
       showElement(this.els.custom_field);
     }
+
+    if (this.on_change_callback !== null && this._option_i !== -1) {
+      this.on_change_callback(SizeInput.val(this.option_i));
+    }
   }
 
   getParsedSize() {
     if (this.error_count > 0) {
-      throw Error("Tried to get size while in a invalid state");
+      return null;
     }
 
     // custom size will be valid if there are no errors
@@ -289,8 +297,7 @@ export default class SizeInput extends Component {
         old_height !== null
           ? SizeInput.customHeightInvalid(old_height) !== null
           : false;
-      const new_invalid_message =
-        SizeInput.customHeightInvalid(new_height);
+      const new_invalid_message = SizeInput.customHeightInvalid(new_height);
       const new_invalid = new_invalid_message !== null;
 
       if (new_invalid) {
@@ -307,6 +314,10 @@ export default class SizeInput extends Component {
       } else if (!old_invalid && new_invalid) {
         this.error_count += 1;
       }
+    }
+
+    if (this.on_change_callback !== null) {
+      this.on_change_callback(this.getParsedSize());
     }
   }
 }
