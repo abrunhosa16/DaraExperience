@@ -30,22 +30,55 @@ export class API {
     }
   }
 
-  async ranking(rows, columns) {
+  async ranking(width, height) {
     const url = this.url + "/ranking";
     const response = await fetch(url, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({
         group: this.group,
-        size: { rows: rows, columns: columns },
+        size: { rows: height, columns: width },
       }),
     });
 
+    const data = await response.json();
     if (response.ok) {
-      const data = await response.json();
       return data.ranking;
     } else {
-      throw "Unknown error";
+      throw new Error(data.error_field);
     }
+  }
+
+  async join(cred_mgr, width, height) {
+    const url = this.url + "/join";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({
+        group: this.group,
+        nick: cred_mgr.getUsername(),
+        password: cred_mgr.getPassword(),
+        size: { rows: height, columns: width },
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      return data.game;
+    } else {
+      throw new Error(data.error_field);
+    }
+  }
+
+  async update(game_id, cred_mgr) {
+    const url = this.url + "/update" + encodeURI(`nick=${cred_mgr.getUsername()}&game=${game_id}`);
+    const e_source = new EventSource(url, {
+      withCredentials: true,
+    });
+
+    return e_source;
+    e_source.addEventListener("message", (e) => {
+      console.log(e.data);
+    });
   }
 }
