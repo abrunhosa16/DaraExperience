@@ -43,7 +43,7 @@ class OnlineGameManager {
     this.status = STATUS.CONNECTING;
     let game_id;
     try {
-      game_id = this.api.join(this.cred_mgr, width, height);
+      game_id = await this.api.join(this.cred_mgr, width, height);
     } catch (err) {
       // failed to start searching for a game
       this.status = STATUS.NOT_CONNECTED;

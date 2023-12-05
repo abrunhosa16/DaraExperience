@@ -1,3 +1,5 @@
+("use strict");
+
 const JSON_HEADERS = {
   Accept: "application/json",
   "Content-Type": "application/json",
@@ -10,34 +12,38 @@ export class API {
     this.group = group;
   }
 
-  register(username, password) {
+  async register(username, password) {
     const url = this.url + "/register";
-    return fetch(url, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({
-        nick: username,
-        password: password,
-      }),
-    }).then(
-      (response) => {
-        if (response.ok) {
-          return;
-        }
-        throw new Error(data.error);
-      },
-      (err) => {
-        console.error(err);
-        throw new Error("Failed to establish a connection");
-      }
-    );
+
+    let response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          nick: username,
+          password: password,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+      throw new Error("Failed to establish a connection");
+    }
+
+    if (response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    throw new Error(data.error);
   }
 
   async ranking(width, height) {
     const url = this.url + "/ranking";
 
+    let response;
     try {
-      const response = await fetch(url, {
+      response = response = await fetch(url, {
         method: "POST",
         headers: JSON_HEADERS,
         body: JSON.stringify({
@@ -45,43 +51,46 @@ export class API {
           size: { rows: height, columns: width },
         }),
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        return data.ranking;
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      console.error(err);
+      throw new Error("Failed to establish a connection");
     }
+
+    // shouldn't fail
+    const data = await response.json();
+    if (response.ok) {
+      return data.ranking;
+    }
+
+    throw new Error(data.error);
   }
 
-  join(cred_mgr, width, height) {
+  async join(cred_mgr, width, height) {
     const url = this.url + "/join";
-    return fetch(url, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({
-        group: this.group,
-        nick: cred_mgr.getUsername(),
-        password: cred_mgr.getPassword(),
-        size: { rows: height, columns: width },
-      }),
-    })
-      .then(
-        (response) => response.json(),
-        (err) => {
-          console.error(err);
-          throw new Error("Failed to establish a connection");
-        }
-      )
-      .then((data) => {
-        if (response.ok) {
-          return data.game;
-        }
-        throw new Error(data.error);
+
+    let response;
+    try {
+      response = response = await fetch(url, {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          group: this.group,
+          nick: cred_mgr.getUsername(),
+          password: cred_mgr.getPassword(),
+          size: { rows: height, columns: width },
+        }),
       });
+    } catch (err) {
+      console.error(err);
+      throw new Error("Failed to establish a connection");
+    }
+
+    if (response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    throw new Error(data.error);
   }
 
   update(cred_mgr, game_id) {
@@ -115,28 +124,30 @@ export class API {
     };
   }
 
-  leave(cred_mgr, game_id) {
+  async leave(cred_mgr, game_id) {
     const url = this.url + "/leave";
 
-    return fetch(url, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({
-        nick: cred_mgr.getUsername(),
-        password: cred_mgr.getPassword(),
-        game: game_id,
-      }),
-    }).then(
-      (response) => {
-        if (response.ok) {
-          return;
-        }
-        throw new Error(data.error);
-      },
-      (err) => {
-        console.error(err);
-        throw new Error("Failed to establish a connection");
-      }
-    );
+    let response;
+    try {
+      response = response = await fetch(url, {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          nick: cred_mgr.getUsername(),
+          password: cred_mgr.getPassword(),
+          game: game_id,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+      throw new Error("Failed to establish a connection");
+    }
+
+    if (response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    throw new Error(data.error);
   }
 }

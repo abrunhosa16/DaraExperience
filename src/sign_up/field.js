@@ -1,8 +1,7 @@
 import Component from "../component.js";
-import { showElement } from "../css_h.js";
+import { hideElement, showElement } from "../css_h.js";
 
 ("use strict");
-
 
 // sign up form
 export default class SignUpField extends Component {
@@ -103,14 +102,12 @@ export default class SignUpField extends Component {
 
     crd_mgr
       .signUp(this.username, this.password)
-      .then(({ success, error_msg }) => {
-        if (success) {
-          // success
-        } else {
-          console.log("Error login", error_msg);
-          this.error_field.innerHTML = error_msg;
-          showElement(this.error_field);
-        }
+      .catch((message) => {
+        console.log("Error login", message);
+        this.error_field.innerHTML = message;
+        showElement(this.error_field);
+      })
+      .finally(() => {
         this.submit_button.disabled = false;
       });
   }
@@ -123,5 +120,7 @@ export default class SignUpField extends Component {
   clearPassword() {
     this.password_input.value = "";
     this.password = "";
+    
+    hideElement(this.error_field);
   }
 }
