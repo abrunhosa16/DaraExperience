@@ -20,7 +20,7 @@ export default class GameGen extends Component {
         ["online", "Play against another player online"],
         ["offline", "Play locally or against an AI"],
       ],
-      "offline"
+      "online"
     );
 
     const online_offline_gen = document.createElement("div");

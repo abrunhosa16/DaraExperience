@@ -162,13 +162,13 @@ export default class OfflineGameGen extends Component {
       // options:
       //    width: width of the board in cells
       //    height: height of the board in cells
-      //    black_mode: black player GAME_MODE
-      //    white_mode: white player GAME_MODE
       //    black_piece_type: PIECE_TYPE
       //    white_piece_type: PIECE_TYPE
       //  If playing offline:
       //    starting_color: COLOR
       //    skip_drop_phase: bool (places pieces in drop phase randomly)
+      //    black_mode: black player GAME_MODE
+      //    white_mode: white player GAME_MODE
 
       submit_callback({
         mode: "offline",
