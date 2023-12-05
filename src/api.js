@@ -10,48 +10,56 @@ export class API {
     this.group = group;
   }
 
-  async register(username, password) {
+  register(username, password) {
     const url = this.url + "/register";
-    const response = await fetch(url, {
+    return fetch(url, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({
         nick: username,
         password: password,
       }),
-    });
-
-    if (response.ok) {
-      return { success: true, error_msg: null };
-    } else {
-      const error_data = await response.json();
-
-      return { success: false, error_msg: error_data.error_field };
-    }
+    }).then(
+      (response) => {
+        if (response.ok) {
+          return;
+        }
+        throw new Error(data.error);
+      },
+      (err) => {
+        console.error(err);
+        throw new Error("Failed to establish a connection");
+      }
+    );
   }
 
   async ranking(width, height) {
     const url = this.url + "/ranking";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: JSON_HEADERS,
-      body: JSON.stringify({
-        group: this.group,
-        size: { rows: height, columns: width },
-      }),
-    });
 
-    const data = await response.json();
-    if (response.ok) {
-      return data.ranking;
-    } else {
-      throw new Error(data.error_field);
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          group: this.group,
+          size: { rows: height, columns: width },
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return data.ranking;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (e) {
+      throw new Error(e);
     }
   }
 
-  async join(cred_mgr, width, height) {
+  join(cred_mgr, width, height) {
     const url = this.url + "/join";
-    const response = await fetch(url, {
+    return fetch(url, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({
@@ -60,25 +68,75 @@ export class API {
         password: cred_mgr.getPassword(),
         size: { rows: height, columns: width },
       }),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      return data.game;
-    } else {
-      throw new Error(data.error_field);
-    }
+    })
+      .then(
+        (response) => response.json(),
+        (err) => {
+          console.error(err);
+          throw new Error("Failed to establish a connection");
+        }
+      )
+      .then((data) => {
+        if (response.ok) {
+          return data.game;
+        }
+        throw new Error(data.error);
+      });
   }
 
-  async update(game_id, cred_mgr) {
-    const url = this.url + "/update" + encodeURI(`nick=${cred_mgr.getUsername()}&game=${game_id}`);
+  update(cred_mgr, game_id) {
+    const url =
+      this.url +
+      "/update" +
+      encodeURI(`nick=${cred_mgr.getUsername()}&game=${game_id}`);
     const e_source = new EventSource(url, {
       withCredentials: true,
     });
 
-    return e_source;
-    e_source.addEventListener("message", (e) => {
-      console.log(e.data);
-    });
+    return {
+      connected: new Promise((resolve, reject) => {
+        e_source.addEventListener("open", (e) => {
+          console.log(e);
+          resolve();
+        });
+        e_source.addEventListener("error", (e) => {
+          console.log(e);
+          reject(e);
+        });
+      }),
+      addOnMessage: (func) => {
+        e_source.addEventListener("message", (e) => {
+          func(JSON.parse(e.data));
+        });
+      },
+      close: () => {
+        e_source.close();
+      },
+    };
+  }
+
+  leave(cred_mgr, game_id) {
+    const url = this.url + "/leave";
+
+    return fetch(url, {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({
+        nick: cred_mgr.getUsername(),
+        password: cred_mgr.getPassword(),
+        game: game_id,
+      }),
+    }).then(
+      (response) => {
+        if (response.ok) {
+          return;
+        }
+        throw new Error(data.error);
+      },
+      (err) => {
+        console.error(err);
+        throw new Error("Failed to establish a connection");
+      }
+    );
   }
 }
