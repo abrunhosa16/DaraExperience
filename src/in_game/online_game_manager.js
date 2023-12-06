@@ -5,7 +5,7 @@ const STATUS = {
   ABORTING_SEARCH: 3,
 };
 
-class OnlineGameManager {
+export default class OnlineGameManager {
   constructor(api, cred_mgr) {
     this.api = api;
     this.cred_mgr = cred_mgr;
@@ -19,7 +19,7 @@ class OnlineGameManager {
     this.game_id = null;
   }
 
-  async search_game(width, height) {
+  async searchGame(width, height) {
     if (this.status === STATUS.ABORTING_SEARCH) {
       throw new Error(
         "Attempted to search for a new game while aborting previous search"
@@ -50,6 +50,8 @@ class OnlineGameManager {
       throw err;
     }
 
+    console.log("Joined", game_id);
+
     if (this.status === STATUS.ABORTING_SEARCH) {
       await this.api.leave(this.cred_mgr, game_id);
       this.abortSearchCallback();
@@ -79,9 +81,10 @@ class OnlineGameManager {
 
     this.in_game = true;
     // todo
+    console.log("started!")
   }
 
-  async abort_game_search() {
+  async abortSearch() {
     if (this.status === STATUS.CONNECTING) {
       this.status = STATUS.ABORTING_SEARCH;
       // wait to connect and instantly cancel

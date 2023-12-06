@@ -39,6 +39,7 @@ export default class GameGen extends Component {
   setOnline(sign_up_modal) {
     this.online_offline_gen.innerHTML = "";
     const online = new OnlineGameGen(
+      this.api,
       this.cred_mgr,
       this.submit_callback,
       sign_up_modal
@@ -52,13 +53,14 @@ export default class GameGen extends Component {
     this.online_offline_gen.append(offline.el());
   }
 
-  constructor(cred_mgr, submit_callback, sign_up_modal) {
+  constructor(api, cred_mgr, submit_callback, sign_up_modal) {
     const { base, online_sel, online_offline_gen } =
       GameGen.createElements(cred_mgr);
     super(base);
 
     this.online_offline_gen = online_offline_gen;
 
+    this.api = api;
     this.cred_mgr = cred_mgr;
     this.submit_callback = submit_callback;
 

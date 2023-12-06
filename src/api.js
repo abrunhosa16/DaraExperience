@@ -85,36 +85,42 @@ export class API {
       throw new Error("Failed to establish a connection");
     }
 
+    const data = await response.json();
     if (response.ok) {
-      return;
+      return data.game;
     }
 
-    const data = await response.json();
     throw new Error(data.error);
   }
 
   update(cred_mgr, game_id) {
     const url =
       this.url +
-      "/update" +
+      "/update?" +
       encodeURI(`nick=${cred_mgr.getUsername()}&game=${game_id}`);
+
     const e_source = new EventSource(url, {
-      withCredentials: true,
+      withCredentials: false,
     });
 
     return {
       connected: new Promise((resolve, reject) => {
         e_source.addEventListener("open", (e) => {
-          console.log(e);
+          console.log("open", Date.now(), e);
+          resolve();
+        });
+        e_source.addEventListener("start", (e) => {
+          console.log("start", Date.now(), e);
           resolve();
         });
         e_source.addEventListener("error", (e) => {
-          console.log(e);
+          console.log("error", Date.now(), e);
           reject(e);
         });
       }),
       addOnMessage: (func) => {
         e_source.addEventListener("message", (e) => {
+          console.log("message", Date.now(), e);
           func(JSON.parse(e.data));
         });
       },
