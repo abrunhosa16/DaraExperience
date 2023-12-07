@@ -1,0 +1,20 @@
+{
+  "ranking": [
+    { "nick": "jpleal", "victories": 50, "games": 51 },
+    { "nick": "zp", "victories": 30, "games": 2 }, 
+    { "nick": "bia", "victories": 17, "games": 2 },
+    { "nick": "zak", "victories": 46, "games": 2 }, 
+    { "nick": "vini", "victories": 62, "games": 2 },
+    { "nick": "gamer", "victories": 10, "games": 2 }, 
+    { "nick": "outro", "victories": 2, "games": 2 },
+    { "nick": "trevas", "victories": 0, "games": 2 }, 
+    { "nick": "shop", "victories": 42, "games": 2 },
+    { "nick": "carro", "victories": 0, "games": 2 }, 
+    { "nick": "moto", "victories": 2, "games": 2 },
+    { "nick": "rus", "victories": 30, "games": 2 }, 
+    { "nick": "tesouro", "victories": 2, "games": 2 },
+    { "nick": "oitenta", "victories": 0, "games": 2 }, 
+    { "nick": "mesa", "victories": 2, "games": 2 },
+    { "nick": "cavalo", "victories": 0, "games": 2 }
+  ]
+}

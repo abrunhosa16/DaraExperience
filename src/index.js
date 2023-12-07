@@ -46,9 +46,7 @@ function main() {
     hideElement(modal);
   });
 
-  getRanking(5, 6).then((data) => {
-  createRanking(data);
-  });
+
 
   const div_ranking = new rankingArea();
   const el_rank = document.getElementById("ranking_area");
