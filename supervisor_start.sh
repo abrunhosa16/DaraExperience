@@ -1,1 +1,2 @@
-supervisor backend/index.js
+cd ./backend/
+yarn listen

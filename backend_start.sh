@@ -1,1 +1,2 @@
-node backend/index.js
+cd ./backend
+yarn start
