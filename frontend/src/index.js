@@ -9,7 +9,7 @@ import { API } from "./api.js";
 
 ("use strict");
 
-export const SERVER_URL = "http://twserver.alunos.dcc.fc.up.pt:8008";
+export const SERVER_URL = "http://localhost:3000";
 export const GROUP = 12;
 
 function main() {
