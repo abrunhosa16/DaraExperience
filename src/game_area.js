@@ -3,12 +3,13 @@ import GameGen from "./game_options/gen.js";
 import InGameArea from "./in_game/area.js";
 
 export default class GameArea extends Component {
-  constructor(cred_mgr, sign_up_modal) {
+  constructor(api, cred_mgr, sign_up_modal) {
     const base = document.createElement("div");
     base.classList.add("game-area");
 
     super(base);
 
+    this.api = api;
     this.cred_mgr = cred_mgr;
     this.sign_up_modal = sign_up_modal;
 
@@ -17,6 +18,7 @@ export default class GameArea extends Component {
 
   setToGameGeneration() {
     const gen = new GameGen(
+      this.api,
       this.cred_mgr,
       (game_options) => {
         this.startGame(game_options)

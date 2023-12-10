@@ -29,7 +29,7 @@ function main() {
   taskbar_signup_target.appendChild(taskbar_signup.el());
 
   const area_target = document.getElementById("game-gen-area");
-  const area = new GameArea(crd_mgr, signup_modal);
+  const area = new GameArea(api, crd_mgr, signup_modal);
   area_target.appendChild(area.el());
 
   const instructions_button_open = document.getElementById(

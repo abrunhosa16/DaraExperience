@@ -16,10 +16,10 @@ function createRanking(data) {
 
   if (data.length === 0) {
     const no_data = document.createElement("p");
-    no_data.innerHTML = "There are yet to be a ranking for this width and height.";
+    no_data.innerHTML = "There is yet to be a ranking table for a board of this width and height.";
     return no_data;
   }
-  
+
   const table = document.createElement("table");
   const tbody = document.createElement("tbody");
 

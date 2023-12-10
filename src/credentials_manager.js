@@ -1,5 +1,3 @@
-import { SERVER_URL } from "./index.js";
-
 ("use strict");
 
 // Makes register / login operations and stores user credentials
@@ -39,18 +37,14 @@ export default class CredentialsManager {
     }
   }
 
-  async signUp(username, password) {
+  signUp(username, password) {
     // copy values so that they don't change
     const username_copy = (" " + username).slice(1);
     const password_copy = (" " + password).slice(1);
 
-    const result = await this.api.register(username_copy, password_copy);
-    if (result.success) {
+    return this.api.register(username_copy, password_copy).then(() => {
       this.completeSignIn(username_copy, password_copy);
-    } else {
-      console.error(result.error_msg);
-    }
-    return result;
+    });
   }
 
   completeSignIn(username, password) {
