@@ -48,13 +48,7 @@ function main() {
     hideElement(modal);
   });
 
-<<<<<<< HEAD
-
-
-  const div_ranking = new rankingArea();
-=======
   const div_ranking = new rankingArea(api);
->>>>>>> 8157c38fbe3867be85b75ea1a1fd8342cc0967d3
   const el_rank = document.getElementById("ranking_area");
   el_rank.appendChild(div_ranking.el());
 }

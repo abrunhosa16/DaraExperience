@@ -1,1 +1,2 @@
-npx http-server ./
+npx http-server ./frontend/
+
