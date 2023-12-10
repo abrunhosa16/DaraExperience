@@ -26,7 +26,6 @@ const HEADERS = {
     "Access-Control-Max-Age": 2592000, // 30 days
   },
 };
-const EMPTY_JSON = "{}";
 
 const sortRank = (data) => {
   data.ranking.sort(
@@ -36,123 +35,216 @@ const sortRank = (data) => {
   data.ranking.length = 10;
 };
 
-function conditionsErrors(dataParse) {
-  if (dataParse.group === undefined) {
-    response.writeHead(400, HEADERS.JSON);
-    response.end(JSON.stringify({ error: `${dataParse.group}` }));
-    return;
+const parseData = (data) => {
+  try {
+    return JSON.parse(data);
+  } catch (err) {
+    return null;
   }
+};
 
-  if (!Number.isInteger(dataParse.group)) {
-    response.writeHead(400, HEADERS.JSON);
-    response.end(JSON.stringify({ error: `Invalid group ${dataParse.group}` }));
-    return;
-  }
+const RESPONSE_TYPE = {
+  OK_NO_BODY: 0,
+  OK_JSON: 1,
+  UNKNOWN: 2,
+  INVALID_JSON_IN_REQUEST_BODY: 3,
+  CUSTOM_ERROR: 4,
+  SERVER_ERROR: 5,
+};
 
-  if (
-    dataParse.size === undefined ||
-    typeof dataParse.size !== "object" ||
-    Array.isArray(dataParse.size) ||
-    dataParse.size === null
-  ) {
-    response.writeHead(400, HEADERS.JSON);
-    response.end(
-      JSON.stringify({ error: `Undefined size '${dataParse.size}'` })
-    );
-    return;
-  }
+function processRequest(request, pathname) {
+  return new Promise((resolve, reject) => {
+    switch (pathname) {
+      case "/ranking":
+        if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return resolve({
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              });
+            }
 
-  if (
-    dataParse.size.columns === undefined ||
-    !Number.isInteger(dataParse.size.columns)
-  ) {
-    response.writeHead(400, HEADERS.JSON);
-    response.end(
-      JSON.stringify({
-        error: `size property columns with invalid value '${dataParse.size.columns}'`,
-      })
-    );
-    return;
-  }
+            if (parsed.group === undefined) {
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: "Undefined group",
+              });
+            }
+            if (!Number.isInteger(parsed.group)) {
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: `Invalid group '${parsed.group}'`,
+              });
+            }
+            if (
+              parsed.size === undefined ||
+              parsed.size === null ||
+              typeof parsed.size !== "object" ||
+              Array.isArray(parsed.size)
+            ) {
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: `Undefined size '${parsed.size}'`,
+              });
+            }
+            if (
+              parsed.size.columns === undefined ||
+              !Number.isInteger(parsed.size.columns)
+            ) {
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: `size property columns with invalid value '${parsed.size.columns}'`,
+              });
+            }
+            if (
+              parsed.size.rows === undefined ||
+              !Number.isInteger(parsed.size.rows)
+            ) {
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: `size property rows with invalid value '${parsed.size.rows}'`,
+              });
+            }
 
-  if (
-    dataParse.size.rows === undefined ||
-    !Number.isInteger(dataParse.size.rows)
-  ) {
-    response.writeHead(400, HEADERS.JSON);
-    response.end(
-      JSON.stringify({
-        error: `size property rows with invalid value '${dataParse.size.rows}'`,
-      })
-    );
-    return;
-  }
+            const path = `data/ranking/${parsed.group}/${parsed.size.rows}-${parsed.size.columns}.json`;
+            fs.readFile(path, "utf-8", (err, data) => {
+              if (err !== null) {
+                // file not exists error
+                if (err.code === "ENOENT") {
+                  return resolve({
+                    type: RESPONSE_TYPE.OK_JSON,
+                    data: { ranking: [] },
+                  });
+                }
+                throw err;
+              }
+
+              const content = JSON.parse(data);
+              sortRank(content);
+
+              resolve({
+                type: RESPONSE_TYPE.OK_JSON,
+                data: content,
+              });
+            });
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.UNKNOWN,
+          });
+        }
+        break;
+
+      case "/register":
+        resolve({
+          type: RESPONSE_TYPE.OK_JSON,
+          data: {},
+        });
+        break;
+
+      case "/join":
+        if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return {
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              };
+            }
+
+            console.log(parsed);
+
+            resolve({
+              type: RESPONSE_TYPE.OK_JSON,
+              data: {},
+            });
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.UNKNOWN,
+          });
+        }
+        break;
+
+      default:
+        return {
+          type: RESPONSE_TYPE.UNKNOWN,
+        };
+    }
+  });
 }
 
-const server = http.createServer((request, response) => {
-  const preq = url.parse(request.url, true);
-  const pathname = preq.pathname;
-  let path;
+function createServer() {
+  return http.createServer(async (request, response) => {
+    const preq = url.parse(request.url, true);
+    const pathname = preq.pathname;
 
-  if (request.method === "OPTIONS") {
-    response.writeHead(204, HEADERS.OPTIONS);
-    response.end();
-    return;
-  }
-
-  switch (pathname) {
-    case "/ranking":
-      if (request.method === "POST") {
-        let data = "";
-        request.on("data", (chunk) => {
-          data += chunk;
-        });
-        request.on("end", () => {
-          let dataParse;
-
-          try {
-            dataParse = JSON.parse(data);
-          } catch (err) {
-            response.writeHead(400, HEADERS.JSON);
-            response.end(JSON.stringify({ error: `Invalid JSON in request body` }));
-            return;
-          }
-
-          conditionsErrors(dataParse);
-
-          path = `data/ranking/${dataParse.group}/${dataParse.size.rows}-${dataParse.size.columns}.json`;
-
-          if (fs.existsSync(path)) {
-            response.writeHead(200, HEADERS.JSON);
-            const content = JSON.parse(fs.readFileSync(path, "utf-8"));
-
-            sortRank(content);
-            response.end(JSON.stringify(content));
-          } else {
-            response.writeHead(200, HEADERS.JSON);
-            response.end(EMPTY_JSON);
-          }
-        });
-
-        return;
-      }
-      break;
-
-    case "/register":
-      response.writeHead(200, HEADERS.NO_BODY);
-      response.end(JSON.stringify({}));
+    if (request.method === "OPTIONS") {
+      response.writeHead(204, HEADERS.OPTIONS);
+      response.end();
       return;
-  }
+    }
 
-  response.writeHead(404, HEADERS.JSON);
-  response.end();
-});
+    try {
+      const result = await processRequest(request, pathname);
+      console.log(result);
+      switch (result.type) {
+        case RESPONSE_TYPE.OK_NO_BODY:
+          response.writeHead(204, HEADERS.NO_BODY);
+          response.end();
+          break;
+        case RESPONSE_TYPE.OK_JSON:
+          response.writeHead(200, HEADERS.JSON);
+          response.end(JSON.stringify(result.data));
+          break;
+        case RESPONSE_TYPE.UNKNOWN:
+          response.writeHead(404, HEADERS.NO_BODY);
+          response.end();
+          break;
+        case RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY:
+          response.writeHead(400, HEADERS.JSON);
+          response.end(
+            JSON.stringify({ error: `Invalid JSON in request body` })
+          );
+          break;
+        case RESPONSE_TYPE.CUSTOM_ERROR:
+          response.writeHead(400, HEADERS.JSON);
+          response.end(JSON.stringify({ error: result.err_msg }));
+          break;
+        case RESPONSE_TYPE.SERVER_ERROR:
+          response.writeHead(500, HEADERS.NO_BODY);
+          response.end();
+          break;
+        default:
+          throw new Error(`Invalid processed result: ${result}`);
+      }
+    } catch (err) {
+      console.error(err);
+      response.writeHead(500, HEADERS.NO_BODY);
+      response.end();
+    }
+  });
+}
 
-server.listen(PORT, (err) => {
-  if (err) {
-    console.log("Sorry I will server you better ", err);
-  }
-  console.log(
-    `The server started successfully and is listening for requests at http://localhost:${PORT}`
-  );
-});
+function main() {
+  const server = createServer();
+  server.listen(PORT, (err) => {
+    if (err) {
+      console.log("Sorry I will server you better ", err);
+    }
+    console.log(
+      `The server started successfully and is listening for requests at http://localhost:${PORT}`
+    );
+  });
+}
+
+main();
