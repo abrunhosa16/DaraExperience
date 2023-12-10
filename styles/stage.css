@@ -1,0 +1,19 @@
+.stage {
+  border: 2px solid black;
+}
+
+.stage canvas {
+  position: absolute;
+}
+.stage .hovered {
+  z-index: 4;
+}
+.stage .pieces {
+  z-index: 3;
+}
+.stage .highlighted {
+  z-index: 2;
+}
+.stage .background {
+  z-index: 1;
+}

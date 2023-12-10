@@ -1,13 +1,12 @@
-import MultiButtonSelection from "../../misc_components/multi_button_selection.js";
-import Component from "../../component.js";
-import OfflineBoardGen from "./offline_gen.js";
-import OnlineBoardGen from "./online_gen.js";
+import MultiButtonSelection from "../misc_components/multi_button_selection.js";
+import Component from "../component.js";
+import OfflineGameGen from "./offline.js";
+import OnlineGameGen from "./online.js";
 
 ("use strict");
 
-export default class BoardGen extends Component {
+export default class GameGen extends Component {
   static createElements(cred_mgr) {
-    console.log(cred_mgr);
     const title = document.createElement("h2");
     title.innerHTML = "Start playing";
 
@@ -17,17 +16,17 @@ export default class BoardGen extends Component {
     const online_sel = new MultiButtonSelection(
       "online",
       "",
-      {
-        online: "Play against another player online",
-        offline: "Play locally or against an AI",
-      },
-      "online"
+      [
+        ["online", "Play against another player online"],
+        ["offline", "Play locally or against an AI"],
+      ],
+      "offline"
     );
 
     const online_offline_gen = document.createElement("div");
-    
+
     const base = document.createElement("div");
-    base.classList.add("board-config");
+    base.classList.add("game-gen");
     base.append(title, online_title, online_sel.el(), online_offline_gen);
 
     return {
@@ -39,19 +38,23 @@ export default class BoardGen extends Component {
 
   setOnline(sign_up_modal) {
     this.online_offline_gen.innerHTML = "";
-    const online = new OnlineBoardGen(this.cred_mgr, this.submit_callback, sign_up_modal);
+    const online = new OnlineGameGen(
+      this.cred_mgr,
+      this.submit_callback,
+      sign_up_modal
+    );
     this.online_offline_gen.append(online.el());
   }
 
   setOffline() {
     this.online_offline_gen.innerHTML = "";
-    const offline = new OfflineBoardGen(this.submit_callback);
+    const offline = new OfflineGameGen(this.submit_callback);
     this.online_offline_gen.append(offline.el());
   }
 
   constructor(cred_mgr, submit_callback, sign_up_modal) {
     const { base, online_sel, online_offline_gen } =
-      BoardGen.createElements(cred_mgr);
+      GameGen.createElements(cred_mgr);
     super(base);
 
     this.online_offline_gen = online_offline_gen;
@@ -71,6 +74,6 @@ export default class BoardGen extends Component {
       } else {
         this.setOffline();
       }
-    })
+    });
   }
 }

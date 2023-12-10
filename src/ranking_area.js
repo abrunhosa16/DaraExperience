@@ -1,50 +1,83 @@
-import BoardSizeInput from "./board/board_gen/size_input.js";
 import Component from "./component.js";
-import { createRanking } from "./ranking.js";
-import { getRanking } from "./request_ranking.js";
+import SizeInput from "./misc_components/size_input.js";
+
+const createCell = (text) => {
+  const cell = document.createElement("td");
+  cell.innerHTML = text;
+  return cell;
+};
+
+function createRanking(data) {
+  if (data === undefined) {
+    const error = document.createElement("p");
+    error.innerHTML = "Failed to load table.";
+    return error;
+  }
+
+  if (data.length === 0) {
+    const no_data = document.createElement("p");
+    no_data.innerHTML = "There are yet to be a ranking for this width and height.";
+    return no_data;
+  }
+  
+  const table = document.createElement("table");
+  const tbody = document.createElement("tbody");
+
+  const label = document.createElement("tr");
+  label.append(
+    createCell("Nick"),
+    createCell("Victories"),
+    createCell("Games"),
+    createCell("Precision")
+  );
+  tbody.appendChild(label);
+
+  data.forEach((player) => {
+    const row = document.createElement("tr");
+    row.append(
+      createCell(player.nick),
+      createCell(player.victories),
+      createCell(player.games),
+      createCell((player.victories / player.games) * 100)
+    );
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(tbody);
+  return table;
+}
 
 export default class rankingArea extends Component {
   static createElements() {
-    const button = new BoardSizeInput();
-    const submit_button = document.createElement("button");
-    submit_button.innerHTML = "Submit!";
-    const table = document.createElement("div");
+    const size_input = new SizeInput();
+    const p = document.createElement("p");
+    p.appendChild(size_input.el());
 
-    const div_area = document.createElement("div");
+    const ranking = document.createElement("div");
 
-    div_area.append(button.el(), submit_button, table);
-    return { button, submit_button, div_area, table };
+    const base = document.createElement("div");
+    base.append(p, ranking);
+    return { size_input, base, ranking };
   }
 
-  constructor() {
-    const { button, submit_button, div_area, table } =
-      rankingArea.createElements();
-    super(div_area);
-    this.submit_button = submit_button;
-    this.button = button;
+  constructor(api) {
+    const { size_input, base, ranking } = rankingArea.createElements();
 
-    this.button.set_error_update_callback((err_count) => {
-      this.error_count = err_count;
-      if (this.error_count > 0) {
-        submit_button.disabled = true;
-      } else {
-        submit_button.disabled = false;
-      }
+    super(base);
+
+    api.ranking(5, 6).then((data) => {
+      console.log(data);
+      ranking.appendChild(createRanking(data));
     });
 
-    submit_button.addEventListener("click", (e) => {
-      const [rows, columns] = button.getParsedSize();
-      console.log(rows, columns);
-      getRanking(rows, columns)
-        .then((data) => {
-          const el = createRanking(data);
-          table.innerHTML = "";
-          table.appendChild(el);
-        })
-        .catch(() => {
-          console.log("Invalid");
+    size_input.set_on_change_callback((dimensions) => {
+      if (dimensions !== null) {
+        api.ranking(...dimensions).then((data) => {
+          console.log(data);
+          ranking.innerHTML = "";
+          ranking.appendChild(createRanking(data));
         });
+      }
     });
   }
 }
-

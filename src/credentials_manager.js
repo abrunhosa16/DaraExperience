@@ -4,7 +4,9 @@ import { SERVER_URL } from "./index.js";
 
 // Makes register / login operations and stores user credentials
 export default class CredentialsManager {
-  constructor() {
+  constructor(api) {
+    this.api = api;
+
     this.signed_in = false;
     this.username = null;
     this.password = null;
@@ -38,33 +40,17 @@ export default class CredentialsManager {
   }
 
   async signUp(username, password) {
-    console.log(username, password)
+    // copy values so that they don't change
     const username_copy = (" " + username).slice(1);
     const password_copy = (" " + password).slice(1);
 
-    const url = SERVER_URL + "/register";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        nick: username_copy,
-        password: password_copy,
-      }),
-    });
-
-    if (response.ok) {
-      // use values before fetch started (or else they could have changed)
+    const result = await this.api.register(username_copy, password_copy);
+    if (result.success) {
       this.completeSignIn(username_copy, password_copy);
-      return { success: true, error_msg: null };
     } else {
-      const error_data = await response.json();
-
-      return { success: true, error_msg: error_data.error_field };
+      console.error(result.error_msg);
     }
+    return result;
   }
 
   completeSignIn(username, password) {
