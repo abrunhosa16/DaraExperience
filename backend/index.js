@@ -21,7 +21,6 @@ const HEADERS = {
   },
   OPTIONS: {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Max-Age": 2592000, // 30 days
   },
@@ -50,13 +49,19 @@ const RESPONSE_TYPE = {
   INVALID_JSON_IN_REQUEST_BODY: 3,
   CUSTOM_ERROR: 4,
   SERVER_ERROR: 5,
+  OPTIONS: 6,
 };
 
 function processRequest(request, pathname) {
   return new Promise((resolve, reject) => {
     switch (pathname) {
       case "/ranking":
-        if (request.method === "POST") {
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
           let data = "";
           request.on("data", (chunk) => {
             data += chunk;
@@ -141,14 +146,26 @@ function processRequest(request, pathname) {
         break;
 
       case "/register":
-        resolve({
-          type: RESPONSE_TYPE.OK_JSON,
-          data: {},
-        });
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.OK_JSON,
+            data: {},
+          });
+        }
         break;
 
       case "/join":
-        if (request.method === "POST") {
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
           let data = "";
           request.on("data", (chunk) => {
             data += chunk;
@@ -188,16 +205,17 @@ function createServer() {
     const preq = url.parse(request.url, true);
     const pathname = preq.pathname;
 
-    if (request.method === "OPTIONS") {
-      response.writeHead(204, HEADERS.OPTIONS);
-      response.end();
-      return;
-    }
-
     try {
       const result = await processRequest(request, pathname);
       console.log(result);
       switch (result.type) {
+        case RESPONSE_TYPE.OPTIONS:
+          response.writeHead(204, {
+            ...HEADERS.OPTIONS,
+            "Access-Control-Allow-Methods": result.methods,
+          });
+          response.end();
+          break;
         case RESPONSE_TYPE.OK_NO_BODY:
           response.writeHead(204, HEADERS.NO_BODY);
           response.end();
