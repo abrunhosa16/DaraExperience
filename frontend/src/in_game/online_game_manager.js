@@ -3,6 +3,7 @@ const STATUS = {
   CONNECTING: 1,
   SEARCHING: 2,
   ABORTING_SEARCH: 3,
+  IN_GAME: 4,
 };
 
 export default class OnlineGameManager {
@@ -13,100 +14,133 @@ export default class OnlineGameManager {
     this.status = STATUS.NOT_CONNECTED;
     this.in_game = false;
 
-    this.abortSearchCallback = null;
     this.stopSearch = null;
 
     this.game_id = null;
   }
 
-  async searchGame(width, height) {
-    if (this.status === STATUS.ABORTING_SEARCH) {
-      throw new Error(
-        "Attempted to search for a new game while aborting previous search"
-      );
-    }
+  // resolves when connecting to the server
+  searchGame(width, height) {
+    return new Promise((resolve, reject) => {
+      if (this.status === STATUS.ABORTING_SEARCH) {
+        return reject(
+          "Attempted to search for a new game while aborting previous search"
+        );
+      }
 
-    // return immediately if trying to connect or already searching for a game
-    if (
-      this.status === STATUS.CONNECTING ||
-      this.status === STATUS.SEARCHING
-    ) {
-      throw new Error(
-        "Attempted to search multiple times at the same time for a game"
-      );
-    }
+      // return immediately if trying to connect or already searching for a game
+      if (
+        this.status === STATUS.CONNECTING ||
+        this.status === STATUS.SEARCHING
+      ) {
+        return reject(
+          "Attempted to search multiple times at the same time for a game"
+        );
+      }
 
-    if (this.in_game) {
-      throw new Error("Attempted to search for a game while already in another");
-    }
+      if (this.in_game) {
+        return reject(
+          "Attempted to search for a game while already in another"
+        );
+      }
 
-    this.status = STATUS.CONNECTING;
-    let game_id;
-    try {
-      game_id = await this.api.join(this.cred_mgr, width, height);
-    } catch (err) {
-      // failed to start searching for a game
-      this.status = STATUS.NOT_CONNECTED;
-      throw err;
-    }
+      this.status = STATUS.CONNECTING;
+      this.api.join(this.cred_mgr, width, height).then(
+        (game_id) => {
+          if (this.status === STATUS.ABORTING_SEARCH) {
+            this.api.leave(this.cred_mgr, game_id).then(
+              () => {
+                resolve({
+                  result: "Aborted",
+                });
+              },
+              (err) => {
+                reject(err);
+              }
+            );
+            return;
+          } else {
+            resolve({
+              result: "Searching",
+              search_ended: new Promise((resolve, reject) => {
+                this.status = STATUS.SEARCHING;
+                const { connected, addOnMessage, removeOnMessage, close } =
+                  this.api.update(this.cred_mgr, this.game_id);
 
-    console.log("Joined", game_id);
+                // stop search should automatically reject connected promise
+                this.stopSearch = close;
 
-    if (this.status === STATUS.ABORTING_SEARCH) {
-      await this.api.leave(this.cred_mgr, game_id);
-      this.abortSearchCallback();
-      return;
-    }
-
-    this.game_id = game_id;
-    this.status = STATUS.SEARCHING;
-      const { connected, addOnMessage, close } = this.api.update(
-        this.cred_mgr,
-        this.game_id
-      );
-    this.stopSearch = close;
-    addOnMessage((data) => {
-      console.log(data);
-      this.start(data);
-    })
-
-    // if search is cancelled the await will have no effect
-    await connected;
-  }
-
-  start(data) {
-    if (this.status == STATUS.ABORTING_SEARCH || this.status === STATUS.NOT_CONNECTED) {
-      return;
-    }
-
-    this.in_game = true;
-    // todo
-    console.log("started!", data)
-  }
-
-  async abortSearch() {
-    if (this.status === STATUS.CONNECTING) {
-      this.status = STATUS.ABORTING_SEARCH;
-      // wait to connect and instantly cancel
-      return new Promise((resolve, reject) => {
-        this.abortSearchCallback = () => {
+                const first_message_received = new Promise(
+                  (resolve, reject) => {
+                    const func = addOnMessage((message) => {
+                      removeOnMessage(func);
+                      resolve(message);
+                    });
+                  }
+                );
+                connected.then(
+                  () => {
+                    first_message_received.then((message) => {
+                      if (message.winner === null) {
+                        this.status = STATUS.NOT_CONNECTED;
+                        resolve({
+                          result: "Timeout reached",
+                        });
+                        close();
+                      } else {
+                        this.status = STATUS.IN_GAME;
+                        resolve({
+                          result: "Success",
+                        });
+                        close(); // temporary
+                      }
+                    });
+                  },
+                  (err) => {
+                    this.status = STATUS.NOT_CONNECTED;
+                    if (err === "Aborted") {
+                      this.api.leave(this.cred_mgr, game_id).then(
+                        () => {
+                          resolve({
+                            result: "Aborted",
+                          });
+                        },
+                        (err) => {
+                          reject(err);
+                        }
+                      );
+                    } else {
+                      console.error(err);
+                      reject("An error ocurred while searching for a match");
+                    }
+                  }
+                );
+              }),
+            });
+          }
+        },
+        (err) => {
           this.status = STATUS.NOT_CONNECTED;
-          resolve();
+          reject(err);
         }
-      })
+      );
+    });
+  }
+
+  abortSearch() {
+    console.log(this.status);
+    if (
+      this.status !== STATUS.CONNECTING &&
+      this.status !== STATUS.SEARCHING &&
+      this.status !== STATUS.ABORTING_SEARCH
+    ) {
+      throw new Error("Attempting to cancel search while not searching");
     }
 
-    if (this.status === STATUS.SEARCHING) {
-      this.status = STATUS.ABORTING_SEARCH;
+    const old = this.status;
+    this.status = STATUS.ABORTING_SEARCH;
+    if (old === STATUS.SEARCHING) {
       this.stopSearch();
-
-      await this.api.leave(this.cred_mgr, this.game_id);
-
-      this.status = STATUS.NOT_CONNECTED;
-      this.game_id = null;
-      return;
     }
-
-    throw new Error("Attempting to cancel search while not searching");
   }
 }

@@ -176,10 +176,17 @@ function processRequest(request, url_parsed) {
         }
         break;
 
+      case "/leave":
+        resolve({
+          type: RESPONSE_TYPE.OK_JSON,
+          data: {},
+        });
+        break;
+
       default:
-        return {
+        resolve({
           type: RESPONSE_TYPE.UNKNOWN,
-        };
+        });
     }
   });
 }
@@ -200,17 +207,19 @@ function createServer() {
         console.log(url_parsed.query);
         response.writeHead(200, HEADERS.SSE);
 
-        let test = 0;
-        const interval = setInterval(() => {
-          const data = JSON.stringify({ winner: `${test}` });
-          response.write(
-            `data: ${data}\n\n`
-          );
-          test += 1;
-        }, 2000);
+        // keep the connection alive
+        const i0 = setInterval(() => {
+          response.write("");
+        }, 450);
+
+        setTimeout(() => {
+          const data = JSON.stringify({ winner: null });
+          response.write(`data: ${data}\n\n`);
+        }, 15000);
 
         request.on("close", () => {
-          clearInterval(interval);
+          clearInterval(i0);
+          response.end();
         });
       } else {
         response.writeHead(405, HEADERS.NO_BODY);
@@ -231,6 +240,7 @@ function createServer() {
           response.end(JSON.stringify(result.data));
           break;
         case RESPONSE_TYPE.UNKNOWN:
+          console.log("unknown");
           response.writeHead(404, HEADERS.NO_BODY);
           response.end();
           break;
