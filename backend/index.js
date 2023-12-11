@@ -21,7 +21,6 @@ const HEADERS = {
   },
   OPTIONS: {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Max-Age": 2592000, // 30 days
   },
@@ -51,13 +50,19 @@ const RESPONSE_TYPE = {
   CUSTOM_ERROR: 4,
   SERVER_ERROR: 5,
   NOT_ALLOWED: 6,
+  OPTIONS: 7,
 };
 
 function processRequest(request, url_parsed) {
   return new Promise((resolve, reject) => {
     switch (url_parsed.pathname) {
       case "/ranking":
-        if (request.method === "POST") {
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
           let data = "";
           request.on("data", (chunk) => {
             data += chunk;
@@ -142,14 +147,26 @@ function processRequest(request, url_parsed) {
         break;
 
       case "/register":
-        resolve({
-          type: RESPONSE_TYPE.OK_JSON,
-          data: {},
-        });
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.OK_JSON,
+            data: {},
+          });
+        }
         break;
 
       case "/join":
-        if (request.method === "POST") {
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
           let data = "";
           request.on("data", (chunk) => {
             data += chunk;
@@ -177,10 +194,17 @@ function processRequest(request, url_parsed) {
         break;
 
       case "/leave":
-        resolve({
-          type: RESPONSE_TYPE.OK_JSON,
-          data: {},
-        });
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.OK_JSON,
+            data: {},
+          });
+        }
         break;
 
       default:
@@ -195,14 +219,15 @@ function createServer() {
   return http.createServer(async (request, response) => {
     const url_parsed = url.parse(request.url, true);
 
-    if (request.method === "OPTIONS") {
-      response.writeHead(204, HEADERS.OPTIONS);
-      response.end();
-      return;
-    }
-
     // update is a special case
     if (url_parsed.pathname === "/update") {
+      if (request.method === "OPTIONS") {
+        response.writeHead(204, {
+          ...HEADERS.OPTIONS,
+          "Access-Control-Allow-Methods": "OPTIONS, GET",
+        });
+        response.end();
+      }
       if (request.method === "GET") {
         console.log(url_parsed.query);
         response.writeHead(200, HEADERS.SSE);
@@ -231,6 +256,13 @@ function createServer() {
     try {
       const result = await processRequest(request, url_parsed, response);
       switch (result.type) {
+        case RESPONSE_TYPE.OPTIONS:
+          response.writeHead(204, {
+            ...HEADERS.OPTIONS,
+            "Access-Control-Allow-Methods": result.methods,
+          });
+          response.end();
+          break;
         case RESPONSE_TYPE.OK_NO_BODY:
           response.writeHead(204, HEADERS.NO_BODY);
           response.end();
