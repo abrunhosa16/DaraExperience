@@ -123,21 +123,46 @@ export default class OnlineGameGen extends Component {
       this.error_count = err_count;
     });
 
+    const showSearch = () => {
+      if (this.error_count === 0) {
+        search_button.disabled = false;
+      }
+      hideElement(search_message);
+      hideElement(abort_button);
+      showElement(search_button);
+    };
+
+    const showAbort = () => {
+      abort_button.disabled = false;
+      hideElement(search_button);
+      showElement(search_message);
+      showElement(abort_button);
+    };
+
     search_button.addEventListener("click", (e) => {
       const [width, height] = this.size_input.getParsedSize();
       this.search_button.disabled = true;
 
       this.game_manager
         .searchGame(width, height)
-        .then(() => {
-          hideElement(search_button);
-          showElement(search_message);
-          showElement(abort_button);
-        })
-        .catch(() => {
-          if (this.error_count === 0) {
-            search_button.disabled = false;
+        .then((ret) => {
+          if (ret.result === "Searching") {
+            showAbort();
+            ret.search_ended.then((ret) => {
+              if (ret.result === "Success") {
+                console.log("Game started!");
+              } else if (ret.result === "Timeout reached") {
+                console.log("Timeout reached!");
+                showSearch();
+              } else {
+                showSearch();
+              }
+            });
           }
+        })
+        .catch((err) => {
+          console.log("Search error:", err);
+          showSearch();
         });
 
       // options:
@@ -156,20 +181,7 @@ export default class OnlineGameGen extends Component {
 
     abort_button.addEventListener("click", (e) => {
       abort_button.disabled = true;
-      this.game_manager
-        .abortSearch()
-        .then(() => {
-          abort_button.disabled = false;
-          if (this.error_count === 0) {
-            search_button.disabled = false;
-          }
-          hideElement(search_message);
-          hideElement(abort_button);
-          showElement(search_button);
-        })
-        .catch(() => {
-          abort_button.disabled = false;
-        });
+      this.game_manager.abortSearch();
     });
   }
 

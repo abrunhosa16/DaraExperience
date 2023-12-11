@@ -103,28 +103,43 @@ export class API {
       withCredentials: false,
     });
 
+    let abort_connected;
+    const connected = new Promise((resolve, reject) => {
+      abort_connected = () => {
+        reject("Aborted");
+      };
+      e_source.addEventListener("open", (e) => {
+        abort_connected = null;
+        console.log("open", Date.now(), e);
+        resolve();
+      });
+      e_source.addEventListener("error", (e) => {
+        abort_connected = null;
+        console.log("error", Date.now(), e);
+        reject(e);
+      });
+    });
+
     return {
-      connected: new Promise((resolve, reject) => {
-        e_source.addEventListener("open", (e) => {
-          console.log("open", Date.now(), e);
-          resolve();
-        });
-        e_source.addEventListener("start", (e) => {
-          console.log("start", Date.now(), e);
-          resolve();
-        });
-        e_source.addEventListener("error", (e) => {
-          console.log("error", Date.now(), e);
-          reject(e);
-        });
-      }),
+      connected: connected,
       addOnMessage: (func) => {
-        e_source.addEventListener("message", (e) => {
+        const callback = (e) => {
           console.log("message", Date.now(), e);
           func(JSON.parse(e.data));
-        });
+        };
+        e_source.addEventListener("message", callback);
+        return callback;
+      },
+      removeOnMessage: (func_ctx) => {
+        e_source.removeEventListener("message", func_ctx);
       },
       close: () => {
+        console.log("closing");
+        // should not be undefined
+        if (abort_connected !== null) {
+          abort_connected();
+        }
+
         e_source.close();
       },
     };

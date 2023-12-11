@@ -49,12 +49,13 @@ const RESPONSE_TYPE = {
   INVALID_JSON_IN_REQUEST_BODY: 3,
   CUSTOM_ERROR: 4,
   SERVER_ERROR: 5,
-  OPTIONS: 6,
+  NOT_ALLOWED: 6,
+  OPTIONS: 7,
 };
 
-function processRequest(request, pathname) {
+function processRequest(request, url_parsed) {
   return new Promise((resolve, reject) => {
-    switch (pathname) {
+    switch (url_parsed.pathname) {
       case "/ranking":
         if (request.method === "OPTIONS") {
           resolve({
@@ -140,7 +141,7 @@ function processRequest(request, pathname) {
           });
         } else {
           resolve({
-            type: RESPONSE_TYPE.UNKNOWN,
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
         break;
@@ -187,27 +188,73 @@ function processRequest(request, pathname) {
           });
         } else {
           resolve({
-            type: RESPONSE_TYPE.UNKNOWN,
+            type: RESPONSE_TYPE.NOT_ALLOWED,
+          });
+        }
+        break;
+
+      case "/leave":
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.OK_JSON,
+            data: {},
           });
         }
         break;
 
       default:
-        return {
+        resolve({
           type: RESPONSE_TYPE.UNKNOWN,
-        };
+        });
     }
   });
 }
 
 function createServer() {
   return http.createServer(async (request, response) => {
-    const preq = url.parse(request.url, true);
-    const pathname = preq.pathname;
+    const url_parsed = url.parse(request.url, true);
+
+    // update is a special case
+    if (url_parsed.pathname === "/update") {
+      if (request.method === "OPTIONS") {
+        response.writeHead(204, {
+          ...HEADERS.OPTIONS,
+          "Access-Control-Allow-Methods": "OPTIONS, GET",
+        });
+        response.end();
+      }
+      if (request.method === "GET") {
+        console.log(url_parsed.query);
+        response.writeHead(200, HEADERS.SSE);
+
+        // keep the connection alive
+        const i0 = setInterval(() => {
+          response.write("");
+        }, 450);
+
+        setTimeout(() => {
+          const data = JSON.stringify({ winner: null });
+          response.write(`data: ${data}\n\n`);
+        }, 15000);
+
+        request.on("close", () => {
+          clearInterval(i0);
+          response.end();
+        });
+      } else {
+        response.writeHead(405, HEADERS.NO_BODY);
+        response.end();
+      }
+      return;
+    }
 
     try {
-      const result = await processRequest(request, pathname);
-      console.log(result);
+      const result = await processRequest(request, url_parsed, response);
       switch (result.type) {
         case RESPONSE_TYPE.OPTIONS:
           response.writeHead(204, {
@@ -225,7 +272,12 @@ function createServer() {
           response.end(JSON.stringify(result.data));
           break;
         case RESPONSE_TYPE.UNKNOWN:
+          console.log("unknown");
           response.writeHead(404, HEADERS.NO_BODY);
+          response.end();
+          break;
+        case RESPONSE_TYPE.NOT_ALLOWED:
+          response.writeHead(405, HEADERS.NO_BODY);
           response.end();
           break;
         case RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY:
