@@ -109,10 +109,6 @@ export class API {
           console.log("open", Date.now(), e);
           resolve();
         });
-        e_source.addEventListener("start", (e) => {
-          console.log("start", Date.now(), e);
-          resolve();
-        });
         e_source.addEventListener("error", (e) => {
           console.log("error", Date.now(), e);
           reject(e);

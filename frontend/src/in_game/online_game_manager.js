@@ -81,7 +81,7 @@ export default class OnlineGameManager {
 
     this.in_game = true;
     // todo
-    console.log("started!")
+    console.log("started!", data)
   }
 
   async abortSearch() {

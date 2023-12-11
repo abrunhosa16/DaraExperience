@@ -50,11 +50,12 @@ const RESPONSE_TYPE = {
   INVALID_JSON_IN_REQUEST_BODY: 3,
   CUSTOM_ERROR: 4,
   SERVER_ERROR: 5,
+  NOT_ALLOWED: 6,
 };
 
-function processRequest(request, pathname) {
+function processRequest(request, url_parsed) {
   return new Promise((resolve, reject) => {
-    switch (pathname) {
+    switch (url_parsed.pathname) {
       case "/ranking":
         if (request.method === "POST") {
           let data = "";
@@ -135,7 +136,7 @@ function processRequest(request, pathname) {
           });
         } else {
           resolve({
-            type: RESPONSE_TYPE.UNKNOWN,
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
         break;
@@ -170,7 +171,7 @@ function processRequest(request, pathname) {
           });
         } else {
           resolve({
-            type: RESPONSE_TYPE.UNKNOWN,
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
         break;
@@ -185,8 +186,7 @@ function processRequest(request, pathname) {
 
 function createServer() {
   return http.createServer(async (request, response) => {
-    const preq = url.parse(request.url, true);
-    const pathname = preq.pathname;
+    const url_parsed = url.parse(request.url, true);
 
     if (request.method === "OPTIONS") {
       response.writeHead(204, HEADERS.OPTIONS);
@@ -194,9 +194,33 @@ function createServer() {
       return;
     }
 
+    // update is a special case
+    if (url_parsed.pathname === "/update") {
+      if (request.method === "GET") {
+        console.log(url_parsed.query);
+        response.writeHead(200, HEADERS.SSE);
+
+        let test = 0;
+        const interval = setInterval(() => {
+          const data = JSON.stringify({ winner: `${test}` });
+          response.write(
+            `data: ${data}\n\n`
+          );
+          test += 1;
+        }, 2000);
+
+        request.on("close", () => {
+          clearInterval(interval);
+        });
+      } else {
+        response.writeHead(405, HEADERS.NO_BODY);
+        response.end();
+      }
+      return;
+    }
+
     try {
-      const result = await processRequest(request, pathname);
-      console.log(result);
+      const result = await processRequest(request, url_parsed, response);
       switch (result.type) {
         case RESPONSE_TYPE.OK_NO_BODY:
           response.writeHead(204, HEADERS.NO_BODY);
@@ -208,6 +232,10 @@ function createServer() {
           break;
         case RESPONSE_TYPE.UNKNOWN:
           response.writeHead(404, HEADERS.NO_BODY);
+          response.end();
+          break;
+        case RESPONSE_TYPE.NOT_ALLOWED:
+          response.writeHead(405, HEADERS.NO_BODY);
           response.end();
           break;
         case RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY:
