@@ -1,6 +1,7 @@
 import http from "http";
 import fs from "fs";
 import url from "url";
+import GamePairing from "./game_pairing.js";
 
 const PORT = 3000;
 const HEADERS = {
@@ -53,7 +54,7 @@ const RESPONSE_TYPE = {
   OPTIONS: 7,
 };
 
-function processRequest(request, url_parsed) {
+function processRequest(request, url_parsed, game_pairing) {
   return new Promise((resolve, reject) => {
     switch (url_parsed.pathname) {
       case "/ranking":
@@ -179,11 +180,17 @@ function processRequest(request, url_parsed) {
               };
             }
 
-            console.log(parsed);
+            const result = game_pairing.join(
+              parsed.nick,
+              parsed.size.columns,
+              parsed.size.rows,
+              5000
+            );
+            console.log("joined", result);
 
             resolve({
               type: RESPONSE_TYPE.OK_JSON,
-              data: {},
+              data: { game: result.id },
             });
           });
         } else {
@@ -199,10 +206,29 @@ function processRequest(request, url_parsed) {
             type: RESPONSE_TYPE.OPTIONS,
             methods: "OPTIONS, POST",
           });
+        } else if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return {
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              };
+            }
+
+            game_pairing.leave(parsed.game);
+
+            resolve({
+              type: RESPONSE_TYPE.OK_JSON,
+              data: {},
+            });
+          });
         } else {
           resolve({
-            type: RESPONSE_TYPE.OK_JSON,
-            data: {},
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
         break;
@@ -216,6 +242,8 @@ function processRequest(request, url_parsed) {
 }
 
 function createServer() {
+  const game_pairing = new GamePairing();
+
   return http.createServer(async (request, response) => {
     const url_parsed = url.parse(request.url, true);
 
@@ -231,19 +259,21 @@ function createServer() {
       if (request.method === "GET") {
         console.log(url_parsed.query);
         response.writeHead(200, HEADERS.SSE);
-
+        
         // keep the connection alive
-        const i0 = setInterval(() => {
+        const alive = setInterval(() => {
           response.write("");
         }, 450);
 
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
+          // send that no match was found and there is no winner (timeout reached)
           const data = JSON.stringify({ winner: null });
           response.write(`data: ${data}\n\n`);
         }, 15000);
 
         request.on("close", () => {
-          clearInterval(i0);
+          clearInterval(alive);
+          clearTimeout(timeout);
           response.end();
         });
       } else {
@@ -254,7 +284,7 @@ function createServer() {
     }
 
     try {
-      const result = await processRequest(request, url_parsed, response);
+      const result = await processRequest(request, url_parsed, game_pairing);
       switch (result.type) {
         case RESPONSE_TYPE.OPTIONS:
           response.writeHead(204, {
