@@ -39,69 +39,220 @@ const SEARCH_TIMEOUT = 60000;
 //  successfully go to "Searching", only when a third user calls the endpoint
 //  again then a pairing will occur with the user that joined "Searching" first.
 
+const USER_STATUS = {
+  CONNECTING: "Connecting",
+  SEARCHING: "Searching",
+  PAIRED: "Paired",
+  PAIRING: "Pairing",
+};
+
+const GAME_STATUS = {
+  CONNECTING: "Connecting",
+  SEARCHING: "Searching",
+  PAIRING: "Pairing",
+};
+
 export default class GamePairing {
   constructor() {
-    this.connecting = {};
-    this.searching = {};
-    this.pairing = {};
+    // [game_id]: {
+    //    status: GAME_STATUS
+    //    width
+    //    height
+    //    connecting:           "Connecting" or "Pairing" username
+    //    connecting_timeout:   "Connecting" or "Pairing" user join timeout
+    //    searching:            "Searching" or "Paired" username
+    //    searching_timeout:    "Searching" or "Paired" user search timeout
+    // }
+    this.games = {};
 
     // existing users and their specific size respective state
+    // [username]: [{
+    //    id: game_id,
+    //    status: USER_STATUS,
+    //    width: width,
+    //    height: height
+    // }]
     this.users = {};
 
     // ids contained in this.searching for a particular size
     this.searching_by_size = {};
   }
 
+  joinTimeout(id, username) {
+    return setTimeout(() => {
+      this.leave(id, username);
+    }, JOIN_TIMEOUT);
+  }
+
+  searchTimeout(id, username) {
+    return setTimeout(() => {
+      this.leave(id, username);
+    }, SEARCH_TIMEOUT);
+  }
+
+  searchUserGame(username, width, height) {
+    if (!this.users.hasOwnProperty(username)) {
+      return null;
+    }
+
+    for (const game of this.users[username]) {
+      if (game.width === width && game.height === height) {
+        return game;
+      }
+    }
+
+    return null;
+  }
+
+  addUserGame(username, game) {
+    if (this.users.hasOwnProperty(username)) {
+      this.users[username] = [game];
+    } else {
+      this.users[username].push(game);
+    }
+  }
+
+  deleteUserGame(username, width, height) {
+    if (!this.users.hasOwnProperty(username)) {
+      return;
+    }
+
+    const i = this.users[username].findIndex(
+      (game) => game.width === width && game.height === height
+    );
+    if (i < 0) {
+      return;
+    }
+
+    // delete element from array
+    this.users[username].splice(i, 1);
+  }
+
   // Gets called on endpoint /join
-  // Supposed to not fail (throw any errors)
-  // Restarts timeouts if called multiple times for the same parameters and
-  //  while in "Connecting" or "Pairing" states, otherwise just returns the
-  //  game id.
+  // Supposed to not fail (throw any errors) and always return a game id
+  // Refreshes timeouts if called multiple times for the same parameters
+  //  while in "Connecting" or "Pairing" states
   join(username, width, height) {
-    const users_key = `${username}-${width}-${height}`;
-    if (this.users.hasOwnProperty(users_key)) {
-      return; // todo
+    const user_game = searchUserGame(username, width, height);
+    if (user_game !== null) {
+      // this user is already playing a game with this exact width and height
+      const { status, id } = this.users[users_key];
+
+      if (status === USER_STATUS.CONNECTING || status === USER_STATUS.PAIRING) {
+        this.games[id].connecting_timeout = this.joinTimeout(id, username);
+      }
+
+      return id;
     }
 
     const size_key = `${width}-${height}`;
+    let id;
     if (this.searching_by_size.hasOwnProperty(size_key)) {
       // adequate pair found
-      // todo
-    } else {
-      // no adequate pair -> add to this.connecting
-      const id = crypto.randomUUID();
-      this.connecting[id] = {
-        username: username,
+      id = this.searching_by_size[size_key];
+
+      // change searching user status to paired
+      const searching_u_game = this.searchUserGame(
+        this.games[id].searching,
+        width,
+        height
+      );
+      searching_u_game.status = USER_STATUS.PAIRING;
+      delete this.searching_by_size[size_key];
+
+      this.games[id].status = GAME_STATUS.PAIRING;
+      this.games[id].connecting = username;
+      this.games[id].connecting_timeout = this.joinTimeout(id, username);
+
+      this.addUserGame(username, {
+        id: id,
+        status: USER_STATUS.PAIRED,
         width: width,
         height: height,
-        timeout: setTimeout(() => {
-          this.leave(id);
-        }, JOIN_TIMEOUT),
+      });
+    } else {
+      // no adequate pair -> add to this.connecting
+      id = crypto.randomUUID(); // only instance where new game ids are generated
+      this.games[id] = {
+        status: GAME_STATUS.CONNECTING,
+        width: width,
+        height: height,
+        connecting: username,
+        connecting_timeout: this.joinTimeout(id, username),
+        searching: null,
+        searching_timeout: null,
       };
-      this.users[users_key] = {
-        status: "Connecting",
+
+      this.addUserGame(username, {
         id: id,
-      };
-      return id;
+        status: USER_STATUS.CONNECTING,
+        width: width,
+        height: height,
+      });
+    }
+
+    return id;
+  }
+
+  // Gets called on endpoint /update
+  // Throws an error if username doesn't belong to the game id
+  // Refreshes timeouts if username is already searching
+  update(id, username) {
+    if (!this.games.hasOwnProperty(id)) {
+      throw new Error(`The game with id <${id}> doesn't exist.`);
+    }
+    const game = this.games[id];
+
+    if (game.searching === username) {
+      // username is already searching, so just refresh timeouts
+      game.searching_timeout = this.searchTimeout(id, username);
+      return;
+    }
+
+    if (game.connecting !== username) {
+      throw new Error(
+        `The user ${username} doesn't belong to the game with id <${id}>.`
+      );
+    }
+
+    if (game.status === GAME_STATUS.CONNECTING) {
+      clearTimeout(game.connecting_timeout);
+
+      // change status from "Connecting" to "Searching"
+      game.connecting = null;
+      game.connecting_timeout = null;
+      game.status = GAME_STATUS.SEARCHING;
+      game.searching = username;
+      game.searchTimeout = this.searchTimeout(id, username);
+
+      this.addUserGame(username, {
+        id: id,
+        status: USER_STATUS.SEARCHING,
+        width: width,
+        height: height,
+      });
+      this.searching_by_size[`${game.width}-${game.height}`] = id;
+    } else if (game.status === GAME_STATUS.PAIRING) {
+      // two players successfully got paired and connected, meaning a game can start
+      const self = username;
+      const other = game.searching;
+      const width = game.width;
+      const height = game.height;
+
+      delete this.games[id];
+      this.deleteUserGame(self, width, height);
+      this.deleteUserGame(other, width, height);
+
+      // todo
+      console.log("Started game!", self, other, width, height);
+    } else {
+      // server error
+      throw new Error(`The game with id <${id}> is in an invalid state`);
     }
   }
 
   // todo
-  refreshTimeout(id, timeout, timeout_callback) {
-    if (!this.by_id.hasOwnProperty(id)) {
-      throw new Error("Invalid id");
-    }
-    clearTimeout(this.by_id[id].timeout);
-    this.by_id[id].timeout = setTimeout(() => {
-      this.leave(id);
-      if (timeout_callback !== undefined) {
-        timeout_callback();
-      }
-    }, timeout);
-  }
-
-  // todo
-  leave(id) {
+  leave(id, username) {
     if (!this.by_id.hasOwnProperty(id)) {
       throw new Error("Invalid id");
     }
