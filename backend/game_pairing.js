@@ -4,42 +4,51 @@ import MultiValueDict from "./multi_value_dict.js";
 const JOIN_TIMEOUT = 5000;
 const SEARCH_TIMEOUT = 60000;
 
-// Because of the way the API has to work, match pairing is structured in a convoluted way
-//  in order to ensure adequate timeouts.
-// All players can only be paired with each other if they have the same size and group.
-// A user can leave while being in any state.
-// Because the game ids are not directly tied to a user, they can play multiple
-//  games at the same time. However, if they try to create a game multiple
-//  times for the same parameters they are just going to refresh the timeouts.
+// Because of the way the API has to work, match pairing is structured in a
+//    convoluted way in order to ensure adequate timeouts.
+
+// A user can:
+//    - Be paired with another if both have the same size.
+//    - Leave (abort) at any time.
+//    - Play multiple games with different sizes.
+
+// The endpoints should return always the same game id if called with the
+//    same parameters, as long as the timeouts haven't expired.
+// Doing that will refresh the timeouts, so the endpoints should behave the
+//    same while preventing a user from joining a game with the same size
+//    twice.
+
+// This class operates on endpoints /join, /update and /leave.
+// The user is expected to call /update soon after /join, so there is only a
+//    small timeout in between.
 
 // There are four waiting states for a user:
+//    /join: "Connecting" / "Paired",
+//    /update: "Searching" / "Pairing"
 //  - Connecting: The user called /join and no pairings exited.
-//      They received a new game id and will be forgotten if they not call
-//      /update in the next <JOIN_TIMEOUT> ms.
-//  - Searching: The user was connected by calling /update while previously
-//      "Connecting" and will wait for another user to /join. This state has a
-//      timeout of <SEARCH_TIMEOUT> ms in which a <no winners> message is sent
-//      and the user is expected to disconnect.
-//  - Paired: The user called /join and was automatically paired with an adequate player.
-//      They received the game id of the paired player and will be forgotten if
-//      they not call /update in the next <JOIN_TIMEOUT> ms. If the other user leaves,
-//      the state is changed to "Connecting" with the
-//  - Pairing: The state was previously "Searching" and another player called
-//      /join however hasn't called /update yet. In this state, no new pairings
-//      can be received. If the other user calls /update they will be
-//      successfully paired and the game will start, otherwise the state will
-//      change again to "Searching" (this also happens if the other user
-//      specifically leaves).
+//      A new game id was created and returned, and it will be forgotten if
+//      /update is called in the next <JOIN_TIMEOUT> ms.
+//  - Searching: The previous state was "Connecting" and /update was called.
+//      Other users that calling /join can now get paired with this game.
+//      The user can remain searching for <SEARCH_TIMEOUT> ms and should
+//      automatically leave if the /update connection is closed.
+//  - Paired: The user called /join and was paired with an adequate player.
+//      The paired player game was upgraded to "Pairing" and will be downgraded
+//      again if this user doesn't call /update in the next <JOIN_TIMEOUT> ms.
+//  - Pairing: The previous state was "Searching" and another user called /join
+//      and was paired. While the other user doesn't call /update or abort,
+//      this game cannot get paired with anyone else.
 
-// Because /join is expected to return immediately, the only way for a user to
-//  get paired is to call the endpoint and another user be "Searching" with the
-//  adequate parameters. This means that multiple states can be "Searching" at
-//  the same time in witch case another user that calls /join will pair with
-//  the oldest waiting one.
+// Because /join is expected to return immediately, the only way for pairing to
+//    occur is if another user state is set to "Searching" with the same
+//    size. This means that even that users get paired immediately, multiple
+//    games can still wait for the same sizes because their status where
+//    previously different.
 // For example, if two users are "Connecting" at the same time and later
-//  successfully go to "Searching", only when a third user calls the endpoint
-//  again then a pairing will occur with the user that joined "Searching" first.
+//    successfully go to "Searching", only when a third user calls the endpoint
+//    again then a pairing will occur with the user that joined "Searching" first.
 
+// This is the status of a specific user (see above)
 const USER_STATUS = {
   CONNECTING: "Connecting",
   SEARCHING: "Searching",
@@ -47,6 +56,8 @@ const USER_STATUS = {
   PAIRING: "Pairing",
 };
 
+// The game status
+// Will be "Pairing" when there are two users connected
 const GAME_STATUS = {
   CONNECTING: "Connecting",
   SEARCHING: "Searching",
@@ -166,13 +177,10 @@ export default class GamePairing {
       id = pair;
 
       // change searching user status to paired
-      const searching_u_game = this.findUserGame(
-        this.games[id].searching,
-        width,
-        height
-      );
-      // pairing doesn't refresh searching timeout
-      searching_u_game.status = USER_STATUS.PAIRING;
+      this.findUserGame(this.games[id].searching, width, height).status =
+        USER_STATUS.PAIRING;
+
+      // remove game from being flagged as searching
       this.removeSearching(id, width, height);
 
       this.games[id].status = GAME_STATUS.PAIRING;
@@ -211,6 +219,7 @@ export default class GamePairing {
   // Gets called on endpoint /update
   // Throws an error if username doesn't belong to the game id
   // Refreshes timeouts if username is already searching
+  // Returns a starting game if this user was paired, null otherwise
   update(id, username) {
     if (!this.games.hasOwnProperty(id)) {
       throw new Error(`The game with id <${id}> doesn't exist.`);
@@ -221,7 +230,7 @@ export default class GamePairing {
       // username is already searching, so just refresh timeouts
       clearTimeout(game.searching_timeout);
       game.searching_timeout = this.searchTimeout(id, username);
-      return;
+      return null;
     }
 
     if (game.connecting !== username) {
@@ -240,13 +249,12 @@ export default class GamePairing {
       game.searching = username;
       game.searching_timeout = this.searchTimeout(id, username);
 
-      this.addUserGame(username, {
-        id: id,
-        status: USER_STATUS.SEARCHING,
-        width: game.width,
-        height: game.height,
-      });
+      this.findUserGame(username, width, height).status = USER_STATUS.SEARCHING;
+
+      // flag this game as searching
       this.addSearching(game);
+
+      return null;
     } else if (game.status === GAME_STATUS.PAIRING) {
       // two players successfully got paired and connected, meaning a game can start
       clearTimeout(game.searching_timeout);
@@ -256,12 +264,17 @@ export default class GamePairing {
       const width = game.width;
       const height = game.height;
 
+      // delete game from all objects
       delete this.games[id];
       this.deleteUserGame(self, width, height);
       this.deleteUserGame(other, width, height);
 
-      // todo
-      console.log("Started game!", self, other, width, height);
+      return {
+        player1: self,
+        player2: other,
+        width: width,
+        height: height,
+      };
     } else {
       // server error
       throw new Error(`The game with id <${id}> is in an invalid state`);
@@ -306,6 +319,8 @@ export default class GamePairing {
           game.status = GAME_STATUS.SEARCHING;
           game.connecting = null;
           game.connecting_timeout = null;
+          this.findUserGame(game.searching, width, height).status =
+            USER_STATUS.SEARCHING;
 
           this.addSearching(game);
         } else if (game.searching === username) {
@@ -315,6 +330,8 @@ export default class GamePairing {
           game.status = GAME_STATUS.CONNECTING;
           game.searching = null;
           game.searching_timeout = null;
+          this.findUserGame(game.connecting, width, height).status =
+            USER_STATUS.CONNECTING;
         } else {
           notBelongError();
         }
