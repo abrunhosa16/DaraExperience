@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import MultiValueDict from "./multi_value_dict.js";
 
 const JOIN_TIMEOUT = 5000;
 const SEARCH_TIMEOUT = 60000;
@@ -72,10 +73,11 @@ export default class GamePairing {
     //    width: width,
     //    height: height
     // }]
-    this.users = {};
+    this.users = new MultiValueDict();
 
     // ids contained in this.searching for a particular size
-    this.searching_by_size = {};
+    // [width-height]: [game_id]
+    this.searching = {};
   }
 
   joinTimeout(id, username) {
@@ -90,42 +92,54 @@ export default class GamePairing {
     }, SEARCH_TIMEOUT);
   }
 
-  searchUserGame(username, width, height) {
-    if (!this.users.hasOwnProperty(username)) {
-      return null;
-    }
-
-    for (const game of this.users[username]) {
-      if (game.width === width && game.height === height) {
-        return game;
-      }
-    }
-
-    return null;
-  }
-
-  addUserGame(username, game) {
-    if (this.users.hasOwnProperty(username)) {
-      this.users[username] = [game];
-    } else {
-      this.users[username].push(game);
-    }
+  findUserGame(username, width, height) {
+    return this.users.find(
+      username,
+      (game) => game.width === width && game.height === height
+    );
   }
 
   deleteUserGame(username, width, height) {
-    if (!this.users.hasOwnProperty(username)) {
-      return;
-    }
-
-    const i = this.users[username].findIndex(
+    return this.users.removeFirst(
+      username,
       (game) => game.width === width && game.height === height
     );
-    if (i < 0) {
-      return;
+  }
+
+  getFirstSearching(width, height) {
+    const key = `${width}-${height}`;
+    if (this.searching.hasOwnProperty(key)) {
+      return this.searching[key][0];
     }
 
-    // delete element from array
-    this.users[username].splice(i, 1);
+    return undefined;
+  }
+
+  removeSearching(id, width, height) {
+    const key = `${width}-${height}`;
+    if (this.searching.hasOwnProperty(key)) {
+      if (this.searching[key].length === 1) {
+        if (this.searching[key][0] === id) {
+          delete this.searching[key];
+        }
+      } else {
+        // remove index element from array
+        const i = this.searching[key].findIndex((t) => t === id);
+        if (i < 0) {
+          return;
+        }
+        this.searching[key].splice(i, 1);
+      }
+    }
+  }
+
+  addSearching(game) {
+    const key = `${game.width}-${game.height}`;
+    if (this.searching.hasOwnProperty(key)) {
+      this.searching[key].push(game.id);
+    } else {
+      this.searching[key] = [game.id];
+    }
   }
 
   // Gets called on endpoint /join
@@ -133,45 +147,45 @@ export default class GamePairing {
   // Refreshes timeouts if called multiple times for the same parameters
   //  while in "Connecting" or "Pairing" states
   join(username, width, height) {
-    const user_game = searchUserGame(username, width, height);
-    if (user_game !== null) {
+    const user_game = this.findUserGame(username, width, height);
+    if (user_game !== undefined) {
       // this user is already playing a game with this exact width and height
-      const { status, id } = this.users[users_key];
-
+      const { status, id } = user_game;
       if (status === USER_STATUS.CONNECTING || status === USER_STATUS.PAIRING) {
+        clearTimeout(this.games[id].connecting_timeout);
         this.games[id].connecting_timeout = this.joinTimeout(id, username);
       }
 
       return id;
     }
 
-    const size_key = `${width}-${height}`;
     let id;
-    if (this.searching_by_size.hasOwnProperty(size_key)) {
+    const pair = this.getFirstSearching(width, height);
+    if (pair !== undefined) {
       // adequate pair found
-      id = this.searching_by_size[size_key];
+      id = pair;
 
       // change searching user status to paired
-      const searching_u_game = this.searchUserGame(
+      const searching_u_game = this.findUserGame(
         this.games[id].searching,
         width,
         height
       );
+      // pairing doesn't refresh searching timeout
       searching_u_game.status = USER_STATUS.PAIRING;
-      delete this.searching_by_size[size_key];
+      this.removeSearching(id, width, height);
 
       this.games[id].status = GAME_STATUS.PAIRING;
       this.games[id].connecting = username;
       this.games[id].connecting_timeout = this.joinTimeout(id, username);
 
-      this.addUserGame(username, {
+      this.users.add(username, {
         id: id,
         status: USER_STATUS.PAIRED,
         width: width,
         height: height,
       });
     } else {
-      // no adequate pair -> add to this.connecting
       id = crypto.randomUUID(); // only instance where new game ids are generated
       this.games[id] = {
         status: GAME_STATUS.CONNECTING,
@@ -183,7 +197,7 @@ export default class GamePairing {
         searching_timeout: null,
       };
 
-      this.addUserGame(username, {
+      this.users.add(username, {
         id: id,
         status: USER_STATUS.CONNECTING,
         width: width,
@@ -205,6 +219,7 @@ export default class GamePairing {
 
     if (game.searching === username) {
       // username is already searching, so just refresh timeouts
+      clearTimeout(game.searching_timeout);
       game.searching_timeout = this.searchTimeout(id, username);
       return;
     }
@@ -215,26 +230,28 @@ export default class GamePairing {
       );
     }
 
-    if (game.status === GAME_STATUS.CONNECTING) {
-      clearTimeout(game.connecting_timeout);
+    clearTimeout(game.connecting_timeout);
 
+    if (game.status === GAME_STATUS.CONNECTING) {
       // change status from "Connecting" to "Searching"
       game.connecting = null;
       game.connecting_timeout = null;
       game.status = GAME_STATUS.SEARCHING;
       game.searching = username;
-      game.searchTimeout = this.searchTimeout(id, username);
+      game.searching_timeout = this.searchTimeout(id, username);
 
       this.addUserGame(username, {
         id: id,
         status: USER_STATUS.SEARCHING,
-        width: width,
-        height: height,
+        width: game.width,
+        height: game.height,
       });
-      this.searching_by_size[`${game.width}-${game.height}`] = id;
+      this.addSearching(game);
     } else if (game.status === GAME_STATUS.PAIRING) {
       // two players successfully got paired and connected, meaning a game can start
-      const self = username;
+      clearTimeout(game.searching_timeout);
+
+      const self = game.connecting;
       const other = game.searching;
       const width = game.width;
       const height = game.height;
@@ -251,23 +268,58 @@ export default class GamePairing {
     }
   }
 
-  // todo
   leave(id, username) {
-    if (!this.by_id.hasOwnProperty(id)) {
-      throw new Error("Invalid id");
+    if (!this.games.hasOwnProperty(id)) {
+      throw new Error(`The game with id <${id}> doesn't exist.`);
+    }
+    const game = this.games[id];
+
+    const notBelongError = () => {
+      throw new Error(
+        `The user ${username} does not belong to the game with id <${id}>.`
+      );
+    };
+
+    switch (game.status) {
+      case GAME_STATUS.CONNECTING:
+        if (game.connecting !== username) {
+          notBelongError();
+        }
+        clearTimeout(game.connecting_timeout);
+
+        delete this.games[id];
+        break;
+      case GAME_STATUS.SEARCHING:
+        if (game.searching !== username) {
+          notBelongError();
+        }
+        clearTimeout(game.searching_timeout);
+
+        this.removeSearching(id, game.width, game.height);
+        delete this.games[id];
+        break;
+      case GAME_STATUS.PAIRING:
+        if (game.connecting === username) {
+          clearTimeout(game.connecting_timeout);
+
+          // downgrade to searching
+          game.status = GAME_STATUS.SEARCHING;
+          game.connecting = null;
+          game.connecting_timeout = null;
+
+          this.addSearching(game);
+        } else if (game.searching === username) {
+          clearTimeout(game.searching_timeout);
+
+          // downgrade to connecting
+          game.status = GAME_STATUS.CONNECTING;
+          game.searching = null;
+          game.searching_timeout = null;
+        } else {
+          notBelongError();
+        }
     }
 
-    const { username, width, height, timeout } = this.by_id[id];
-    clearTimeout(timeout);
-
-    delete this.by_size[width][height];
-    if (Object.keys(this.by_size[width]).length === 0) {
-      delete this.by_size[width];
-    }
-    delete this.by_username[username];
-
-    delete this.by_id[id];
-
-    console.log("leave", this.by_id);
+    this.deleteUserGame(username, game.width, game.height);
   }
 }

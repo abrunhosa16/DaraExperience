@@ -183,8 +183,7 @@ function processRequest(request, url_parsed, game_pairing) {
             const result = game_pairing.join(
               parsed.nick,
               parsed.size.columns,
-              parsed.size.rows,
-              5000
+              parsed.size.rows
             );
             console.log("joined", result);
 
@@ -259,7 +258,7 @@ function createServer() {
       if (request.method === "GET") {
         console.log(url_parsed.query);
         response.writeHead(200, HEADERS.SSE);
-        
+
         // keep the connection alive
         const alive = setInterval(() => {
           response.write("");
