@@ -1,8 +1,8 @@
 import crypto from "crypto";
-import MultiValueDict from "./multi_value_dict.js";
+import MultiValueDict from "../multi_value_dict.js";
 
-const JOIN_TIMEOUT = 5000;
-const SEARCH_TIMEOUT = 60000;
+const JOIN_TIMEOUT = 50000;
+const SEARCH_TIMEOUT = 600000;
 
 // Because of the way the API has to work, match pairing is structured in a
 //    convoluted way in order to ensure adequate timeouts.
@@ -144,12 +144,12 @@ export default class GamePairing {
     }
   }
 
-  addSearching(game) {
+  addSearching(id, game) {
     const key = `${game.width}-${game.height}`;
     if (this.searching.hasOwnProperty(key)) {
-      this.searching[key].push(game.id);
+      this.searching[key].push(id);
     } else {
-      this.searching[key] = [game.id];
+      this.searching[key] = [id];
     }
   }
 
@@ -249,10 +249,10 @@ export default class GamePairing {
       game.searching = username;
       game.searching_timeout = this.searchTimeout(id, username);
 
-      this.findUserGame(username, width, height).status = USER_STATUS.SEARCHING;
+      this.findUserGame(username, game.width, game.height).status = USER_STATUS.SEARCHING;
 
       // flag this game as searching
-      this.addSearching(game);
+      this.addSearching(id, game);
 
       return null;
     } else if (game.status === GAME_STATUS.PAIRING) {
@@ -270,6 +270,7 @@ export default class GamePairing {
       this.deleteUserGame(other, width, height);
 
       return {
+        id: id,
         player1: self,
         player2: other,
         width: width,
@@ -282,6 +283,7 @@ export default class GamePairing {
   }
 
   leave(id, username) {
+    console.log("leave", id, username);
     if (!this.games.hasOwnProperty(id)) {
       throw new Error(`The game with id <${id}> doesn't exist.`);
     }
@@ -319,10 +321,10 @@ export default class GamePairing {
           game.status = GAME_STATUS.SEARCHING;
           game.connecting = null;
           game.connecting_timeout = null;
-          this.findUserGame(game.searching, width, height).status =
+          this.findUserGame(game.searching, game.width, game.height).status =
             USER_STATUS.SEARCHING;
 
-          this.addSearching(game);
+          this.addSearching(id, game);
         } else if (game.searching === username) {
           clearTimeout(game.searching_timeout);
 

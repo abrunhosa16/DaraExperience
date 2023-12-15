@@ -12,9 +12,9 @@ export default class MultiValueDict {
 
   add(key, item) {
     if (this.d.hasOwnProperty(key)) {
-      this.d[key] = [item];
-    } else {
       this.d[key].push(item);
+    } else {
+      this.d[key] = [item];
     }
   }
 
@@ -28,8 +28,13 @@ export default class MultiValueDict {
       return false;
     }
 
-    // remove element from array
-    this.f[key].splice(i, 1);
+    if (this.d[key].length === 1) {
+      delete this.d[key];
+    } else {
+      // remove element from array
+      this.d[key].splice(i, 1);
+    }
+
     return true;
   }
 }
