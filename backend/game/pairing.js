@@ -49,7 +49,7 @@ const SEARCH_TIMEOUT = 600000;
 //    again then a pairing will occur with the user that joined "Searching" first.
 
 // This is the status of a specific user (see above)
-const USER_STATUS = {
+export const USER_STATUS = {
   CONNECTING: "Connecting",
   SEARCHING: "Searching",
   PAIRED: "Paired",
@@ -58,7 +58,7 @@ const USER_STATUS = {
 
 // The game status
 // Will be "Pairing" when there are two users connected
-const GAME_STATUS = {
+export const GAME_STATUS = {
   CONNECTING: "Connecting",
   SEARCHING: "Searching",
   PAIRING: "Pairing",
