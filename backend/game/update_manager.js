@@ -176,7 +176,13 @@ export default class GameUpdateManager {
 
     const pairing = this.game_pairing.update(
       url_parsed.query.game,
-      url_parsed.query.nick
+      url_parsed.query.nick,
+      () => {
+        // timeout
+        if (this.waiting.hasOwnProperty(id)) {
+          delete this.waiting[id];
+        }
+      }
     );
 
     if (pairing === null) {

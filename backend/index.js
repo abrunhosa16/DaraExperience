@@ -1,8 +1,8 @@
 import http from "http";
 import fs from "fs";
 import url from "url";
-import GamePairing from "./game/pairing.js";
-import { hashPass, register } from "./users.js";
+import { hashPass, register, validAuthentication } from "./users.js";
+import GameUpdateManager from "./game/update_manager.js";
 
 const PORT = 3000;
 const HEADERS = {
@@ -53,9 +53,11 @@ const RESPONSE_TYPE = {
   SERVER_ERROR: 5,
   NOT_ALLOWED: 6,
   OPTIONS: 7,
+  NONE: 8,
+  UNAUTHORIZED: 9,
 };
 
-function processRequest(request, response, game_pairing) {
+function processRequest(request, response, update_manager) {
   const url_parsed = url.parse(request.url, true);
   return new Promise((resolve, reject) => {
     switch (url_parsed.pathname) {
@@ -210,15 +212,18 @@ function processRequest(request, response, game_pairing) {
               };
             }
 
-            const result = game_pairing.join(
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            const result = update_manager.join(
               parsed.nick,
               parsed.size.columns,
               parsed.size.rows
             );
-            console.log("joined", result);
-            console.log(game_pairing.games);
-            console.log(game_pairing.users);
-            console.log(game_pairing.searching);
 
             resolve({
               type: RESPONSE_TYPE.OK_JSON,
@@ -251,7 +256,59 @@ function processRequest(request, response, game_pairing) {
               };
             }
 
-            game_pairing.leave(parsed.game, parsed.nick);
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            update_manager.leave(parsed.game, parsed.nick);
+
+            resolve({
+              type: RESPONSE_TYPE.OK_JSON,
+              data: {},
+            });
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.NOT_ALLOWED,
+          });
+        }
+        break;
+
+      case "/notify":
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return {
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              };
+            }
+
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            update_manager.notify(
+              parsed.game,
+              parsed.nick,
+              parsed.move.column,
+              parsed.move.row
+            );
 
             resolve({
               type: RESPONSE_TYPE.OK_JSON,
@@ -273,33 +330,19 @@ function processRequest(request, response, game_pairing) {
           });
         }
         if (request.method === "GET") {
-          console.log(url_parsed.query);
           response.writeHead(200, HEADERS.SSE);
 
-          const game = game_pairing.update(
-            url_parsed.query.game,
-            url_parsed.query.nick
-          );
-          console.log("update", game);
-          console.log(game_pairing.games);
-          console.log(game_pairing.users);
-          console.log(game_pairing.searching);
+          const id = url_parsed.query.game;
+          const username = url_parsed.query.username;
 
-          const timeout = setTimeout(() => {
-            // send that no match was found and there is no winner (timeout reached)
-            const data = JSON.stringify({ winner: null });
-            response.write(`data: ${data}\n\n`);
-          }, 15000);
-
-          // keep the connection alive
-          const alive = setInterval(() => {
-            response.write("");
-          }, 450);
+          update_manager.add().update(id, username, response);
 
           request.on("close", () => {
-            clearInterval(alive);
-            clearTimeout(timeout);
-            response.end();
+            update_manager.disconnect(id, username);
+          });
+
+          resolve({
+            type: RESPONSE_TYPE.NONE,
           });
         } else {
           resolve({
@@ -318,11 +361,11 @@ function processRequest(request, response, game_pairing) {
 }
 
 function createServer() {
-  const game_pairing = new GamePairing();
+  const update_manager = new GameUpdateManager();
 
   return http.createServer(async (request, response) => {
     try {
-      const result = await processRequest(request, response, game_pairing);
+      const result = await processRequest(request, response, update_manager);
       switch (result.type) {
         case RESPONSE_TYPE.OPTIONS:
           response.writeHead(204, {
@@ -358,15 +401,22 @@ function createServer() {
           response.writeHead(400, HEADERS.JSON);
           response.end(JSON.stringify({ error: result.err_msg }));
           break;
+        case RESPONSE_TYPE.UNAUTHORIZED:
+          response.writeHead(401, HEADERS.JSON);
+          response.end(
+            JSON.stringify({ error: "Invalid username or password" })
+          );
         case RESPONSE_TYPE.SERVER_ERROR:
           response.writeHead(500, HEADERS.NO_BODY);
           response.end();
+          break;
+        case RESPONSE_TYPE.NONE:
           break;
         default:
           throw new Error(`Invalid processed result: ${result}`);
       }
     } catch (err) {
-      console.error(err);
+      console.log(err);
       response.writeHead(500, HEADERS.NO_BODY);
       response.end();
     }
@@ -377,11 +427,12 @@ function main() {
   const server = createServer();
   server.listen(PORT, (err) => {
     if (err) {
-      console.log("Sorry I will server you better ", err);
+      console.err("The server failed to start with the error", err);
+    } else {
+      console.log(
+        `The server started successfully and is listening for requests at http://localhost:${PORT}`
+      );
     }
-    console.log(
-      `The server started successfully and is listening for requests at http://localhost:${PORT}`
-    );
   });
 }
 

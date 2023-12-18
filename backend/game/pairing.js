@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import MultiValueDict from "../multi_value_dict.js";
 
-const JOIN_TIMEOUT = 50000;
-const SEARCH_TIMEOUT = 600000;
+const JOIN_TIMEOUT = 5000;
+const SEARCH_TIMEOUT = 60000;
 
 // Because of the way the API has to work, match pairing is structured in a
 //    convoluted way in order to ensure adequate timeouts.
@@ -82,7 +82,8 @@ export default class GamePairing {
     //    id: game_id,
     //    status: USER_STATUS,
     //    width: width,
-    //    height: height
+    //    height: height,
+    //    onLeave: callback | null 
     // }]
     this.users = new MultiValueDict();
 
@@ -97,8 +98,9 @@ export default class GamePairing {
     }, JOIN_TIMEOUT);
   }
 
-  searchTimeout(id, username) {
+  searchTimeout(id, username, onTimeoutCallback) {
     return setTimeout(() => {
+      onTimeoutCallback();
       this.leave(id, username);
     }, SEARCH_TIMEOUT);
   }
@@ -220,7 +222,7 @@ export default class GamePairing {
   // Throws an error if username doesn't belong to the game id
   // Refreshes timeouts if username is already searching
   // Returns a starting game if this user was paired, null otherwise
-  update(id, username) {
+  update(id, username, onTimeoutCallback) {
     if (!this.games.hasOwnProperty(id)) {
       throw new Error(`The game with id <${id}> doesn't exist.`);
     }
@@ -229,7 +231,7 @@ export default class GamePairing {
     if (game.searching === username) {
       // username is already searching, so just refresh timeouts
       clearTimeout(game.searching_timeout);
-      game.searching_timeout = this.searchTimeout(id, username);
+      game.searching_timeout = this.searchTimeout(id, username, onTimeoutCallback);
       return null;
     }
 
@@ -247,7 +249,7 @@ export default class GamePairing {
       game.connecting_timeout = null;
       game.status = GAME_STATUS.SEARCHING;
       game.searching = username;
-      game.searching_timeout = this.searchTimeout(id, username);
+      game.searching_timeout = this.searchTimeout(id, username, onTimeoutCallback);
 
       this.findUserGame(username, game.width, game.height).status = USER_STATUS.SEARCHING;
 
@@ -280,6 +282,10 @@ export default class GamePairing {
       // server error
       throw new Error(`The game with id <${id}> is in an invalid state`);
     }
+  }
+
+  onLeave(id, username) {
+
   }
 
   leave(id, username) {
