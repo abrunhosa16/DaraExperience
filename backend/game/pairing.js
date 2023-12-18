@@ -284,10 +284,6 @@ export default class GamePairing {
     }
   }
 
-  onLeave(id, username) {
-
-  }
-
   leave(id, username) {
     if (!this.games.hasOwnProperty(id)) {
       throw new Error(`The game with id <${id}> doesn't exist.`);

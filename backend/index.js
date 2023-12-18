@@ -263,12 +263,21 @@ function processRequest(request, response, update_manager) {
               });
             }
 
-            update_manager.leave(parsed.game, parsed.nick);
+            try {
+              update_manager.leave(parsed.game, parsed.nick);
+            } catch (err) {
+
+              return resolve({
+                type: RESPONSE_TYPE.CUSTOM_ERROR,
+                err_msg: "Invalid game id",
+              });
+            }
 
             resolve({
               type: RESPONSE_TYPE.OK_JSON,
               data: {},
             });
+            
           });
         } else {
           resolve({
@@ -333,9 +342,9 @@ function processRequest(request, response, update_manager) {
           response.writeHead(200, HEADERS.SSE);
 
           const id = url_parsed.query.game;
-          const username = url_parsed.query.username;
+          const username = url_parsed.query.nick;
 
-          update_manager.add().update(id, username, response);
+          update_manager.add(id, username, response);
 
           request.on("close", () => {
             update_manager.disconnect(id, username);

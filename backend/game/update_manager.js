@@ -2,7 +2,7 @@ import OngoingGame from "./ongoing.js";
 import GamePairing from "./pairing.js";
 import { winnerLoser } from "../store_results.js";
 
-stringify = (obj) => {
+const stringify = (obj) => {
   const data = JSON.stringify(obj);
   return `data: ${data}\n\n`;
 };
@@ -13,6 +13,14 @@ const PLAYER_TIME = 300;
 export default class GameUpdateManager {
   constructor() {
     this.game_pairing = new GamePairing();
+
+    // [game_id]: {
+    //    username: str,
+    //    connection: Response,
+    //    alive: interval,
+    //    left: bool,
+    //    closing: timeout
+    // }
     this.waiting = {};
 
     // [game_id]: {
@@ -39,8 +47,9 @@ export default class GameUpdateManager {
 
   broadcast(id, data) {
     const obj = this.ongoing[id];
-    obj.player1.connection.write(data);
-    obj.player2.connection.write(data);
+    const s = stringify(data);
+    obj.player1.connection.write(s);
+    obj.player2.connection.write(s);
   }
 
   deleteOngoing(id) {
@@ -67,10 +76,26 @@ export default class GameUpdateManager {
     winnerLoser(winner, loser, width, height);
   }
 
-  leave(id, username) {
-    if (this.waiting.hasOwnProperty(id)) {
-      this.game_pairing.leave(id, username);
+  deleteWaiting(id) {
+    const obj = this.waiting[id];
+
+    clearInterval(obj.alive);
+
+    console.log("no winners final message");
+    const s = stringify({ winner: null });
+    obj.connection.write(s);
+
+    obj.left = true;
+    obj.closing = setTimeout(() => {
+      obj.connection.end();
       delete this.waiting[id];
+    });
+  }
+
+  leave(id, username) {
+    if (this.waiting.hasOwnProperty(id) && !this.waiting[id].left) {
+      this.game_pairing.leave(id, username);
+      this.deleteWaiting(id);
 
       return;
     }
@@ -90,26 +115,40 @@ export default class GameUpdateManager {
     throw new Error("Requested game id does not exist");
   }
 
-  getCountIntervalFuncPlayer1(id) {
-    this.ongoing[id].player1.time_remaining -= 1;
-    if (this.ongoing[id].player1.time_remaining <= 0) {
-      this.leave(id, this.ongoing[id].player1.username);
-    }
+  getCountIntervalFuncPlayer1(id, obj) {
+    return () => {
+      obj.player1.time_remaining -= 1;
+      if (obj.player1.time_remaining <= 0) {
+        this.leave(id, obj.player1.username);
+      }
+    };
   }
 
-  getCountIntervalFuncPlayer2(id) {
-    this.ongoing[id].player2.time_remaining -= 1;
-    if (this.ongoing[id].player2.time_remaining <= 0) {
-      this.leave(id, this.ongoing[id].player2.username);
-    }
+  getCountIntervalFuncPlayer2(id, obj) {
+    return () => {
+      obj.player2.time_remaining -= 1;
+      if (obj.player2.time_remaining <= 0) {
+        this.leave(id, obj.player2.username);
+      }
+    };
   }
 
   // when player connection goes down (without forfeiting)
   disconnect(id, username) {
+    console.log("disconnected");
     if (this.waiting.hasOwnProperty(id)) {
       // if player is just searching then kick him out
-      clearInterval(this.waiting[id].alive);
-      this.game_pairing.leave(id, username);
+      if (this.waiting[id].left) {
+        clearTimeout(this.waiting[id].closing);
+      } else {
+        clearInterval(this.waiting[id].alive);
+        try {
+          this.game_pairing.leave(id, username);
+        } catch (err) {}
+
+        this.waiting[id].connection.end();
+      }
+
       delete this.waiting[id];
       return;
     }
@@ -152,7 +191,7 @@ export default class GameUpdateManager {
     // interval for keeping the connection going (big intervals between writes
     // can make a browser try to restart or end the connection)
     const alive = setInterval(() => {
-      response.write("");
+      connection.write("");
     }, 450);
 
     // player in game
@@ -174,33 +213,35 @@ export default class GameUpdateManager {
       return;
     }
 
-    const pairing = this.game_pairing.update(
-      url_parsed.query.game,
-      url_parsed.query.nick,
-      () => {
-        // timeout
-        if (this.waiting.hasOwnProperty(id)) {
-          delete this.waiting[id];
-        }
+    const pairing = this.game_pairing.update(id, username, () => {
+      // timeout
+      if (this.waiting.hasOwnProperty(id)) {
+        this.deleteWaiting(id);
       }
-    );
+    });
 
     if (pairing === null) {
       // user is searching
+      // todo: may override previous
       this.waiting[id] = {
         username: username,
         connection: connection,
         alive: alive,
+        left: false,
+        closing: null,
       };
     } else {
       const waiting = this.waiting[id];
-      const game = new OngoingGame(id, player1, username, width, height);
+      const game = new OngoingGame(
+        id,
+        pairing.player1,
+        pairing.player2,
+        pairing.width,
+        pairing.height
+      );
       const starting_player = game.currentPlayer();
-      const starting_player_count =
-        starting_player === waiting.username
-          ? this.getCountIntervalFuncPlayer1(id)
-          : this.getCountIntervalFuncPlayer2(id);
-      this.ongoing[id] = {
+
+      const obj = {
         player1: {
           username: waiting.username,
           connection: waiting.connection,
@@ -215,12 +256,20 @@ export default class GameUpdateManager {
         },
         game: game,
         player1_turn: starting_player === waiting.username,
-        time_count_interval: setInterval(starting_player_count, 1000),
         width: pairing.width,
         height: pairing.height,
         ended: false,
         closing: null,
       };
+
+      obj.time_count_interval = setInterval(
+        starting_player === waiting.username
+          ? this.getCountIntervalFuncPlayer1(id, obj)
+          : this.getCountIntervalFuncPlayer2(id, obj),
+        1000
+      );
+
+      this.ongoing[id] = obj;
 
       delete this.waiting[id];
 
@@ -239,13 +288,13 @@ export default class GameUpdateManager {
         if (current_player !== obj.player1.username) {
           obj.player1_turn = false;
           clearInterval(obj.time_count_interval);
-          obj.time_count_interval = this.getCountIntervalFuncPlayer2(id);
+          obj.time_count_interval = this.getCountIntervalFuncPlayer2(id, obj);
         }
       } else {
         if (current_player !== obj.player2.username) {
           obj.player1_turn = true;
           clearInterval(obj.time_count_interval);
-          obj.time_count_interval = this.getCountIntervalFuncPlayer1(id);
+          obj.time_count_interval = this.getCountIntervalFuncPlayer1(id, obj);
         }
       }
 

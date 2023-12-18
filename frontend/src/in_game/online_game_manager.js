@@ -14,7 +14,7 @@ export default class OnlineGameManager {
     this.status = STATUS.NOT_CONNECTED;
     this.in_game = false;
 
-    this.stopSearch = null;
+    this.closeConnection = null;
 
     this.game_id = null;
   }
@@ -47,7 +47,7 @@ export default class OnlineGameManager {
       this.status = STATUS.CONNECTING;
       this.api.join(this.cred_mgr, width, height).then(
         (game_id) => {
-          console.log(`Joined game with id ${game_id}`)
+          console.log(`Joined game with id ${game_id}`);
           if (this.status === STATUS.ABORTING_SEARCH) {
             this.api.leave(this.cred_mgr, game_id).then(
               () => {
@@ -65,11 +65,21 @@ export default class OnlineGameManager {
               result: "Searching",
               search_ended: new Promise((resolve, reject) => {
                 this.status = STATUS.SEARCHING;
+                this.game_id = game_id;
+
                 const { connected, addOnMessage, removeOnMessage, close } =
                   this.api.update(this.cred_mgr, game_id);
 
                 // stop search should automatically reject connected promise
-                this.stopSearch = close;
+                this.closeConnection = () => {
+                  close();
+
+                  this.status = STATUS.NOT_CONNECTED;
+                  this.game_id = null;
+                  resolve({
+                    result: "Aborted",
+                  });
+                };
 
                 const first_message_received = new Promise(
                   (resolve, reject) => {
@@ -81,7 +91,9 @@ export default class OnlineGameManager {
                 );
                 connected.then(
                   () => {
+                    console.log("connected");
                     first_message_received.then((message) => {
+                      console.log("message", message);
                       if (message.winner === null) {
                         this.status = STATUS.NOT_CONNECTED;
                         resolve({
@@ -100,19 +112,14 @@ export default class OnlineGameManager {
                   (err) => {
                     this.status = STATUS.NOT_CONNECTED;
                     if (err === "Aborted") {
-                      this.api.leave(this.cred_mgr, game_id).then(
-                        () => {
-                          resolve({
-                            result: "Aborted",
-                          });
-                        },
-                        (err) => {
-                          reject(err);
-                        }
-                      );
+                      this.closeConnection = null;
+                      resolve({
+                        result: "Aborted",
+                      });
                     } else {
                       console.error(err);
                       reject("An error ocurred while searching for a match");
+                      close();
                     }
                   }
                 );
@@ -141,7 +148,9 @@ export default class OnlineGameManager {
     const old = this.status;
     this.status = STATUS.ABORTING_SEARCH;
     if (old === STATUS.SEARCHING) {
-      this.stopSearch();
+      this.game_id === null;
+      console.log("abort left");
+      this.closeConnection();
     }
   }
 }

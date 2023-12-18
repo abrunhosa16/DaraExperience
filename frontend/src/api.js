@@ -106,6 +106,7 @@ export class API {
     let abort_connected;
     const connected = new Promise((resolve, reject) => {
       abort_connected = () => {
+        console.log("aborted api");
         reject("Aborted");
       };
       e_source.addEventListener("open", (e) => {
@@ -135,12 +136,14 @@ export class API {
       },
       close: () => {
         console.log("closing");
-        // should not be undefined
-        if (abort_connected !== null) {
-          abort_connected();
-        }
+        this.leave(cred_mgr, game_id).then(() => {
+          // should not be undefined
+          if (abort_connected !== null) {
+            abort_connected();
+          }
 
-        e_source.close();
+          e_source.close();
+        });
       },
     };
   }

@@ -1,4 +1,4 @@
-import { MAX_LINE_COUNT, PIECE } from "../board.js";
+import { MAX_LINE_COUNT, PIECE } from "./board.js";
 
 const adjacent = (xi, yi, xf, yf) => {
   return Math.abs(xf - xi) + Math.abs(yf - yi) === 1;
