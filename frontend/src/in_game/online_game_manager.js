@@ -47,6 +47,7 @@ export default class OnlineGameManager {
       this.status = STATUS.CONNECTING;
       this.api.join(this.cred_mgr, width, height).then(
         (game_id) => {
+          console.log(`Joined game with id ${game_id}`)
           if (this.status === STATUS.ABORTING_SEARCH) {
             this.api.leave(this.cred_mgr, game_id).then(
               () => {
@@ -65,7 +66,7 @@ export default class OnlineGameManager {
               search_ended: new Promise((resolve, reject) => {
                 this.status = STATUS.SEARCHING;
                 const { connected, addOnMessage, removeOnMessage, close } =
-                  this.api.update(this.cred_mgr, this.game_id);
+                  this.api.update(this.cred_mgr, game_id);
 
                 // stop search should automatically reject connected promise
                 this.stopSearch = close;

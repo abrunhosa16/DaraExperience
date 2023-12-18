@@ -278,6 +278,22 @@ export default class Board {
     return positions;
   }
 
+  intoText() {
+    const rows = [];
+    for (let y = 0; y < this.height(); y += 1) {
+      const row = [];
+      for (let x = 0; x < this.width(); x += 1) {
+        const piece = this.get(x, y);
+        if (piece === PIECE.BLACK) {
+          row.push("black");
+        } else if (piece === PIECE.WHITE) {
+          row.push("white");
+        } else {
+          row.push("empty");
+        }
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
 }
-
-

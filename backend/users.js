@@ -14,7 +14,7 @@ const randomString = (len) => {
     .substring(2, len + 2);
 };
 
-async function validAuthentication(username, hashValue) {
+export async function validAuthentication(username, hashValue) {
   const file = await fs.open("./data/register.txt");
   for await (const line of file.readLines()) {
     const space = line.indexOf("␝");

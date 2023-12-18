@@ -1,7 +1,8 @@
 import http from "http";
 import fs from "fs";
 import url from "url";
-import { hashPass, register } from "./users.js";
+import { hashPass, register, validAuthentication } from "./users.js";
+import GameUpdateManager from "./game/update_manager.js";
 
 const PORT = 3000;
 const HEADERS = {
@@ -52,9 +53,12 @@ const RESPONSE_TYPE = {
   SERVER_ERROR: 5,
   NOT_ALLOWED: 6,
   OPTIONS: 7,
+  NONE: 8,
+  UNAUTHORIZED: 9,
 };
 
-function processRequest(request, url_parsed) {
+function processRequest(request, response, update_manager) {
+  const url_parsed = url.parse(request.url, true);
   return new Promise((resolve, reject) => {
     switch (url_parsed.pathname) {
       case "/ranking":
@@ -208,11 +212,22 @@ function processRequest(request, url_parsed) {
               };
             }
 
-            console.log(parsed);
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            const result = update_manager.join(
+              parsed.nick,
+              parsed.size.columns,
+              parsed.size.rows
+            );
 
             resolve({
               type: RESPONSE_TYPE.OK_JSON,
-              data: {},
+              data: { game: result },
             });
           });
         } else {
@@ -228,12 +243,113 @@ function processRequest(request, url_parsed) {
             type: RESPONSE_TYPE.OPTIONS,
             methods: "OPTIONS, POST",
           });
+        } else if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return {
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              };
+            }
+
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            update_manager.leave(parsed.game, parsed.nick);
+
+            resolve({
+              type: RESPONSE_TYPE.OK_JSON,
+              data: {},
+            });
+          });
         } else {
           resolve({
-            type: RESPONSE_TYPE.OK_JSON,
-            data: {},
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
+        break;
+
+      case "/notify":
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, POST",
+          });
+        } else if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return {
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              };
+            }
+
+            const hash = hashPass(parsed.password);
+            if (!validAuthentication(parsed.nick, hash)) {
+              return resolve({
+                type: RESPONSE_TYPE.UNAUTHORIZED,
+              });
+            }
+
+            update_manager.notify(
+              parsed.game,
+              parsed.nick,
+              parsed.move.column,
+              parsed.move.row
+            );
+
+            resolve({
+              type: RESPONSE_TYPE.OK_JSON,
+              data: {},
+            });
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.NOT_ALLOWED,
+          });
+        }
+        break;
+
+      case "/update":
+        if (request.method === "OPTIONS") {
+          resolve({
+            type: RESPONSE_TYPE.OPTIONS,
+            methods: "OPTIONS, GET",
+          });
+        }
+        if (request.method === "GET") {
+          response.writeHead(200, HEADERS.SSE);
+
+          const id = url_parsed.query.game;
+          const username = url_parsed.query.username;
+
+          update_manager.add().update(id, username, response);
+
+          request.on("close", () => {
+            update_manager.disconnect(id, username);
+          });
+
+          resolve({
+            type: RESPONSE_TYPE.NONE,
+          });
+        } else {
+          resolve({
+            type: RESPONSE_TYPE.NOT_ALLOWED,
+          });
+        }
+
         break;
 
       default:
@@ -245,45 +361,11 @@ function processRequest(request, url_parsed) {
 }
 
 function createServer() {
+  const update_manager = new GameUpdateManager();
+
   return http.createServer(async (request, response) => {
-    const url_parsed = url.parse(request.url, true);
-
-    // update is a special case
-    if (url_parsed.pathname === "/update") {
-      if (request.method === "OPTIONS") {
-        response.writeHead(204, {
-          ...HEADERS.OPTIONS,
-          "Access-Control-Allow-Methods": "OPTIONS, GET",
-        });
-        response.end();
-      }
-      if (request.method === "GET") {
-        console.log(url_parsed.query);
-        response.writeHead(200, HEADERS.SSE);
-
-        // keep the connection alive
-        const i0 = setInterval(() => {
-          response.write("");
-        }, 450);
-
-        setTimeout(() => {
-          const data = JSON.stringify({ winner: null });
-          response.write(`data: ${data}\n\n`);
-        }, 15000);
-
-        request.on("close", () => {
-          clearInterval(i0);
-          response.end();
-        });
-      } else {
-        response.writeHead(405, HEADERS.NO_BODY);
-        response.end();
-      }
-      return;
-    }
-
     try {
-      const result = await processRequest(request, url_parsed);
+      const result = await processRequest(request, response, update_manager);
       switch (result.type) {
         case RESPONSE_TYPE.OPTIONS:
           response.writeHead(204, {
@@ -319,15 +401,22 @@ function createServer() {
           response.writeHead(400, HEADERS.JSON);
           response.end(JSON.stringify({ error: result.err_msg }));
           break;
+        case RESPONSE_TYPE.UNAUTHORIZED:
+          response.writeHead(401, HEADERS.JSON);
+          response.end(
+            JSON.stringify({ error: "Invalid username or password" })
+          );
         case RESPONSE_TYPE.SERVER_ERROR:
           response.writeHead(500, HEADERS.NO_BODY);
           response.end();
+          break;
+        case RESPONSE_TYPE.NONE:
           break;
         default:
           throw new Error(`Invalid processed result: ${result}`);
       }
     } catch (err) {
-      console.error(err);
+      console.log(err);
       response.writeHead(500, HEADERS.NO_BODY);
       response.end();
     }
@@ -338,11 +427,12 @@ function main() {
   const server = createServer();
   server.listen(PORT, (err) => {
     if (err) {
-      console.log("Sorry I will server you better ", err);
+      console.err("The server failed to start with the error", err);
+    } else {
+      console.log(
+        `The server started successfully and is listening for requests at http://localhost:${PORT}`
+      );
     }
-    console.log(
-      `The server started successfully and is listening for requests at http://localhost:${PORT}`
-    );
   });
 }
 
