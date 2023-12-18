@@ -26,6 +26,8 @@ export default class GameUpdateManager {
     //    game: OngoingGame object
     //    player1_turn: bool (true if player 1 should play)
     //    time_count_interval: js interval for decreasing time
+    //    ended: bool (true if the game has ended and players are disconnecting)
+    //    closing: timeout for game forceful deleting when ended
     // }
     this.ongoing = {};
   }
@@ -36,8 +38,8 @@ export default class GameUpdateManager {
 
   broadcast(id, data) {
     const obj = this.ongoing[id];
-    obj.connection1.write(data);
-    obj.connection2.write(data);
+    obj.player1.connection.write(data);
+    obj.player2.connection.write(data);
   }
 
   deleteOngoing(id) {
@@ -46,26 +48,45 @@ export default class GameUpdateManager {
     clearInterval(obj.player2.alive);
     clearInterval(obj.time_count_interval);
 
-    delete this.ongoing[obj];
+    obj.ended = true;
+    obj.closing = setTimeout(() => {
+      if (!obj.player1.disconnected) {
+        // forcefully disconnect player 1
+        obj.player1.connection.end();
+      }
+      if (!obj.player2.disconnected) {
+        // forcefully disconnect player 1
+        obj.player2.connection.end();
+      }
+      delete this.ongoing[id];
+    });
   }
 
-  writeWinner(username, width, height) {
-    
+  writeResults(winner, loser, width, height) {
+    // todo
   }
 
   leave(id, username) {
     if (this.waiting.hasOwnProperty(id)) {
       this.game_pairing.leave(id, username);
       delete this.waiting[id];
-    } else {
+
+      return;
+    }
+
+    if (this.ongoing.hasOwnProperty(id) && !this.ongoing[id].ended) {
       const obj = this.ongoing[id];
       const other = obj.player1 === username ? obj.player2 : obj.player1;
 
       this.broadcast({ winner: other });
 
-      this.writeWinner(other);
+      this.writeResults(other, username, obj.width, obj.height);
       this.deleteOngoing(id);
+
+      return;
     }
+
+    throw new Error("Requested game id does not exist");
   }
 
   getCountIntervalFuncPlayer1(id) {
@@ -94,6 +115,20 @@ export default class GameUpdateManager {
 
     if (this.ongoing.hasOwnProperty(id)) {
       const obj = this.ongoing[id];
+      if (obj.ended) {
+        if (username === obj.player1.username) {
+          obj.player1.disconnected = true;
+        } else {
+          obj.player2.disconnected = true;
+        }
+
+        if (obj.player1.disconnected && obj.player2.disconnected) {
+          // gracefully delete game
+          clearTimeout(obj.closing);
+          delete this.ongoing[id];
+        }
+      }
+
       if (username === obj.player1.username) {
         obj.player1.disconnected = true;
         clearInterval(obj.player1.alive);
@@ -105,10 +140,16 @@ export default class GameUpdateManager {
       }
 
       this.broadcast(id, { disconnected: username });
+      return;
     }
+
+    // do nothing if the game already does not exist
   }
 
+  // for when a connection occurs
   add(id, username, connection) {
+    // interval for keeping the connection going (big intervals between writes
+    // can make a browser try to restart or end the connection)
     const alive = setInterval(() => {
       response.write("");
     }, 450);
@@ -170,6 +211,8 @@ export default class GameUpdateManager {
         time_count_interval: setInterval(starting_player_count, 1000),
         width: pairing.width,
         height: pairing.height,
+        ended: false,
+        closing: null,
       };
 
       delete this.waiting[id];
@@ -179,30 +222,38 @@ export default class GameUpdateManager {
   }
 
   notify(id, username, x, y) {
-    const obj = this.ongoing[id];
-    const play_data = obj.game.play(username, x, y);
+    if (this.ongoing.hasOwnProperty(id) && !this.ongoing.ended) {
+      const obj = this.ongoing[id];
+      const play_data = obj.game.play(username, x, y);
 
-    const current_player = obj.game.currentPlayer();
-    // switch timeouts if current player is different
-    if (obj.player1_turn) {
-      if (current_player !== obj.player1.username) {
-        obj.player1_turn = false;
-        clearInterval(obj.time_count_interval);
-        obj.time_count_interval = this.getCountIntervalFuncPlayer2(id);
+      const current_player = obj.game.currentPlayer();
+      // switch timeouts if current player is different
+      if (obj.player1_turn) {
+        if (current_player !== obj.player1.username) {
+          obj.player1_turn = false;
+          clearInterval(obj.time_count_interval);
+          obj.time_count_interval = this.getCountIntervalFuncPlayer2(id);
+        }
+      } else {
+        if (current_player !== obj.player2.username) {
+          obj.player1_turn = true;
+          clearInterval(obj.time_count_interval);
+          obj.time_count_interval = this.getCountIntervalFuncPlayer1(id);
+        }
+      }
+
+      this.broadcast(id, play_data);
+
+      if (play_data.winner !== undefined) {
+        const loser =
+          obj.player1.username === play_data.winner
+            ? obj.player2.username
+            : obj.player1.username;
+        this.writeResults(play_data.winner, loser, obj.width, obj.height);
+        this.deleteOngoing(id);
       }
     } else {
-      if (current_player !== obj.player2.username) {
-        obj.player1_turn = true;
-        clearInterval(obj.time_count_interval);
-        obj.time_count_interval = this.getCountIntervalFuncPlayer1(id);
-      }
-    }
-
-    this.broadcast(id, play_data);
-
-    if (play_data.winner !== undefined) {
-      this.writeWinner(play_data.winner);
-      this.deleteOngoing(id);
+      throw new Error("Requested game does not exist");
     }
   }
 }
