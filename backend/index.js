@@ -2,6 +2,7 @@ import http from "http";
 import fs from "fs";
 import url from "url";
 import GamePairing from "./game/pairing.js";
+import { hashPass, register } from "./users.js";
 
 const PORT = 3000;
 const HEADERS = {
@@ -154,10 +155,38 @@ function processRequest(request, response, game_pairing) {
             type: RESPONSE_TYPE.OPTIONS,
             methods: "OPTIONS, POST",
           });
+        } else if (request.method === "POST") {
+          let data = "";
+          request.on("data", (chunk) => {
+            data += chunk;
+          });
+          request.on("end", () => {
+            const parsed = parseData(data);
+            if (parsed === null) {
+              return resolve({
+                type: RESPONSE_TYPE.INVALID_JSON_IN_REQUEST_BODY,
+              });
+            }
+
+            const hash = hashPass(parsed.password);
+
+            register(parsed.nick, hash).then((result) => {
+              if (result) {
+                resolve({
+                  type: RESPONSE_TYPE.OK_JSON,
+                  data: {},
+                });
+              } else {
+                resolve({
+                  type: RESPONSE_TYPE.CUSTOM_ERROR,
+                  err_msg: "User Registered with a different password",
+                });
+              }
+            });
+          });
         } else {
           resolve({
-            type: RESPONSE_TYPE.OK_JSON,
-            data: {},
+            type: RESPONSE_TYPE.NOT_ALLOWED,
           });
         }
         break;
