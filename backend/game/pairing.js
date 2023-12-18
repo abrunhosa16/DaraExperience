@@ -283,7 +283,6 @@ export default class GamePairing {
   }
 
   leave(id, username) {
-    console.log("leave", id, username);
     if (!this.games.hasOwnProperty(id)) {
       throw new Error(`The game with id <${id}> doesn't exist.`);
     }
