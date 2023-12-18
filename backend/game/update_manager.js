@@ -1,5 +1,6 @@
 import OngoingGame from "./ongoing.js";
 import GamePairing from "./pairing.js";
+import { winnerLoser } from "../store_results.js";
 
 stringify = (obj) => {
   const data = JSON.stringify(obj);
@@ -63,7 +64,7 @@ export default class GameUpdateManager {
   }
 
   writeResults(winner, loser, width, height) {
-    // todo
+    winnerLoser(winner, loser, width, height);
   }
 
   leave(id, username) {
