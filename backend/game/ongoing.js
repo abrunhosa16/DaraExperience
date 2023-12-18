@@ -23,6 +23,24 @@ export default class OngoingGame {
     this.game = new DropPhaseGame(width, height, starting_turn);
   }
 
+  // returns the username of the current player
+  currentPlayer() {
+    const turn = this.game.getTurn();
+    return turn === PIECE.BLACK ? this.black_player : this.white_player;
+  }
+
+  getBlackPlayer() {
+    return this.black_player;
+  }
+
+  getWhitePlayer() {
+    return this.white_player;
+  }
+
+  isPlayer(username) {
+    return this.black_player === username || this.white_player === username;
+  }
+
   // convert phase to how it should be returned by the server
   standardizedPhase() {
     if (this.phase === PHASE.DROP) {
@@ -86,6 +104,22 @@ export default class OngoingGame {
           ? this.black_player
           : this.white_player,
       winner: won ? player : undefined,
+    };
+  }
+
+  getStatusData() {
+    return {
+      board: this.game.getBoard().intoText(),
+      phase: this.standardizedPhase(),
+      step: this.standardizedStep(),
+      players: {
+        [this.black_player]: "black",
+        [this.white_player]: "white",
+      },
+      turn:
+        this.game.getTurn() === PIECE.BLACK
+          ? this.black_player
+          : this.white_player,
     };
   }
 }
